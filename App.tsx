@@ -1,34 +1,39 @@
 import React from "react";
 import {StatusBar} from 'expo-status-bar';
-import {Button, StyleSheet, Text, View} from 'react-native';
+import {Text, useColorScheme} from 'react-native';
+import {Paragraph, TamaguiProvider, Theme, YStack, Button, Main} from "tamagui";
+import config from "./tamagui.config";
+import {useFonts} from "expo-font";
+import * as Font from 'expo-font';
+import {createDrawerNavigator} from "@react-navigation/drawer";
+import HomePage from "./src/pages/home";
+import {NavigationContainer} from "@react-navigation/native";
+
+const Drawer = createDrawerNavigator()
+
 
 export default function App() {
-    const [count, setCount] = React.useState<number>(0)
+    const color_scheme = useColorScheme()
 
-    React.useEffect(() => {
-        console.log('another count has occurred')
-    }, [count])
+    const [fonts_loaded, error] = useFonts({
+        'Inter': require('@tamagui/font-inter/otf/Inter-Medium.otf'),
+        'InterBold': require('@tamagui/font-inter/otf/Inter-Bold.otf'),
+    })
 
-    const onClickButton = React.useCallback(() => {
-        console.log('clicked')
-        setCount(count + 2)
-        console.log('stop before this')
-    }, [count])
+    if (!fonts_loaded) {
+        return null // todo: add a splash screen or loader
+    }
 
     return (
-        <View style={styles.container}>
-            <Text>Open up App.tsx to start working on your app!</Text>
-            <Button title={'Click me'} onPress={onClickButton}/>
-            <StatusBar style="auto"/>
-        </View>
+        <TamaguiProvider config={config}>
+            <Theme name={color_scheme === 'dark' ? 'dark' : 'light'}>
+                <NavigationContainer>
+                    <Drawer.Navigator initialRouteName={'Home'}>
+                        <Drawer.Screen name={'Home'} component={HomePage}/>
+                    </Drawer.Navigator>
+                </NavigationContainer>
+             </Theme>
+         </TamaguiProvider>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
