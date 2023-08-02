@@ -3,7 +3,7 @@ import {Button, Paragraph, YStack} from "tamagui";
 import {useDispatch} from "react-redux";
 
 
-export default function SessionsTab() {
+export default function ActivitiesTab() {
     const dispatch = useDispatch()
     return (
         <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'}>
