@@ -1,9 +1,16 @@
 import {combineReducers} from "@reduxjs/toolkit";
-import testReducer from "./testReducer";
+import activitiesReducer, {ActivitiesState} from "./activitiesReducer";
+import durationsReducer, {DurationsState} from "./durationsReducer";
+
+export interface AppState {
+    activities: ActivitiesState,
+    durations: DurationsState,
+}
 
 
 const rootReducer = combineReducers({
-    test:testReducer
+    activities: activitiesReducer,
+    durations: durationsReducer,
 });
 
 export default rootReducer;

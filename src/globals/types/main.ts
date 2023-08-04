@@ -2,6 +2,7 @@ interface Session {
     id: number;
     activity_id: number;
     duration_id: number;
+    is_ongoing: boolean;
 
     start_time: Date,
     end_time: Date,
