@@ -7,4 +7,4 @@ const ActivityFormValidation = yup.object().shape({
     default_duration_id: yup.number().required('Default duration is required'),
 })
 
-export default ActivityFormValidation;
+export default ActivityFormValidation

@@ -1,22 +1,10 @@
-interface Session {
-    id: number;
-    activity_id: number;
-    duration_id: number;
-    is_ongoing: boolean;
-
-    start_time: Date,
-    end_time: Date,
-
-    segments: Segment[]
+export enum SegmentType {
+    FOCUS = 'focus',
+    BREAK = 'break'
 }
-interface Day {
-    date: Date;
-    sessions: Session[];
-}
-
 interface Segment {
     duration: number;
-    type: 'focus' | 'break';
+    type: SegmentType
 }
 
 // ? MAIN DATA STRUCTURES
@@ -44,7 +32,23 @@ export interface Duration {
     segments: Segment[]
 }
 
-export type Calendar = Map<string, Day>
+export type Session = {
+    id: number;
+    activity_id?: number;
+    duration_id?: number;
+
+    start_time: Date,
+
+    segments: Segment[]
+} & (
+    { is_ongoing: true, end_time: null } |
+    { is_ongoing: false, end_time: Date }
+    )
+
+export interface Day {
+    date: Date;
+    sessions: Map<number,Session>
+}
 
 // ? ........................
 // ? ........................

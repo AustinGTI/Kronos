@@ -1,8 +1,8 @@
 import {createSlice} from "@reduxjs/toolkit";
 import {Activity} from "../../types/main";
-import {ValidationResponse, Status} from "../types";
+import {ValidationResponse, ValidationStatus} from "../types";
 
-export type ActivitiesState =  Map<number, Activity>
+export type ActivitiesState = Map<number, Activity>
 
 
 export type NewActivity = { id?: never } & Omit<Activity, 'id'>

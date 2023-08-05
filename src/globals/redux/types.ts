@@ -1,9 +1,18 @@
-export enum Status {
+export enum ValidationStatus {
     SUCCESS = 'SUCCESS',
     ERROR = 'ERROR',
 }
+
+export enum SpecialField {
+    GLOBAL = 'GLOBAL',
+}
+
+interface ValidationError {
+    field: string | SpecialField;
+    message: string;
+}
+
 export interface ValidationResponse {
-    type: string;
-    status: Status;
-    error?: string;
+    status: ValidationStatus;
+    error?: ValidationError;
 }
