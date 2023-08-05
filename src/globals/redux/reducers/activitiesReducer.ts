@@ -7,6 +7,7 @@ export type ActivitiesState = Map<number, Activity>
 
 export type NewActivity = { id?: never } & Omit<Activity, 'id'>
 
+
 const initial_state: ActivitiesState = new Map<number, Activity>()
 
 const activitiesSlice = createSlice({
@@ -22,6 +23,13 @@ const activitiesSlice = createSlice({
         updateActivity: (state, {payload}: { type: string, payload: Activity }) => {
             state.set(payload.id, payload)
         },
+
+        incrementActivityStats: (state, {payload}: { type: string, payload: { activity_id: number, session_duration: number } }) => {
+            const activity = state.get(payload.activity_id) as Activity
+            activity.stats_data.total_time += payload.session_duration
+            activity.stats_data.total_sessions += 1
+        },
+
         deleteActivity: (state, {payload}: { type: string, payload: number }) => {
             state.delete(payload)
         },

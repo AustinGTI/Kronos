@@ -38,6 +38,22 @@ export function updateActivityValidation(app_state: AppState, new_activity: NewA
     }
 }
 
+export function incrementActivityStatsValidation(app_state: AppState, activity_id: number): ValidationResponse {
+    // check that the activity exists
+    if (!app_state.activities.has(activity_id)) {
+        return {
+            status: ValidationStatus.ERROR,
+            error: {
+                field: SpecialField.GLOBAL,
+                message: 'This activity does not exist'
+            }
+        }
+    }
+    return {
+        status: ValidationStatus.SUCCESS
+    }
+}
+
 export function deleteActivityValidation(app_state: AppState, activity_id: number): ValidationResponse {
     // check that the activity exists
     if (!app_state.activities.has(activity_id)) {
