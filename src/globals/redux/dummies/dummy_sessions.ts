@@ -17,7 +17,7 @@ const RANDOM_SESSION_CONFIG = {
  */
 function getRandomActivity(): Activity | undefined {
     if (Math.random() < RANDOM_SESSION_CONFIG.probabilities.activity_is_defined) {
-        return DEFAULT_ACTIVITIES_STATE.get(Math.floor(Math.random() * DEFAULT_ACTIVITIES_STATE.size));
+        return DEFAULT_ACTIVITIES_STATE[Math.floor(Math.random() * Object.keys(DEFAULT_ACTIVITIES_STATE).length) + 1];
     } else {
         return undefined;
     }
@@ -31,9 +31,9 @@ function getRandomActivity(): Activity | undefined {
 function getRandomDuration(activity: Activity): Duration | undefined {
     if (Math.random() < RANDOM_SESSION_CONFIG.probabilities.duration_is_defined) {
         if (Math.random() < RANDOM_SESSION_CONFIG.probabilities.duration_is_default) {
-            return DEFAULT_DURATION_STATE.get(activity.default_duration_id);
+            return DEFAULT_DURATION_STATE[activity.default_duration_id];
         } else {
-            return DEFAULT_DURATION_STATE.get(Math.floor(Math.random() * DEFAULT_DURATION_STATE.size));
+            return DEFAULT_DURATION_STATE[Math.floor(Math.random() * Object.keys(DEFAULT_DURATION_STATE).length) + 1];
         }
     } else {
         return undefined;
@@ -168,6 +168,9 @@ export default function generateDummyDay(date: Date): Day {
 
     return {
         date: date,
-        sessions: new Map<number, Session>(sessions.map(session => [session.id, session]))
+        sessions: sessions.reduce((obj, session) => {
+            obj[session.id] = session
+            return obj
+        }, {} as { [id: number]: Session })
     }
 }

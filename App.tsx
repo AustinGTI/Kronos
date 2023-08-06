@@ -4,13 +4,14 @@ import {Text, useColorScheme} from 'react-native';
 import {Paragraph, TamaguiProvider, Theme, YStack, Button, Main} from "tamagui";
 import config from "./tamagui.config";
 import {useFonts} from "expo-font";
-import * as Font from 'expo-font';
 import {createDrawerNavigator} from "@react-navigation/drawer";
 import HomePage from "./src/pages/home";
 import {NavigationContainer} from "@react-navigation/native";
 import {Provider} from "react-redux";
 import {persistor, store} from "./src/globals/redux";
 import {PersistGate} from "redux-persist/integration/react";
+
+
 
 const Drawer = createDrawerNavigator()
 

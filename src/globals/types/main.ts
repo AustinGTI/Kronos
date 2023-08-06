@@ -47,7 +47,7 @@ export type Session = {
 
 export interface Day {
     date: Date;
-    sessions: Map<number,Session>
+    sessions: { [id: number]: Session }
 }
 
 // ? ........................

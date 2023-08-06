@@ -4,11 +4,11 @@ import {dateToDDMMYYYY, getStartOfDay} from "../../helpers/datetime_functions";
 import {extractSessionDateKey, generateSessionId} from "../../helpers/session_functions";
 import generateDummyDay from "../dummies/dummy_sessions";
 
-export type SessionsState = Map<string, Day>
+export type SessionsState = { [date_key: string]: Day }
 
 export type NewSession = { activity_id?: number, duration_id?: number }
 
-const initial_state: SessionsState = new Map<string, Day>()
+const initial_state: SessionsState = {}
 
 
 const sessionsSlice = createSlice({
@@ -18,7 +18,7 @@ const sessionsSlice = createSlice({
         startSession: (state, {payload}: { type: string, payload: NewSession }) => {
             // a new session will have no id, so we need to generate one
             const start_time = new Date()
-            const id = generateSessionId(start_time, state.get(dateToDDMMYYYY(start_time))?.sessions.size ?? 0)
+            const id = generateSessionId(start_time, Object.keys(state[dateToDDMMYYYY(start_time)]?.sessions).length ?? 0)
 
             const new_session: Session = {
                 ...payload,
@@ -29,32 +29,31 @@ const sessionsSlice = createSlice({
             }
             // check if there is already a day for today
             const today = dateToDDMMYYYY(start_time)
-            if (state.has(today)) {
+            if (state[today]) {
                 // if there is, add the new session to it
-                const day = state.get(today) as Day
-                day.sessions.set(id, new_session)
+                state[today].sessions[id] = new_session
             }
             // if there isn't, create a day for today and add the new session to it
             else {
-                state.set(today, {
+                state[today] = {
                     // the date should be 00:00:00 of today
                     date: getStartOfDay(start_time),
-                    sessions: new Map<number, Session>([[id, new_session]])
-                })
+                    sessions: {[id]: new_session}
+                }
             }
         },
 
         endSession: (state, {payload}: { type: string, payload: { session_id: number, end_time?: Date } }) => {
             // first get the session
             const date_key = extractSessionDateKey(payload.session_id)
-            const session = state.get(date_key)?.sessions.get(payload.session_id) as Session
+            const session = state[date_key]?.sessions[payload.session_id] as Session
 
             // set is_on_going to false and end_time to the current time if not provided
             session.is_ongoing = false
             session.end_time = payload.end_time ?? new Date()
 
             // update the session in the state
-            state.get(dateToDDMMYYYY(session.start_time))?.sessions.set(session.id, session)
+            state[date_key].sessions[payload.session_id] = session
         },
 
         // ? There will be 2 approaches to updating a session, both will be implemented, use will be decided on the frontend
@@ -75,7 +74,7 @@ const sessionsSlice = createSlice({
         }) => {
             // first get the session
             const date_key = extractSessionDateKey(payload.session_id)
-            const session = state.get(date_key)?.sessions.get(payload.session_id) as Session
+            const session = state[date_key]?.sessions[payload.session_id] as Session
 
             // if the last segment is of the same type as given in the payload, increment its duration
             if (session.segments[session.segments.length - 1].type === payload.segment_type) {
@@ -89,7 +88,7 @@ const sessionsSlice = createSlice({
             }
 
             // update the session in the state
-            state.get(date_key)?.sessions.set(session.id, session)
+            state[date_key].sessions[payload.session_id] = session
         },
 
         // ? METHOD 2: a pair of function to start and end a session of a given type
@@ -108,7 +107,7 @@ const sessionsSlice = createSlice({
         }) => {
             // first get the session
             const date_key = extractSessionDateKey(payload.session_id)
-            const session = state.get(date_key)?.sessions.get(payload.session_id) as Session
+            const session = state[date_key]?.sessions[payload.session_id] as Session
 
             // add a new segment of the given type and set its duration to 0
             session.segments.push({
@@ -117,13 +116,13 @@ const sessionsSlice = createSlice({
             })
 
             // update the session in the state
-            state.get(date_key)?.sessions.set(session.id, session)
+            state[date_key].sessions[payload.session_id] = session
         },
 
         endSegment: (state, {payload}: { type: string, payload: { session_id: number } }) => {
             // first get the session
             const date_key = extractSessionDateKey(payload.session_id)
-            const session = state.get(date_key)?.sessions.get(payload.session_id) as Session
+            const session = state[date_key]?.sessions[payload.session_id] as Session
 
             // get the duration of the most recent segment
             // if there are no segments, return and log a warning
@@ -143,7 +142,7 @@ const sessionsSlice = createSlice({
             session.segments[session.segments.length - 1].duration = Math.floor((new Date().getTime() - current_segment_start_time.getTime()) / 1000 / 60)
 
             // update the session in the state
-            state.get(date_key)?.sessions.set(session.id, session)
+            state[date_key].sessions[payload.session_id] = session
         },
 
         // ? Its unclear if this will every be used, I don't see a reason to delete a session, but I'll leave it here for now
@@ -152,7 +151,7 @@ const sessionsSlice = createSlice({
             const date_key = extractSessionDateKey(payload)
 
             // delete the session from the state
-            state.get(date_key)?.sessions.delete(payload)
+            delete state[date_key].sessions[payload]
         },
 
         // ! These functions are only used for testing, they should not be used in production
@@ -165,14 +164,14 @@ const sessionsSlice = createSlice({
             // for every day in the state within the range that does not have any sessions, generate dummy sessions
             for (let date = payload.start_date; date <= end_date; date.setDate(date.getDate() + 1)) {
                 const date_key = dateToDDMMYYYY(date)
-                if (!state.has(date_key)) {
-                    state.set(date_key, generateDummyDay(date))
+                if (!state[date_key]) {
+                    state[date_key] = generateDummyDay(date)
                 }
             }
         },
 
         clearSessions: (state) => {
-            state.clear()
+            state = {} as SessionsState
         }
     }
 })

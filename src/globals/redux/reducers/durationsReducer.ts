@@ -2,7 +2,7 @@ import {Duration} from "../../types/main";
 import {createSlice} from "@reduxjs/toolkit";
 import DEFAULT_DURATION_STATE from "../defaults/default_durations";
 
-export type DurationsState = Map<number,Duration>
+export type DurationsState = {[id:number]: Duration}
 
 export type NewDuration = { id?: never } & Omit<Duration, 'id'>
 
@@ -14,17 +14,16 @@ const durationsSlice = createSlice({
     reducers: {
         createDuration: (state, {payload}: { type: string, payload: NewDuration }) => {
             // a new duration will have no id, so we need to generate one
-            const id = Math.max(...state.keys()) + 1
-            const new_duration: Duration = {...payload, id}
-            state.set(id, new_duration)
+            const id = Math.max(...Object.keys(state).map(key => parseInt(key))) + 1
+            state[id] = {...payload, id}
         },
 
         updateDuration: (state, {payload}: { type: string, payload: Duration }) => {
-            state.set(payload.id, payload)
+            state[payload.id] = payload
         },
 
         deleteDuration: (state, {payload}: { type: string, payload: number }) => {
-            state.delete(payload)
+            delete state[payload]
         },
 
         // ! These functions are purely for testing purposes, should not be used in production
@@ -33,7 +32,7 @@ const durationsSlice = createSlice({
         },
 
         clearDurations: (state) => {
-            state.clear()
+            state = {} as DurationsState
         }
 
     }
