@@ -1,11 +1,12 @@
 import {Duration} from "../../types/main";
 import {createSlice} from "@reduxjs/toolkit";
+import DEFAULT_DURATION_STATE from "../defaults/default_durations";
 
 export type DurationsState = Map<number,Duration>
 
 export type NewDuration = { id?: never } & Omit<Duration, 'id'>
 
-const initial_state: DurationsState = new Map<number, Duration>()
+const initial_state: DurationsState = DEFAULT_DURATION_STATE
 
 const durationsSlice = createSlice({
     name: 'durations',
@@ -24,7 +25,17 @@ const durationsSlice = createSlice({
 
         deleteDuration: (state, {payload}: { type: string, payload: number }) => {
             state.delete(payload)
+        },
+
+        // ! These functions are purely for testing purposes, should not be used in production
+        resetDurations: (state) => {
+            state = DEFAULT_DURATION_STATE
+        },
+
+        clearDurations: (state) => {
+            state.clear()
         }
+
     }
 })
 

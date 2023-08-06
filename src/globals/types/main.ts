@@ -2,7 +2,7 @@ export enum SegmentType {
     FOCUS = 'focus',
     BREAK = 'break'
 }
-interface Segment {
+export interface Segment {
     duration: number;
     type: SegmentType
 }

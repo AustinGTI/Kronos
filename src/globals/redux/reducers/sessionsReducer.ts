@@ -2,13 +2,13 @@ import {Day, SegmentType, Session} from "../../types/main";
 import {createSlice} from "@reduxjs/toolkit";
 import {dateToDDMMYYYY, getStartOfDay} from "../../helpers/datetime_functions";
 import {extractSessionDateKey, generateSessionId} from "../../helpers/session_functions";
+import generateDummyDay from "../dummies/dummy_sessions";
 
 export type SessionsState = Map<string, Day>
 
 export type NewSession = { activity_id?: number, duration_id?: number }
 
 const initial_state: SessionsState = new Map<string, Day>()
-
 
 
 const sessionsSlice = createSlice({
@@ -153,6 +153,26 @@ const sessionsSlice = createSlice({
 
             // delete the session from the state
             state.get(date_key)?.sessions.delete(payload)
+        },
+
+        // ! These functions are only used for testing, they should not be used in production
+        generateDummySessions: (state, {payload}: { type: string, payload: { start_date: Date, end_date?: Date } }) => {
+            // if end date is not defined it is assumed to be yesterday
+            let end_date = payload.end_date ?? new Date()
+            if (!payload.end_date) {
+                end_date.setDate(end_date.getDate() - 1)
+            }
+            // for every day in the state within the range that does not have any sessions, generate dummy sessions
+            for (let date = payload.start_date; date <= end_date; date.setDate(date.getDate() + 1)) {
+                const date_key = dateToDDMMYYYY(date)
+                if (!state.has(date_key)) {
+                    state.set(date_key, generateDummyDay(date))
+                }
+            }
+        },
+
+        clearSessions: (state) => {
+            state.clear()
         }
     }
 })
@@ -163,6 +183,8 @@ export const {
     incrementSegment,
     startSegment,
     endSegment,
-    deleteSession
+    deleteSession,
+    generateDummySessions,
+    clearSessions
 } = sessionsSlice.actions
 export default sessionsSlice.reducer

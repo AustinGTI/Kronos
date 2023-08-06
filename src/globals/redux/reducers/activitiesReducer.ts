@@ -1,6 +1,7 @@
 import {createSlice} from "@reduxjs/toolkit";
 import {Activity} from "../../types/main";
 import {ValidationResponse, ValidationStatus} from "../types";
+import DEFAULT_ACTIVITIES_STATE from "../defaults/default_activities";
 
 export type ActivitiesState = Map<number, Activity>
 
@@ -8,7 +9,7 @@ export type ActivitiesState = Map<number, Activity>
 export type NewActivity = { id?: never } & Omit<Activity, 'id'>
 
 
-const initial_state: ActivitiesState = new Map<number, Activity>()
+const initial_state: ActivitiesState = DEFAULT_ACTIVITIES_STATE
 
 const activitiesSlice = createSlice({
     name: 'activities',
@@ -33,6 +34,15 @@ const activitiesSlice = createSlice({
         deleteActivity: (state, {payload}: { type: string, payload: number }) => {
             state.delete(payload)
         },
+
+        // ! These functions are purely for testing purposes, should not be used in production
+        resetActivities: (state) => {
+            state = DEFAULT_ACTIVITIES_STATE
+        },
+
+        clearActivities: (state) => {
+            state.clear()
+        }
     }
 })
 
