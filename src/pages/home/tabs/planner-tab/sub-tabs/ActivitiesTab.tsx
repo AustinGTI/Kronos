@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useMemo} from 'react'
 import {Circle, Paragraph, Separator, XStack, YStack} from "tamagui";
 import {useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
@@ -13,6 +13,20 @@ interface ActivityPaneProps {
     setOpenActivity: React.Dispatch<React.SetStateAction<Activity | null>>
 }
 
+interface ActivityStatProps {
+    label: string
+    value: number
+}
+
+export function ActivityStat({value, label}: ActivityStatProps) {
+    return (
+        <YStack alignItems={'center'} flexGrow={1}>
+            <Paragraph fontSize={32} color={'black'} lineHeight={40}>{value}</Paragraph>
+            <Paragraph fontSize={8} textTransform={'uppercase'} color={'#aaa'} lineHeight={10}>{label}</Paragraph>
+        </YStack>
+    );
+}
+
 function ActivityPane({activity, open_activity, setOpenActivity}: ActivityPaneProps) {
     const handleOnClickPane = React.useCallback(() => {
         if (open_activity === activity) {
@@ -25,6 +39,14 @@ function ActivityPane({activity, open_activity, setOpenActivity}: ActivityPanePr
     const is_open = React.useMemo(() => {
         return open_activity?.id === activity.id
     }, [open_activity?.id, activity.id])
+
+    const [sessions, hours, minutes] = useMemo(() => {
+        // convert the activity stats data into a more readable format
+        const hours = Math.floor(activity.stats_data.total_time / 60)
+        const minutes = activity.stats_data.total_time % 60
+        return [activity.stats_data.total_sessions, hours, minutes]
+    }, [activity.stats_data.total_time, activity.stats_data.total_sessions]);
+
     return (
         <YStack width={'95%'} borderRadius={10} margin={'2.5%'} backgroundColor={'white'}>
             <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'} onPress={handleOnClickPane}
@@ -38,9 +60,11 @@ function ActivityPane({activity, open_activity, setOpenActivity}: ActivityPanePr
                     <React.Fragment>
                         <Separator width={'90%'} marginHorizontal={'5%'}/>
                         <YStack width={'100%'} backgroundColor={'transparent'} padding={10}>
-                            <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={5}>
-                                <Paragraph>{`${activity.stats_data.total_sessions} SESSIONS`}</Paragraph>
-                                <Paragraph>{`${activity.stats_data.total_time} MINUTES`}</Paragraph>
+                            <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={15}>
+                                <ActivityStat label={'sessions'} value={sessions}/>
+                                <Separator vertical borderColor={'#ccc'}/>
+                                {/*<ActivityStat label={'hours'} value={hours}/>*/}
+                                <ActivityStat label={'minutes'} value={minutes}/>
                             </XStack>
                             <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={10}>
                                 <Edit size={20} color={'#777'}/>

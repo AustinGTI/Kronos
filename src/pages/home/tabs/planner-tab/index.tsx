@@ -22,7 +22,7 @@ const PLANNER_SUB_TABS: SubTab[] = [
         key: 'durations',
         name: 'Durations',
         component: <DurationsTab/>
-    }
+    },
 ]
 
 
