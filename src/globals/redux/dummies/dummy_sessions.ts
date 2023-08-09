@@ -1,4 +1,4 @@
-import {Activity, Day, Duration, Segment, SegmentType, Session} from "../../types/main";
+import {Activity, Day, Duration, Segment, SEGMENT_TYPES, SegmentType, Session} from "../../types/main";
 import DEFAULT_ACTIVITIES_STATE from "../defaults/default_activities";
 import DEFAULT_DURATION_STATE from "../defaults/default_durations";
 
@@ -58,9 +58,9 @@ function generateCustomDuration(): Duration {
     const break_length = Math.floor(Math.random() * 10) + 5
     // generate the segments
     for (let i = 0; i < num_focus_segments; i++) {
-        custom_duration.segments.push({duration: focus_length, type: SegmentType.FOCUS})
+        custom_duration.segments.push({duration: focus_length, type: SEGMENT_TYPES.FOCUS})
         if (i < num_focus_segments - 1) {
-            custom_duration.segments.push({duration: break_length, type: SegmentType.BREAK})
+            custom_duration.segments.push({duration: break_length, type: SEGMENT_TYPES.BREAK})
         }
     }
     return custom_duration

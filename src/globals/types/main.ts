@@ -1,7 +1,19 @@
-export enum SegmentType {
-    FOCUS = 'focus',
-    BREAK = 'break'
+export type SegmentType = {
+    name: string;
+    color: string;
 }
+
+export const SEGMENT_TYPES: { [key: string]: SegmentType } = {
+    FOCUS: {
+        name: 'focus',
+        color: '#db9cff'
+    },
+    BREAK: {
+        name: 'break',
+        color: '#ffe169'
+    }
+}
+
 export interface Segment {
     duration: number;
     type: SegmentType

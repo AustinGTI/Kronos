@@ -1,11 +1,12 @@
 import React, {useMemo} from 'react'
-import {Circle, Paragraph, Separator, XStack, YStack} from "tamagui";
+import {Circle, Paragraph, Separator, Sheet, XStack, YStack} from "tamagui";
 import {useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
 import {Activity} from "../../../../../globals/types/main";
 // import {ArrowDown, Delete, Edit, Play} from "@tamagui/lucide-icons";
 import {FlatList} from "react-native";
 import {ArrowDown, ChevronDown, ChevronUp, Delete, Edit, Play} from "@tamagui/lucide-icons";
+import usePlannerTabContext from "../../../../../globals/contexts/PlannerTabContext";
 
 interface ActivityPaneProps {
     activity: Activity
@@ -62,7 +63,7 @@ function ActivityPane({activity, open_activity, setOpenActivity}: ActivityPanePr
                         <YStack width={'100%'} backgroundColor={'transparent'} padding={10}>
                             <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={15}>
                                 <ActivityStat label={'sessions'} value={sessions}/>
-                                <Separator vertical borderColor={'#ccc'}/>
+                                {/*<Separator vertical borderColor={'#ccc'}/>*/}
                                 {/*<ActivityStat label={'hours'} value={hours}/>*/}
                                 <ActivityStat label={'minutes'} value={minutes}/>
                             </XStack>
