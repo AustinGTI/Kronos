@@ -5,7 +5,6 @@ import DEFAULT_ACTIVITIES_STATE from "../defaults/default_activities";
 export type ActivitiesState = {[id:number]: Activity}
 
 
-export type NewActivity = { id?: never } & Omit<Activity, 'id'>
 
 
 const initial_state: ActivitiesState = DEFAULT_ACTIVITIES_STATE
@@ -14,8 +13,8 @@ const activitiesSlice = createSlice({
     name: 'activities',
     initialState: initial_state,
     reducers: {
-        createActivity: (state, {payload}: { type: string, payload: NewActivity }) => {
-            // a new activity will have no id, so we need to generate one
+        createActivity: (state, {payload}: { type: string, payload: Activity }) => {
+            // a new activity will have an id of -1, so generate a valid one
             const id = Math.max(...Object.keys(state).map(key => parseInt(key))) + 1
             state[id] = {...payload, id}
         },

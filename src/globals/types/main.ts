@@ -36,12 +36,30 @@ export interface Activity {
     }
 }
 
+export const EMPTY_ACTIVITY: Activity = {
+    id: -1,
+    name: '',
+    color: '#fff',
+    default_duration_id: -1,
+    stats_data: {
+        total_time: 0,
+        total_sessions: 0
+    }
+}
+
 
 export interface Duration {
     id: number;
     name: string;
 
     segments: Segment[]
+}
+
+export const EMPTY_DURATION: Duration = {
+    id: -1,
+    name: '',
+
+    segments: []
 }
 
 export type Session = {

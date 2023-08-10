@@ -4,16 +4,14 @@ import DEFAULT_DURATION_STATE from "../defaults/default_durations";
 
 export type DurationsState = {[id:number]: Duration}
 
-export type NewDuration = { id?: never } & Omit<Duration, 'id'>
-
 const initial_state: DurationsState = DEFAULT_DURATION_STATE
 
 const durationsSlice = createSlice({
     name: 'durations',
     initialState: initial_state,
     reducers: {
-        createDuration: (state, {payload}: { type: string, payload: NewDuration }) => {
-            // a new duration will have no id, so we need to generate one
+        createDuration: (state, {payload}: { type: string, payload: Duration }) => {
+            // a new duration will have an id of -1, so generate a valid one
             const id = Math.max(...Object.keys(state).map(key => parseInt(key))) + 1
             state[id] = {...payload, id}
         },

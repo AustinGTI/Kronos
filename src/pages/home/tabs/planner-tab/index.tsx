@@ -2,8 +2,11 @@ import React, {createContext, useMemo} from 'react'
 import {Button, Paragraph, Sheet, XGroup, XStack, YStack} from "tamagui";
 import ActivitiesTab from "./sub-tabs/ActivitiesTab";
 import DurationsTab from "./sub-tabs/DurationsTab";
-import {PlannerTabContext} from "../../../../globals/contexts/PlannerTabContext";
+import {PlannerTabContext, PlannerTabFormData} from "../../../../globals/contexts/PlannerTabContext";
 import {Plus} from "@tamagui/lucide-icons";
+import ActivityForm from "./forms/ActivityForm";
+import {Activity, Duration} from "../../../../globals/types/main";
+import DurationForm from "./forms/DurationForm";
 
 
 interface SubTab {
@@ -27,23 +30,24 @@ const PLANNER_SUB_TABS: SubTab[] = [
 ]
 
 
-
-
-
 export default function PlannerTab() {
     const [active_sub_tab, setActiveSubTab] = React.useState<SubTab>(PLANNER_SUB_TABS[0])
 
+    const [form_data, setFormData] = React.useState<PlannerTabFormData | undefined>()
+
     const [modal_is_open, setModalIsOpen] = React.useState<boolean>(false)
 
-    const [modal_form, setModalForm] = React.useState<JSX.Element>(<Paragraph>Modal Form</Paragraph>)
-
     const planner_tab_context = useMemo(() => ({
-        modal_data: {
-            modal_form,setModalForm
-        }
-    }), []);
+        form_data, setFormData
+    }), [form_data]);
 
-    console.log('the modal is open', modal_is_open)
+    const onClickAddButton = React.useCallback(() => {
+        setModalIsOpen(true)
+        setFormData({
+            initial_values: null,
+            form_title: active_sub_tab.key === 'activities' ? 'Add Activity' : 'Add Duration'
+        })
+    }, [active_sub_tab.key])
 
     return (
         <PlannerTabContext.Provider value={planner_tab_context}>
@@ -56,7 +60,7 @@ export default function PlannerTab() {
                             </XGroup.Item>
                         ))}
                     </XGroup>
-                    <Button onPress={() => setModalIsOpen(true)} icon={<Plus size={'4$'}/>}/>
+                    <Button onPress={onClickAddButton} icon={<Plus size={'4$'}/>}/>
                 </XStack>
 
                 <YStack ai={'center'} jc={'center'} flex={1} backgroundColor={'#f7f7f7'} w={'95%'} margin={10}
@@ -68,7 +72,17 @@ export default function PlannerTab() {
                 <Sheet.Overlay backgroundColor={'transparent'}/>
                 <Sheet.Handle/>
                 <Sheet.Frame>
-                    {modal_form}
+                    {active_sub_tab.key === 'activities' ? (
+                        <ActivityForm
+                            title={form_data?.form_title}
+                            // if initial_values are null or not an instance of type Activity, then it will not be passed to the ActivityForm component
+                            activity={form_data?.initial_values ? form_data.initial_values as Activity : undefined}/>
+                    ) : (
+                        <DurationForm
+                            title={form_data?.form_title}
+                            // if initial_values are null or not an instance of type Duration, then it will not be passed to the DurationForm component
+                            duration={form_data?.initial_values ? form_data.initial_values as Duration : undefined}/>
+                    )}
                 </Sheet.Frame>
             </Sheet>
         </PlannerTabContext.Provider>

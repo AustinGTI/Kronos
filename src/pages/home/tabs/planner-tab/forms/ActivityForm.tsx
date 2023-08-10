@@ -1,26 +1,38 @@
 import React from 'react'
 import {Formik, FormikContext, useFormikContext} from "formik";
-import {Activity} from "../../../../../globals/types/main";
-import ActivityValidation from "./ActivityValidation";
-import {Paragraph, YStack} from "tamagui";
+import {Activity, Duration, EMPTY_ACTIVITY} from "../../../../../globals/types/main";
+import ActivityValidation from "./ActivityFormValidation";
+import {Heading, Input, Label, Paragraph, YStack} from "tamagui";
+import InputContainer from "../../../../../globals/components/form/InputContainer";
 
 interface ActivityFormProps {
+    title?: string
     activity?: Activity
 }
 
 function ActivityFormFields() {
-    const {} = useFormikContext()
+    const {
+        touched, errors, values,
+        handleChange, handleBlur
+    } = useFormikContext<Duration>()
     return (
         <YStack>
-            <Paragraph>Fields</Paragraph>
+            <InputContainer field_key={'name'} label={'Name'} error={touched['name'] ? errors['name'] : undefined}>
+                <Input id={'activity_name'} componentName={'name'} value={values['name']} onChange={handleChange}
+                       onBlur={handleBlur}/>
+            </InputContainer>
         </YStack>
     )
 }
 
-export default function ActivityForm({activity}:ActivityFormProps) {
+export default function ActivityForm({title, activity}: ActivityFormProps) {
     return (
-        <Formik initialValues={activity ?? {}} onSubmit={(values) => console.log(values)} validationSchema={ActivityValidation}>
-            <ActivityFormFields/>
+        <Formik initialValues={activity ?? EMPTY_ACTIVITY} onSubmit={(values) => console.log(values)}
+                validationSchema={ActivityValidation}>
+            <React.Fragment>
+                {title && <Heading>{title}</Heading>}
+                <ActivityFormFields/>
+            </React.Fragment>
         </Formik>
     )
 }

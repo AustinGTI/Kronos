@@ -1,15 +1,18 @@
 import React from "react";
 
+export interface PlannerTabFormData {
+    initial_values: Object | null
+    form_title: string
+}
+
 interface PlannerTabContextProps {
-    modal_data: {
-        modal_form: JSX.Element
-        setModalForm: React.Dispatch<React.SetStateAction<JSX.Element>>
-    }
+    form_data?: PlannerTabFormData
+    setFormData: React.Dispatch<React.SetStateAction<PlannerTabFormData | undefined>>
 }
 export const PlannerTabContext = React.createContext<PlannerTabContextProps>({
-    modal_data: {
-        modal_form: <></>,
-        setModalForm: () => {}
+    form_data: {
+        initial_values: null,
+        form_title: ''
     }
 } as PlannerTabContextProps)
 
