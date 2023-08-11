@@ -68,7 +68,18 @@ export default function PlannerTab() {
                     {active_sub_tab.component}
                 </YStack>
             </YStack>
-            <Sheet modal={true} open={modal_is_open} onOpenChange={setModalIsOpen} dismissOnSnapToBottom>
+            <Sheet modal={true}
+                   open={modal_is_open}
+                   onOpenChange={setModalIsOpen}
+                   dismissOnSnapToBottom
+                   disableDrag
+                   animationConfig={{
+                       type: 'spring',
+                       mass: 1,
+                       damping: 100,
+                       overshootClamping: true,
+                       restDisplacementThreshold: 0.01,
+                   }}>
                 <Sheet.Overlay backgroundColor={'transparent'}/>
                 <Sheet.Handle/>
                 <Sheet.Frame>

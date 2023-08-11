@@ -4,6 +4,7 @@ import {Activity, Duration, EMPTY_ACTIVITY} from "../../../../../globals/types/m
 import ActivityValidation from "./ActivityFormValidation";
 import {Heading, Input, Label, Paragraph, YStack} from "tamagui";
 import InputContainer from "../../../../../globals/components/form/InputContainer";
+import DurationPicker from "../../../../../globals/components/form/pickers/DurationPicker";
 
 interface ActivityFormProps {
     title?: string
@@ -13,13 +14,17 @@ interface ActivityFormProps {
 function ActivityFormFields() {
     const {
         touched, errors, values,
-        handleChange, handleBlur
-    } = useFormikContext<Duration>()
+        handleChange, handleBlur,
+        setValues
+    } = useFormikContext<Activity>()
     return (
         <YStack>
             <InputContainer field_key={'name'} label={'Name'} error={touched['name'] ? errors['name'] : undefined}>
                 <Input id={'activity_name'} componentName={'name'} value={values['name']} onChange={handleChange}
                        onBlur={handleBlur}/>
+            </InputContainer>
+            <InputContainer field_key={'default_duration_id'} label={'Default Duration'} error={touched['default_duration_id'] ? errors['default_duration_id'] : undefined}>
+                <DurationPicker setDuration={(duration) => setValues({...values, default_duration_id: duration.id})} active_duration_id={values['default_duration_id']}/>
             </InputContainer>
         </YStack>
     )
