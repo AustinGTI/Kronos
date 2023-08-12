@@ -5,12 +5,8 @@ import ActivityValidation from "./ActivityFormValidation";
 import {Heading, Input, Label, Paragraph, YStack} from "tamagui";
 import DurationFormValidation from "./DurationFormValidation";
 import InputContainer from "../../../../../globals/components/form/InputContainer";
-
-interface DurationFormProps {
-    title?: string
-    // handleFormSubmit: (values: Duration) => void
-    duration?: Duration
-}
+import {FormProps} from "../../../../../globals/types/form";
+import {generateFormikOnSubmit} from "../../../../../globals/helpers/form_functions";
 
 function DurationFormFields() {
     const {errors, values, handleChange, handleBlur} = useFormikContext<Duration>()
@@ -24,9 +20,11 @@ function DurationFormFields() {
     )
 }
 
-export default function DurationForm({title, duration}: DurationFormProps) {
+export default function DurationForm({title, initial_values, onSubmit}: FormProps<Duration>) {
+    const [global_error, setGlobalError] = React.useState<string | undefined>(undefined)
+    const formikOnSubmit = React.useCallback(generateFormikOnSubmit(onSubmit, setGlobalError), [onSubmit])
     return (
-        <Formik initialValues={duration ?? EMPTY_DURATION} onSubmit={(values) => console.log(values)}
+        <Formik initialValues={initial_values ?? EMPTY_DURATION} onSubmit={(values) => console.log(values)}
                 validationSchema={DurationFormValidation}>
             <React.Fragment>
                 {title && <Heading>{title}</Heading>}

@@ -1,6 +1,7 @@
 import {SpecialField, ValidationStatus, ValidationResponse} from "../types";
 import {AppState} from "../reducers";
 import {Activity} from "../../types/main";
+import {compareStrings, isValidHexColor} from "../../helpers/string_functions";
 
 
 function genericActivityValidation(app_state:AppState,activity: Activity): ValidationResponse {

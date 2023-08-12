@@ -1,17 +1,18 @@
 import React from 'react'
-import {Label, Paragraph, YStack} from "tamagui";
+import {Label, Paragraph, YStack, YStackProps} from "tamagui";
+import {Keyboard, TouchableWithoutFeedback} from "react-native";
 
-interface InputContainerProps {
+interface InputContainerProps extends YStackProps {
     field_key: string
     label: string
     children: React.ReactNode
     error?: string
 }
 
-export default function InputContainer({children,error, field_key, label}: InputContainerProps) {
+export default function InputContainer({children, error, field_key, label, ...stack_props}: InputContainerProps) {
     return (
-        <YStack>
-            <Label textTransform={'uppercase'} htmlFor={field_key}>{label}</Label>
+        <YStack width={'90%'} paddingVertical={10} {...stack_props}>
+            <Paragraph textTransform={'uppercase'}>{label}</Paragraph>
             {children}
             {error && <Paragraph color={'red'}>{error}</Paragraph>}
         </YStack>
