@@ -1,6 +1,5 @@
 import React from 'react'
 import {Label, Paragraph, YStack, YStackProps} from "tamagui";
-import {Keyboard, TouchableWithoutFeedback} from "react-native";
 
 interface InputContainerProps extends YStackProps {
     field_key: string

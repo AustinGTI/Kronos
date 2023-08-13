@@ -3,6 +3,7 @@ import {useSelector} from "react-redux";
 import {AppState} from "../../../redux/reducers";
 import {Duration} from "../../../types/main";
 import {Adapt, Button, Dialog, DialogOverlay, Paragraph, ScrollView, Sheet, XStack, YStack} from "tamagui";
+import DialogContainer from "../DialogContainer";
 
 interface DurationPickerPaneProps {
     duration: Duration,
@@ -41,22 +42,24 @@ export default function DurationPicker({active_duration_id, setDuration}: Durati
 
     return (
         <React.Fragment>
-            <XStack padding={10} alignItems={'center'} justifyContent={'space-between'}>
-                <Paragraph>
+            <XStack paddingVertical={10} alignItems={'center'} justifyContent={'space-between'}>
+                <Paragraph width={'60%'}>
                     {selected_duration?.name ?? 'Select a duration...'}
                 </Paragraph>
                 <Button onPress={() => setDialogOpen(true)}>Select</Button>
             </XStack>
             {dialog_open &&
-                <ScrollView maxHeight={200} borderColor={'#bbb'} borderRadius={7} borderWidth={1} padding={15} backgroundColor={'#eee'}>
-                    {Object.values(durations).map((duration) => (
-                        <DurationPickerPane
-                            key={duration.id}
-                            duration={duration}
-                            is_active={selected_duration?.id === duration.id}
-                            onClick={() => handleClickDuration(duration)}/>
-                    ))}
-                </ScrollView>
+                <DialogContainer onClose={() => setDialogOpen(false)}>
+                    <ScrollView maxHeight={200} width={'100%'}>
+                        {Object.values(durations).map((duration) => (
+                            <DurationPickerPane
+                                key={duration.id}
+                                duration={duration}
+                                is_active={selected_duration?.id === duration.id}
+                                onClick={() => handleClickDuration(duration)}/>
+                        ))}
+                    </ScrollView>
+                </DialogContainer>
             }
         </React.Fragment>
     );

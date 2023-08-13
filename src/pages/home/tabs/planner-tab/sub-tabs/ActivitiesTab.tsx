@@ -1,14 +1,20 @@
 import React, {useMemo} from 'react'
-import {Circle, Paragraph, Separator, Sheet, XStack, YStack} from "tamagui";
-import {useSelector} from "react-redux";
+import {Button, Circle, Paragraph, Separator, XStack, YStack} from "tamagui";
+import {useDispatch, useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
-import {Activity} from "../../../../../globals/types/main";
+import {Activity, Session} from "../../../../../globals/types/main";
 // import {ArrowDown, Delete, Edit, Play} from "@tamagui/lucide-icons";
 import {FlatList} from "react-native";
-import {ArrowDown, ChevronDown, ChevronUp, Delete, Edit, Play} from "@tamagui/lucide-icons";
-import usePlannerTabContext from "../../../../../globals/contexts/PlannerTabContext";
+import {ChevronDown, ChevronUp, Delete, Edit, Play} from "@tamagui/lucide-icons";
+import {PlannerTabContext} from "../../../../../globals/contexts/PlannerTabContext";
+import {updateActivityValidation} from "../../../../../globals/redux/validators/activityValidators";
+import {ValidationStatus} from "../../../../../globals/redux/types";
+import {updateActivity} from "../../../../../globals/redux/reducers/activitiesReducer";
+import {SessionsState} from "../../../../../globals/redux/reducers/sessionsReducer";
+import selectPlannerState from "../../../../../globals/redux/selectors/plannerSelector";
 
 interface ActivityPaneProps {
+    app_state: AppState
     activity: Activity
     open_activity: Activity | null
     setOpenActivity: React.Dispatch<React.SetStateAction<Activity | null>>
@@ -28,7 +34,13 @@ export function ActivityStat({value, label}: ActivityStatProps) {
     );
 }
 
-function ActivityPane({activity, open_activity, setOpenActivity}: ActivityPaneProps) {
+function ActivityPane({app_state, activity, open_activity, setOpenActivity}: ActivityPaneProps) {
+    const dispatch = useDispatch()
+    const {
+        modal_data: {setModalIsOpen, setAlertText},
+        form_data: {setFormParams}
+    } = React.useContext(PlannerTabContext)
+
     const handleOnClickPane = React.useCallback(() => {
         if (open_activity === activity) {
             setOpenActivity(null)
@@ -36,6 +48,28 @@ function ActivityPane({activity, open_activity, setOpenActivity}: ActivityPanePr
             setOpenActivity(activity)
         }
     }, [open_activity, setOpenActivity, activity])
+
+
+    const handleOnClickEditButton = React.useCallback(() => {
+        setFormParams({
+            title: 'Edit Activity',
+            submit_text: 'Save',
+            initial_values: activity,
+            onSubmit: (updated_activity: Activity) => {
+                const validation = updateActivityValidation(app_state, updated_activity)
+                if (validation.status === ValidationStatus.ERROR) {
+                    return validation
+                }
+                dispatch(updateActivity(updated_activity))
+                // close the modal
+                setModalIsOpen(false)
+                // display success message
+                setAlertText('Activity updated successfully')
+                return validation
+            }
+        })
+        setModalIsOpen(true)
+    }, [setFormParams, activity, app_state, dispatch, setModalIsOpen, setAlertText])
 
     const is_open = React.useMemo(() => {
         return open_activity?.id === activity.id
@@ -68,7 +102,9 @@ function ActivityPane({activity, open_activity, setOpenActivity}: ActivityPanePr
                                 <ActivityStat label={'minutes'} value={minutes}/>
                             </XStack>
                             <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={10}>
-                                <Edit size={20} color={'#777'}/>
+                                <Button onPress={handleOnClickEditButton} padding={0} margin={0} height={20}>
+                                    <Edit size={20} color={'#777'}/>
+                                </Button>
                                 <Play size={20} color={'#777'}/>
                                 <Delete size={20} color={'#777'}/>
                             </XStack>
@@ -81,16 +117,17 @@ function ActivityPane({activity, open_activity, setOpenActivity}: ActivityPanePr
 }
 
 export default function ActivitiesTab() {
-    const activities = useSelector((state: AppState) => state.activities)
+    const planner_app_state = useSelector(selectPlannerState)
 
     // only one activity can be expanded at a time, the list simulates an accordion
     const [open_activity, setOpenActivity] = React.useState<Activity | null>(null)
     return (
         <FlatList
             style={{width: '100%', marginVertical: 10}}
-            data={Object.values(activities)}
+            data={Object.values(planner_app_state.activities)}
             renderItem={({item}) => (
-                <ActivityPane activity={item} open_activity={open_activity} setOpenActivity={setOpenActivity}/>
+                <ActivityPane app_state={planner_app_state} activity={item} open_activity={open_activity}
+                              setOpenActivity={setOpenActivity}/>
             )}/>
     )
 }
