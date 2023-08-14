@@ -3,34 +3,45 @@ import {FormProps} from "../types/form";
 import {Activity, Duration} from "../types/main";
 import {ValidationStatus} from "../redux/types";
 import {AppState} from "../redux/reducers";
+import {AlertProps, DEFAULT_ALERT_PROPS} from "../types/alert";
 
 export interface PlannerTabFormData {
-    form_params: FormProps<Activity> | FormProps<Duration>
-    setFormParams: React.Dispatch<React.SetStateAction<FormProps<Activity> | FormProps<Duration>>>
+    form_props: FormProps<Activity> | FormProps<Duration>
+    setFormProps: React.Dispatch<React.SetStateAction<FormProps<Activity> | FormProps<Duration>>>
 }
 
 export interface PlannerTabContextProps {
     form_data: PlannerTabFormData
     modal_data: {
-        modal_is_open: boolean
-        setModalIsOpen: React.Dispatch<React.SetStateAction<boolean>>
-        setAlertText: React.Dispatch<React.SetStateAction<string | null>>
+        form_modal_is_open: boolean
+        setFormModalIsOpen: React.Dispatch<React.SetStateAction<boolean>>
+        alert_modal_is_open: boolean
+        setAlertModalIsOpen: React.Dispatch<React.SetStateAction<boolean>>
+    },
+    alert_data: {
+        alert_props: AlertProps
+        setAlertProps: React.Dispatch<React.SetStateAction<AlertProps>>
     }
 }
 
 export const PlannerTabContext = React.createContext<PlannerTabContextProps>({
     modal_data: {
-        modal_is_open: false,
-        setModalIsOpen: () => undefined,
-        setAlertText: () => undefined
+        form_modal_is_open: false,
+        setFormModalIsOpen: () => undefined,
+        alert_modal_is_open: false,
+        setAlertModalIsOpen: () => undefined
     },
     form_data: {
-        form_params: {
+        form_props: {
             title: '',
             initial_values: null,
             onSubmit: () => ({status: ValidationStatus.SUCCESS})
         },
-        setFormParams: () => undefined
+        setFormProps: () => undefined
+    },
+    alert_data: {
+        alert_props: DEFAULT_ALERT_PROPS,
+        setAlertProps: () => undefined
     }
 } as PlannerTabContextProps)
 

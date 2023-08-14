@@ -7,7 +7,7 @@ export interface FormProps<Record extends Object> {
     onSubmit: (values: Record) => ValidationResponse
 }
 
-export const DEFAULT_FORM_PARAMS: FormProps<any> = {
+export const DEFAULT_FORM_PROPS: FormProps<any> = {
     title: '',
     submit_text: 'Submit',
     initial_values: null,

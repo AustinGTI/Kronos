@@ -11,7 +11,7 @@ import {Plus} from "@tamagui/lucide-icons";
 import ActivityForm from "./forms/ActivityForm";
 import {Activity, Duration, Session} from "../../../../globals/types/main";
 import DurationForm from "./forms/DurationForm";
-import {DEFAULT_FORM_PARAMS, FormProps} from "../../../../globals/types/form";
+import {DEFAULT_FORM_PROPS, FormProps} from "../../../../globals/types/form";
 import {useDispatch, useSelector} from "react-redux";
 import {AppState} from "../../../../globals/redux/reducers";
 import {createActivity} from "../../../../globals/redux/reducers/activitiesReducer";
@@ -23,6 +23,7 @@ import {Keyboard, TouchableWithoutFeedback} from "react-native";
 import {SessionsState} from "../../../../globals/redux/reducers/sessionsReducer";
 import {createSelector} from "@reduxjs/toolkit";
 import selectPlannerState from "../../../../globals/redux/selectors/plannerSelector";
+import {AlertProps, DEFAULT_ALERT_PROPS} from "../../../../globals/types/alert";
 
 
 interface SubTab {
@@ -54,11 +55,11 @@ export default function PlannerTab() {
     // Region : STATES
     const [active_sub_tab, setActiveSubTab] = React.useState<SubTab>(PLANNER_SUB_TABS[0])
 
-    const [form_params, setFormParams] = React.useState<FormProps<Activity> | FormProps<Duration>>(DEFAULT_FORM_PARAMS)
+    const [form_is_open, setFormIsOpen] = React.useState<boolean>(false)
+    const [form_props, setFormProps] = React.useState<FormProps<Activity> | FormProps<Duration>>(DEFAULT_FORM_PROPS)
 
-    const [modal_is_open, setModalIsOpen] = React.useState<boolean>(false)
-
-    const [alert_text, setAlertText] = React.useState<string | null>(null)
+    const [alert_is_open, setAlertIsOpen] = React.useState<boolean>(false)
+    const [alert_props, setAlertProps] = React.useState<AlertProps>(DEFAULT_ALERT_PROPS)
     // EndRegion
     // Region : CALLBACKS
     const AddActivity = React.useCallback((activity: Activity) => {
@@ -69,9 +70,15 @@ export default function PlannerTab() {
         }
         dispatch(createActivity(activity))
         // close the modal
-        setModalIsOpen(false)
+        setFormIsOpen(false)
         // display a success message
-        setAlertText('Activity created successfully')
+        setAlertProps({
+            title: 'Success',
+            description: 'Activity created successfully',
+            buttons: [],
+            with_cancel_button: true,
+        })
+        setAlertIsOpen(true)
         return validation
     }, [planner_app_state, dispatch])
 
@@ -83,23 +90,29 @@ export default function PlannerTab() {
         }
         dispatch(createDuration(duration))
         // close the modal
-        setModalIsOpen(false)
+        setFormIsOpen(false)
         // display a success message
-        setAlertText('Duration created successfully')
+        setAlertProps({
+            title: 'Success',
+            description: 'Duration created successfully',
+            buttons: [],
+            with_cancel_button: true,
+        })
+        setAlertIsOpen(true)
         return validation
     }, [planner_app_state, dispatch])
 
     const onClickAddButton = React.useCallback(() => {
-        setModalIsOpen(true)
+        setFormIsOpen(true)
         if (active_sub_tab.key === 'activities') {
-            setFormParams({
+            setFormProps({
                 initial_values: null,
                 title: 'Create New Activity',
                 submit_text: 'Create Activity',
                 onSubmit: AddActivity
             })
         } else {
-            setFormParams({
+            setFormProps({
                 initial_values: null,
                 title: 'Create New Duration',
                 submit_text: 'Create Duration',
@@ -111,12 +124,16 @@ export default function PlannerTab() {
 
     const planner_tab_context: PlannerTabContextProps = useMemo(() => ({
         form_data: {
-            form_params, setFormParams
+            form_props: form_props, setFormProps: setFormProps
         },
         modal_data: {
-            modal_is_open, setModalIsOpen, setAlertText
+            form_modal_is_open: form_is_open, setFormModalIsOpen: setFormIsOpen,
+            alert_modal_is_open: alert_is_open, setAlertModalIsOpen: setAlertIsOpen,
+        },
+        alert_data: {
+            alert_props, setAlertProps,
         }
-    }), [form_params, modal_is_open]);
+    }), [form_props, form_is_open, alert_is_open, alert_props]);
 
 
     return (
@@ -139,8 +156,8 @@ export default function PlannerTab() {
                 </YStack>
             </YStack>
             <Sheet modal={true}
-                   open={modal_is_open}
-                   onOpenChange={setModalIsOpen}
+                   open={form_is_open}
+                   onOpenChange={setFormIsOpen}
                    dismissOnSnapToBottom
                    disableDrag>
                 <Sheet.Overlay/>
@@ -155,30 +172,26 @@ export default function PlannerTab() {
                         <Sheet.ScrollView w={'100%'} h={'100%'} backgroundColor={'white'}>
                             {active_sub_tab.key === 'activities' ? (
                                 <ActivityForm
-                                    title={form_params?.title}
+                                    title={form_props?.title}
                                     // if initial_values are null or not an instance of type Activity, then it will not be passed to the ActivityForm component
-                                    initial_values={form_params?.initial_values as Activity ?? null}
-                                    submit_text={form_params?.submit_text}
-                                    onSubmit={form_params.onSubmit as (activity: Activity) => ValidationResponse}/>
+                                    initial_values={form_props?.initial_values as Activity ?? null}
+                                    submit_text={form_props?.submit_text}
+                                    onSubmit={form_props.onSubmit as (activity: Activity) => ValidationResponse}/>
                             ) : (
                                 <DurationForm
-                                    title={form_params?.title}
+                                    title={form_props?.title}
                                     // if initial_values are null or not an instance of type Duration, then it will not be passed to the DurationForm component
-                                    initial_values={form_params?.initial_values as Duration ?? null}
-                                    submit_text={form_params?.submit_text}
-                                    onSubmit={form_params.onSubmit as (duration: Duration) => ValidationResponse}/>
+                                    initial_values={form_props?.initial_values as Duration ?? null}
+                                    submit_text={form_props?.submit_text}
+                                    onSubmit={form_props.onSubmit as (duration: Duration) => ValidationResponse}/>
                             )}
                         </Sheet.ScrollView>
                     </TouchableWithoutFeedback>
                 </Sheet.Frame>
             </Sheet>
             <AlertDialog
-                open={alert_text !== null}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setAlertText(null)
-                    }
-                }}>
+                open={alert_is_open}
+                onOpenChange={setAlertIsOpen}>
                 <AlertDialog.Portal>
                     <AlertDialog.Overlay
                         key="overlay"
@@ -207,15 +220,26 @@ export default function PlannerTab() {
                         y={0}
                     >
                         <YStack space>
-                            <AlertDialog.Title>Success</AlertDialog.Title>
-                            <AlertDialog.Description>
-                                {alert_text}
+                            <AlertDialog.Title w={'100%'} textAlign={'center'} textTransform={'uppercase'} textDecorationLine={'underline'} fontSize={20}>
+                                {alert_props.title}
+                            </AlertDialog.Title>
+                            <AlertDialog.Description w={'100%'} textAlign={'center'}>
+                                {alert_props.description}
                             </AlertDialog.Description>
 
-                            <XStack space="$3" justifyContent="flex-end">
-                                <AlertDialog.Cancel asChild>
-                                    <Button>Okay</Button>
-                                </AlertDialog.Cancel>
+                            <XStack space="$3" justifyContent={
+                                alert_props.buttons.length + (alert_props.with_cancel_button ? 1 : 0) > 1 ? 'space-between' : 'center'
+                            }>
+                                {alert_props.with_cancel_button && <AlertDialog.Cancel asChild>
+                                    <Button>Close</Button>
+                                </AlertDialog.Cancel>}
+                                {alert_props.buttons.map((button, index) => (
+                                    // <AlertDialog.Action key={index} asChild>
+                                        <Button key={index} onPress={button.onPress}>
+                                            {button.text}
+                                        </Button>
+                                    // </AlertDialog.Action>
+                                ))}
                             </XStack>
                         </YStack>
                     </AlertDialog.Content>

@@ -5,11 +5,14 @@ import {AppState} from "../../../../../globals/redux/reducers";
 import {Activity, Session} from "../../../../../globals/types/main";
 // import {ArrowDown, Delete, Edit, Play} from "@tamagui/lucide-icons";
 import {FlatList} from "react-native";
-import {ChevronDown, ChevronUp, Delete, Edit, Play} from "@tamagui/lucide-icons";
+import {ChevronDown, ChevronUp, Delete, Edit, Play, Trash} from "@tamagui/lucide-icons";
 import {PlannerTabContext} from "../../../../../globals/contexts/PlannerTabContext";
-import {updateActivityValidation} from "../../../../../globals/redux/validators/activityValidators";
+import {
+    deleteActivityValidation,
+    updateActivityValidation
+} from "../../../../../globals/redux/validators/activityValidators";
 import {ValidationStatus} from "../../../../../globals/redux/types";
-import {updateActivity} from "../../../../../globals/redux/reducers/activitiesReducer";
+import {deleteActivity, updateActivity} from "../../../../../globals/redux/reducers/activitiesReducer";
 import {SessionsState} from "../../../../../globals/redux/reducers/sessionsReducer";
 import selectPlannerState from "../../../../../globals/redux/selectors/plannerSelector";
 
@@ -37,8 +40,9 @@ export function ActivityStat({value, label}: ActivityStatProps) {
 function ActivityPane({app_state, activity, open_activity, setOpenActivity}: ActivityPaneProps) {
     const dispatch = useDispatch()
     const {
-        modal_data: {setModalIsOpen, setAlertText},
-        form_data: {setFormParams}
+        modal_data: {setFormModalIsOpen, setAlertModalIsOpen},
+        form_data: {setFormProps},
+        alert_data: {setAlertProps}
     } = React.useContext(PlannerTabContext)
 
     const handleOnClickPane = React.useCallback(() => {
@@ -51,7 +55,7 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
 
 
     const handleOnClickEditButton = React.useCallback(() => {
-        setFormParams({
+        setFormProps({
             title: 'Edit Activity',
             submit_text: 'Save',
             initial_values: activity,
@@ -62,14 +66,72 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
                 }
                 dispatch(updateActivity(updated_activity))
                 // close the modal
-                setModalIsOpen(false)
+                setFormModalIsOpen(false)
                 // display success message
-                setAlertText('Activity updated successfully')
+                setAlertProps({
+                    title: 'Success',
+                    description: 'Activity updated successfully',
+                    buttons: [],
+                    with_cancel_button: true
+                })
+                setAlertModalIsOpen(true)
                 return validation
             }
         })
-        setModalIsOpen(true)
-    }, [setFormParams, activity, app_state, dispatch, setModalIsOpen, setAlertText])
+        setFormModalIsOpen(true)
+    }, [setFormProps, activity, app_state, dispatch, setFormModalIsOpen, setAlertProps, setAlertModalIsOpen])
+
+    const handleOnClickDeleteButton = React.useCallback(() => {
+        setAlertProps({
+            title: 'Delete Activity',
+            description: 'Are you sure you want to delete this activity?',
+            buttons: [
+                {
+                    text: 'No',
+                    onPress: () => {
+                        setAlertModalIsOpen(false)
+                    }
+                },
+                {
+                    text: 'Yes',
+                    onPress: () => {
+                        // validate the crud request
+                        const validation = deleteActivityValidation(app_state, activity.id)
+                        // if validation fails, display the error message after a short delay
+                        if (validation.status === ValidationStatus.ERROR) {
+                            setAlertModalIsOpen(false)
+                            setTimeout(() => {
+                                setAlertProps({
+                                    title: 'Error',
+                                    description: validation.error?.message ?? '',
+                                    buttons: [],
+                                    with_cancel_button: true
+                                })
+                                setAlertModalIsOpen(true)
+                            }, 500)
+                            return
+                        }
+                        // else delete the activity
+                        dispatch(deleteActivity(activity.id))
+                        setAlertModalIsOpen(false)
+                        // close the modal after a short delay
+                        setTimeout(() => {
+                            // display success message
+                            setAlertProps({
+                                title: 'Success',
+                                description: 'Activity deleted successfully',
+                                buttons: [],
+                                with_cancel_button: true
+                            })
+                            setAlertModalIsOpen(true)
+                        }, 500)
+                    }
+                },
+            ],
+            with_cancel_button: false
+        })
+        setAlertModalIsOpen(true)
+    }, [setAlertProps, setAlertModalIsOpen, dispatch, activity.id])
 
     const is_open = React.useMemo(() => {
         return open_activity?.id === activity.id
@@ -106,7 +168,9 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
                                     <Edit size={20} color={'#777'}/>
                                 </Button>
                                 <Play size={20} color={'#777'}/>
-                                <Delete size={20} color={'#777'}/>
+                                <Button onPress={handleOnClickDeleteButton} padding={0} margin={0} height={20}>
+                                    <Trash size={20} color={'#777'}/>
+                                </Button>
                             </XStack>
                         </YStack>
                     </React.Fragment>
