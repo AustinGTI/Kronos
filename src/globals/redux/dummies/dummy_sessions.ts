@@ -58,9 +58,17 @@ function generateCustomDuration(): Duration {
     const break_length = Math.floor(Math.random() * 10) + 5
     // generate the segments
     for (let i = 0; i < num_focus_segments; i++) {
-        custom_duration.segments.push({duration: focus_length, type: SEGMENT_TYPES.FOCUS})
+        custom_duration.segments.push({
+            key: i+1,
+            duration: focus_length,
+            type: SEGMENT_TYPES.FOCUS
+        })
         if (i < num_focus_segments - 1) {
-            custom_duration.segments.push({duration: break_length, type: SEGMENT_TYPES.BREAK})
+            custom_duration.segments.push({
+                key: i+1,
+                duration: break_length,
+                type: SEGMENT_TYPES.BREAK,
+            })
         }
     }
     return custom_duration
@@ -90,7 +98,11 @@ function skewDurationSegments(duration: Duration): Segment[] {
         if (skew < 0 && segment.duration < Math.abs(skew)) {
             skew = 0
         }
-        segments.push({duration: segment.duration + skew, type: segment.type})
+        segments.push({
+            key: segment.key,
+            duration: segment.duration + skew,
+            type: segment.type
+        })
     }
     return segments
 }

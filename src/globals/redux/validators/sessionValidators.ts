@@ -5,7 +5,7 @@ import {extractSessionDateKey} from "../../helpers/session_functions";
 
 export function startSessionValidation(app_state: AppState, new_session: NewSession): ValidationResponse {
     // check that the activity exists if given
-    if (new_session.activity_id && !app_state.activities.has(new_session.activity_id)) {
+    if (new_session.activity_id && !app_state.activities[new_session.activity_id]) {
         return {
             status: ValidationStatus.ERROR,
             error: {
@@ -15,7 +15,7 @@ export function startSessionValidation(app_state: AppState, new_session: NewSess
         }
     }
     // check that the duration exists if given
-    if (new_session.duration_id && !app_state.durations.has(new_session.duration_id)) {
+    if (new_session.duration_id && !app_state.durations[new_session.duration_id]) {
         return {
             status: ValidationStatus.ERROR,
             error: {
@@ -32,7 +32,7 @@ export function startSessionValidation(app_state: AppState, new_session: NewSess
 export function updateSessionValidation(app_state: AppState, session_id: number): ValidationResponse {
     // check that the day exists
     const date_key = extractSessionDateKey(session_id)
-    if (!app_state.sessions.has(date_key)) {
+    if (!app_state.sessions[date_key]) {
         return {
             status: ValidationStatus.ERROR,
             error: {
@@ -42,7 +42,7 @@ export function updateSessionValidation(app_state: AppState, session_id: number)
         }
     }
     // check that the session exists
-    if (!app_state.sessions.get(date_key)?.sessions.has(session_id)) {
+    if (!app_state.sessions[date_key]?.sessions[session_id]) {
         return {
             status: ValidationStatus.ERROR,
             error: {

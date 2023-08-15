@@ -15,6 +15,7 @@ export const SEGMENT_TYPES: { [key: string]: SegmentType } = {
 }
 
 export interface Segment {
+    key: number;
     duration: number;
     type: SegmentType
 }

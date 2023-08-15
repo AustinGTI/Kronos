@@ -82,6 +82,7 @@ const sessionsSlice = createSlice({
             } else {
                 // if the last segment is of a different type, add a new segment of the given type and set its duration to 1
                 session.segments.push({
+                    key: session.segments.length + 1,
                     type: payload.segment_type,
                     duration: 1
                 })
@@ -111,6 +112,7 @@ const sessionsSlice = createSlice({
 
             // add a new segment of the given type and set its duration to 0
             session.segments.push({
+                key: session.segments.length + 1,
                 type: payload.segment_type,
                 duration: 0
             })
