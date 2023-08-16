@@ -7,14 +7,19 @@ import DurationFormValidation from "./DurationFormValidation";
 import InputContainer from "../../../../../globals/components/form/InputContainer";
 import {FormProps} from "../../../../../globals/types/form";
 import {generateFormikOnSubmit} from "../../../../../globals/helpers/form_functions";
+import SegmentPicker from "../../../../../globals/components/form/pickers/SegmentPicker";
 
 function DurationFormFields() {
-    const {errors, values, handleChange, handleBlur} = useFormikContext<Duration>()
+    const {errors, values, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
     return (
-        <YStack>
+        <YStack alignItems={'center'} paddingHorizontal={10}>
             <InputContainer field_key={'name'} label={'Name'} error={errors['name']}>
                 <Input id={'duration_name'} componentName={'name'} value={values['name']} onChange={handleChange}
                        onBlur={handleBlur}/>
+            </InputContainer>
+            <InputContainer field_key={'segments'} label={'Segments'} error={undefined}>
+                <SegmentPicker setSegments={(segments) => setValues({...values, segments})}
+                               active_segments={values['segments']}/>
             </InputContainer>
         </YStack>
     )
