@@ -52,7 +52,7 @@ export default function ActivityForm({title, initial_values, onSubmit, submit_te
                 </XStack>
                 {global_error && <Paragraph>{global_error}</Paragraph>}
                 <ActivityFormFields/>
-                <SubmitButton text={submit_text}/>
+                <SubmitButton<Activity> text={submit_text}/>
             </React.Fragment>
         </Formik>
     )

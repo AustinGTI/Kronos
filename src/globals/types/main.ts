@@ -59,7 +59,6 @@ export interface Duration {
 export const EMPTY_DURATION: Duration = {
     id: -1,
     name: '',
-
     segments: []
 }
 

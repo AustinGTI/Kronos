@@ -1,6 +1,7 @@
 import {AppState} from "../reducers";
 import {SpecialField, ValidationStatus, ValidationResponse} from "../types";
 import {Duration, SEGMENT_TYPES} from "../../types/main";
+import {compareStrings} from "../../helpers/string_functions";
 
 function genericDurationValidation(app_state: AppState, duration: Duration): ValidationResponse {
     // check that the segments follow a set of rules

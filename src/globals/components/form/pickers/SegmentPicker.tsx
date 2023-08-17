@@ -16,45 +16,77 @@ interface InputSegmentPaneProps {
     setSegments: (segments: Segment[]) => void
 }
 
-interface InputSegementPaneDurationPickerProps {
+interface InputSegmentPaneDurationPickerProps {
     duration: number
     setDuration: (duration: number) => void
 }
 
-function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegementPaneDurationPickerProps) {
+function SegmentsBarView({segments}: { segments: Segment[] }) {
+    const total_duration = segments.reduce((total, segment) => {
+        return total + segment.duration
+    }, 0)
+    return (
+        <XStack w={'100%'} marginTop={10} h={20} alignItems={'center'} justifyContent={'center'} overflow={'hidden'} borderRadius={10}>
+            {segments.map((segment) => {
+                const width = (segment.duration / total_duration) * 100
+                return (
+                    <View key={segment.key} w={`${width.toFixed(2)}%`} h={'100%'} backgroundColor={segment.type.color}/>
+                );
+            })}
+        </XStack>
+    )
+}
+
+function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegmentPaneDurationPickerProps) {
     const [duration_hours, setDurationHours] = React.useState(Math.floor(duration / 60))
     const [duration_minutes, setDurationMinutes] = React.useState(duration % 60)
 
-    // if duration hours or duration minutes change, update the duration
-    React.useEffect(() => {
-        if (duration !== duration_hours * 60 + duration_minutes) {
-            setDuration(duration_hours * 60 + duration_minutes)
-            console.log('duration changed to ', duration_hours * 60 + duration_minutes, 'hours', duration_hours, 'minutes', duration_minutes)
+
+    const onEndEditing = React.useCallback(() => {
+        if (duration_hours < 0) {
+            setDurationHours(0)
+        } else if (duration_hours > 24) {
+            setDurationHours(24)
         }
-    }, [duration, duration_hours, duration_minutes, setDuration])
+        if (duration_minutes < 0) {
+            setDurationMinutes(0)
+        } else if (duration_minutes > 60) {
+            setDurationMinutes(60)
+        }
+        setDuration(duration_hours * 60 + duration_minutes)
+    }, [duration_minutes, duration_hours, setDuration])
+
 
     return (
-        <XStack w={'60%'} justifyContent={'space-around'} paddingHorizontal={10} h={60}>
-            <YStack h={'100%'} w={'50%'} alignItems={'center'} justifyContent={'center'}>
-                <Input value={duration_hours.toString().padStart(2, '0')} onChangeText={(text) => {
-                    const hours = parseInt(text)
-                    if (isNaN(hours) || hours > 24 || hours < 0) {
-                        setDurationHours(0)
-                    } else {
-                        setDurationHours(hours)
-                    }
-                }}/>
+        <XStack w={'60%'} justifyContent={'center'} paddingHorizontal={10} h={60}>
+            <YStack h={'100%'} w={'auto'} alignItems={'center'} justifyContent={'center'}>
+                <Input fontSize={20} height={40} paddingHorizontal={10} keyboardType={'numeric'}
+                       value={duration_hours.toString().padStart(2, '0')}
+                       onChangeText={(text) => {
+                           let hours = parseInt(text)
+                           if (isNaN(hours) || hours < 0) {
+                               hours = 0
+                           } else if (hours > 24) {
+                               hours = 24
+                           }
+                           setDurationHours(hours)
+                       }} onEndEditing={onEndEditing}/>
                 <Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>HOURS</Paragraph>
             </YStack>
-            <YStack h={'100%'} w={'50%'} alignItems={'center'} justifyContent={'center'}>
-                <Input value={duration_minutes.toString().padStart(2, '0')} onChangeText={(text) => {
-                    const minutes = parseInt(text)
-                    if (isNaN(minutes) || minutes > 60 || minutes < 0) {
-                        setDurationMinutes(0)
-                    } else {
-                        setDurationMinutes(minutes)
+            <XStack h={'100%'} paddingBottom={12} alignItems={'center'} justifyContent={'center'}>
+                <Paragraph fontSize={20} paddingHorizontal={10}>:</Paragraph>
+            </XStack>
+            <YStack h={'100%'} w={'auto'} alignItems={'center'} justifyContent={'center'}>
+                <Input fontSize={20} height={40} paddingHorizontal={10}
+                       value={duration_minutes.toString().padStart(2, '0')} onChangeText={(text) => {
+                    let minutes = parseInt(text)
+                    if (isNaN(minutes) || minutes < 0) {
+                        minutes = 0
+                    } else if (minutes > 60) {
+                        minutes = 60
                     }
-                }}/>
+                    setDurationMinutes(minutes)
+                }} onEndEditing={onEndEditing}/>
                 <Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>MINUTES</Paragraph>
             </YStack>
         </XStack>
@@ -62,7 +94,7 @@ function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegeme
 }
 
 
-function InputSegmentPaneDurationPicker({duration, setDuration}: InputSegementPaneDurationPickerProps) {
+function InputSegmentPaneDurationPicker({duration, setDuration}: InputSegmentPaneDurationPickerProps) {
     const [duration_hours, setDurationHours] = React.useState(Math.floor(duration / 60))
     const [duration_minutes, setDurationMinutes] = React.useState(duration % 60)
 
@@ -170,8 +202,14 @@ export default function SegmentPicker({active_segments: segments, setSegments}: 
     return (
         // if there are segments, display them else display the rules for adding segments
         <React.Fragment>
-            <XStack w={'100%'}>
+            <XStack w={'100%'} justifyContent={'space-between'}>
                 <Button onPress={onClickAddButton} icon={<Plus size={'4$'}/>}/>
+                <YStack alignItems={'center'} height={'100%'}>
+                    <Paragraph fontSize={30} lineHeight={30} color={'black'}>{(segments ?? []).reduce((total, segment) => {
+                        return total + segment.duration
+                    }, 0)}</Paragraph>
+                    <Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>MINUTES</Paragraph>
+                </YStack>
             </XStack>
             <YStack w={'100%'}>
                 {segments.length === 0 ? (
@@ -194,10 +232,12 @@ export default function SegmentPicker({active_segments: segments, setSegments}: 
                 ) : (
                     <YStack w={'100%'}>
                         {segments.map((segment) => (
-                            <InputSegmentPane key={segment.key} segment={segment} segments={segments} setSegments={setSegments}/>
+                            <InputSegmentPane key={segment.key} segment={segment} segments={segments}
+                                              setSegments={setSegments}/>
                         ))}
                     </YStack>
                 )}
+                <SegmentsBarView segments={segments}/>
             </YStack>
         </React.Fragment>
     )

@@ -88,6 +88,7 @@ export default function PlannerTab() {
         if (validation.status === ValidationStatus.ERROR) {
             return validation
         }
+        console.log('adding duration')
         dispatch(createDuration(duration))
         // close the modal
         setFormIsOpen(false)
