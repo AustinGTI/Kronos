@@ -8,6 +8,7 @@ import CarouselInput, {CarouselItem} from "../input/CarouselInput";
 interface SegmentPickerProps {
     setSegments: (segments: Segment[]) => void
     active_segments: Segment[]
+    setTouched?: () => void
 }
 
 interface InputSegmentPaneProps {
@@ -177,8 +178,9 @@ function InputSegmentPane({segment, segments, setSegments}: InputSegmentPaneProp
     )
 }
 
-export default function SegmentPicker({active_segments: segments, setSegments}: SegmentPickerProps) {
+export default function SegmentPicker({active_segments: segments, setSegments,setTouched}: SegmentPickerProps) {
     const onClickAddButton = React.useCallback(() => {
+        setTouched?.() // call the setTouched function if it exists
         // add a single segment to the end of the list with type of (focus if the last segment is break or there are no segments, break if the last segment is focus)
         // 25 minutes for focus, 5 minutes for break by default
         const last_segment = segments[segments.length - 1]
@@ -213,20 +215,18 @@ export default function SegmentPicker({active_segments: segments, setSegments}: 
             </XStack>
             <YStack w={'100%'}>
                 {segments.length === 0 ? (
-                    <YStack w={'100%'}>
-                        <Paragraph textAlign={'center'} fontSize={12} color={'#aaa'}>
+                    <YStack w={'100%'} gap={10} paddingTop={10}>
+                        <Paragraph textAlign={'center'} fontSize={10} color={'#aaa'}>
                             1. A Pomodoro Duration should start and end with a focus segment, or be only a focus
                             segment.
                         </Paragraph>
-                        <Paragraph textAlign={'center'} fontSize={12} color={'#aaa'}>
+                        <Paragraph textAlign={'center'} fontSize={10} color={'#aaa'}>
                             2. A Pomodoro Duration's segments should be alternating between focus and break segments,
                             consecutive segments of the same type will be merged into one segment.
                         </Paragraph>
-                        <Paragraph textAlign={'center'} fontSize={12} color={'#aaa'}>
+                        <Paragraph textAlign={'center'} fontSize={10} color={'#aaa'}>
                             3. The recommended duration for a focus segment is 25 minutes to an hour, and for a break
                             segment is 5 to 15 minutes
-                            though you are free to decide what works best for you, the minimum focus segment duration is
-                            5 minutes and the minimum break segment duration is 1 minute.
                         </Paragraph>
                     </YStack>
                 ) : (

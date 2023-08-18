@@ -6,8 +6,8 @@ import {AppState} from "../redux/reducers";
 import {AlertProps, DEFAULT_ALERT_PROPS} from "../types/alert";
 
 export interface PlannerTabFormData {
-    form_props: FormProps<Activity> | FormProps<Duration>
-    setFormProps: React.Dispatch<React.SetStateAction<FormProps<Activity> | FormProps<Duration>>>
+    form_props: FormProps<Activity> | FormProps<Duration> | null
+    setFormProps: React.Dispatch<React.SetStateAction<FormProps<Activity> | FormProps<Duration> | null>>
 }
 
 export interface PlannerTabContextProps {
@@ -19,8 +19,8 @@ export interface PlannerTabContextProps {
         setAlertModalIsOpen: React.Dispatch<React.SetStateAction<boolean>>
     },
     alert_data: {
-        alert_props: AlertProps
-        setAlertProps: React.Dispatch<React.SetStateAction<AlertProps>>
+        alert_props: AlertProps | null
+        setAlertProps: React.Dispatch<React.SetStateAction<AlertProps | null>>
     }
 }
 
@@ -32,15 +32,11 @@ export const PlannerTabContext = React.createContext<PlannerTabContextProps>({
         setAlertModalIsOpen: () => undefined
     },
     form_data: {
-        form_props: {
-            title: '',
-            initial_values: null,
-            onSubmit: () => ({status: ValidationStatus.SUCCESS})
-        },
+        form_props: null,
         setFormProps: () => undefined
     },
     alert_data: {
-        alert_props: DEFAULT_ALERT_PROPS,
+        alert_props: null,
         setAlertProps: () => undefined
     }
 } as PlannerTabContextProps)

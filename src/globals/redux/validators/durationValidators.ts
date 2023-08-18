@@ -16,7 +16,8 @@ function genericDurationValidation(app_state: AppState, duration: Duration): Val
         }
     }
     // ? 2. the first and last segments must be focus segments
-    if (duration.segments[0].type !== SEGMENT_TYPES.FOCUS || duration.segments[duration.segments.length - 1].type !== SEGMENT_TYPES.FOCUS) {
+    console.log('segments ', duration.segments)
+    if (duration.segments[0].type.name !== SEGMENT_TYPES.FOCUS.name || duration.segments[duration.segments.length - 1].type.name !== SEGMENT_TYPES.FOCUS.name) {
         return {
             status: ValidationStatus.ERROR,
             error: {

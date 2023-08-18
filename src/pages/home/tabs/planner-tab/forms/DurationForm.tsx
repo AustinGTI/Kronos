@@ -11,7 +11,8 @@ import SegmentPicker from "../../../../../globals/components/form/pickers/Segmen
 import SubmitButton from "../../../../../globals/components/form/SubmitButton";
 
 function DurationFormFields() {
-    const {errors, values, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
+    const {errors, values, touched, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
+    const [segments_touched, setSegmentsTouched] = React.useState<boolean>(false)
     const segment_error = React.useMemo(() => {
         if (!errors['segments']) {
             return undefined
@@ -31,13 +32,13 @@ function DurationFormFields() {
     }, [errors['segments']])
     return (
         <YStack alignItems={'center'} paddingHorizontal={10}>
-            <InputContainer field_key={'name'} label={'Name'} error={errors['name']}>
-                <Input id={'duration_name'} componentName={'name'} value={values['name']} onChangeText={handleChange('name')}
-                       onBlur={handleBlur('name')}/>
+            <InputContainer field_key={'name'} label={'Name'} error={touched['name'] ? errors['name'] : undefined}>
+                <Input value={values['name']} onChangeText={handleChange('name')} onBlur={handleBlur('name')}/>
             </InputContainer>
-            <InputContainer field_key={'segments'} label={'Segments'} error={segment_error}>
+            <InputContainer field_key={'segments'} label={'Segments'}
+                            error={segments_touched ? segment_error : undefined}>
                 <SegmentPicker setSegments={(segments) => setValues({...values, segments})}
-                               active_segments={values['segments']}/>
+                               active_segments={values['segments']} setTouched={() => setSegmentsTouched(true)}/>
             </InputContainer>
         </YStack>
     )
@@ -48,7 +49,7 @@ export default function DurationForm({title, initial_values, onSubmit, submit_te
     const formikOnSubmit = React.useCallback(generateFormikOnSubmit(onSubmit, setGlobalError), [onSubmit])
     return (
         <Formik initialValues={initial_values ?? EMPTY_DURATION} onSubmit={formikOnSubmit}
-                validationSchema={DurationFormValidation}>
+                validationSchema={DurationFormValidation} enableReinitialize>
             <React.Fragment>
                 <XStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
                     <Heading

@@ -56,10 +56,10 @@ export default function PlannerTab() {
     const [active_sub_tab, setActiveSubTab] = React.useState<SubTab>(PLANNER_SUB_TABS[0])
 
     const [form_is_open, setFormIsOpen] = React.useState<boolean>(false)
-    const [form_props, setFormProps] = React.useState<FormProps<Activity> | FormProps<Duration>>(DEFAULT_FORM_PROPS)
+    const [form_props, setFormProps] = React.useState<FormProps<Activity> | FormProps<Duration> | null>(null)
 
     const [alert_is_open, setAlertIsOpen] = React.useState<boolean>(false)
-    const [alert_props, setAlertProps] = React.useState<AlertProps>(DEFAULT_ALERT_PROPS)
+    const [alert_props, setAlertProps] = React.useState<AlertProps | null>(null)
     // EndRegion
     // Region : CALLBACKS
     const AddActivity = React.useCallback((activity: Activity) => {
@@ -69,8 +69,9 @@ export default function PlannerTab() {
             return validation
         }
         dispatch(createActivity(activity))
-        // close the modal
+        // close the modal and clear the form
         setFormIsOpen(false)
+        setFormProps(null)
         // display a success message
         setAlertProps({
             title: 'Success',
@@ -90,8 +91,9 @@ export default function PlannerTab() {
         }
         console.log('adding duration')
         dispatch(createDuration(duration))
-        // close the modal
+        // close the modal and clear the form
         setFormIsOpen(false)
+        setFormProps(null)
         // display a success message
         setAlertProps({
             title: 'Success',
@@ -158,7 +160,15 @@ export default function PlannerTab() {
             </YStack>
             <Sheet modal={true}
                    open={form_is_open}
-                   onOpenChange={setFormIsOpen}
+                   onOpenChange={(open: boolean) => {
+                       if (!open) {
+                           // wait for the sheet to close before clearing the form props
+                           setTimeout(() => {
+                                 setFormProps(null)
+                            }, 500)
+                       }
+                       setFormIsOpen(open)
+                   }}
                    dismissOnSnapToBottom
                    disableDrag>
                 <Sheet.Overlay/>
@@ -171,7 +181,7 @@ export default function PlannerTab() {
                 <Sheet.Frame height={400} backgroundColor={'transparent'}>
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                         <Sheet.ScrollView w={'100%'} h={'100%'} backgroundColor={'white'}>
-                            {active_sub_tab.key === 'activities' ? (
+                            {form_props ? active_sub_tab.key === 'activities' ? (
                                 <ActivityForm
                                     title={form_props?.title}
                                     // if initial_values are null or not an instance of type Activity, then it will not be passed to the ActivityForm component
@@ -185,67 +195,72 @@ export default function PlannerTab() {
                                     initial_values={form_props?.initial_values as Duration ?? null}
                                     submit_text={form_props?.submit_text}
                                     onSubmit={form_props.onSubmit as (duration: Duration) => ValidationResponse}/>
-                            )}
+                            ) : null}
                         </Sheet.ScrollView>
                     </TouchableWithoutFeedback>
                 </Sheet.Frame>
             </Sheet>
-            <AlertDialog
-                open={alert_is_open}
-                onOpenChange={setAlertIsOpen}>
-                <AlertDialog.Portal>
-                    <AlertDialog.Overlay
-                        key="overlay"
-                        animation="quick"
-                        opacity={0.5}
-                        enterStyle={{opacity: 0}}
-                        exitStyle={{opacity: 0}}
-                    />
-                    <AlertDialog.Content
-                        bordered
-                        elevate
-                        key="content"
-                        animation={[
-                            'quick',
-                            {
-                                opacity: {
-                                    overshootClamping: true,
+            {
+                <AlertDialog
+                    open={alert_is_open}
+                    onOpenChange={setAlertIsOpen}>
+                    <AlertDialog.Portal>
+                        <AlertDialog.Overlay
+                            key="overlay"
+                            animation="quick"
+                            opacity={0.5}
+                            enterStyle={{opacity: 0}}
+                            exitStyle={{opacity: 0}}
+                        />
+                        <AlertDialog.Content
+                            bordered
+                            elevate
+                            key="content"
+                            animation={[
+                                'quick',
+                                {
+                                    opacity: {
+                                        overshootClamping: true,
+                                    },
                                 },
-                            },
-                        ]}
-                        enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
-                        exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
-                        x={0}
-                        scale={1}
-                        opacity={1}
-                        y={0}
-                    >
-                        <YStack space>
-                            <AlertDialog.Title w={'100%'} textAlign={'center'} textTransform={'uppercase'} textDecorationLine={'underline'} fontSize={20}>
-                                {alert_props.title}
-                            </AlertDialog.Title>
-                            <AlertDialog.Description w={'100%'} textAlign={'center'}>
-                                {alert_props.description}
-                            </AlertDialog.Description>
+                            ]}
+                            enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+                            exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+                            x={0}
+                            scale={1}
+                            opacity={1}
+                            y={0}
+                        >
+                            {alert_props && (
+                                <YStack space>
+                                    <AlertDialog.Title w={'100%'} textAlign={'center'} textTransform={'uppercase'}
+                                                       textDecorationLine={'underline'} fontSize={20}>
+                                        {alert_props.title}
+                                    </AlertDialog.Title>
+                                    <AlertDialog.Description w={'100%'} textAlign={'center'}>
+                                        {alert_props.description}
+                                    </AlertDialog.Description>
 
-                            <XStack space="$3" justifyContent={
-                                alert_props.buttons.length + (alert_props.with_cancel_button ? 1 : 0) > 1 ? 'space-between' : 'center'
-                            }>
-                                {alert_props.with_cancel_button && <AlertDialog.Cancel asChild>
-                                    <Button>Close</Button>
-                                </AlertDialog.Cancel>}
-                                {alert_props.buttons.map((button, index) => (
-                                    // <AlertDialog.Action key={index} asChild>
-                                        <Button key={index} onPress={button.onPress}>
-                                            {button.text}
-                                        </Button>
-                                    // </AlertDialog.Action>
-                                ))}
-                            </XStack>
-                        </YStack>
-                    </AlertDialog.Content>
-                </AlertDialog.Portal>
-            </AlertDialog>
+                                    <XStack space="$3" justifyContent={
+                                        alert_props.buttons.length + (alert_props.with_cancel_button ? 1 : 0) > 1 ? 'space-between' : 'center'
+                                    }>
+                                        {alert_props.with_cancel_button && <AlertDialog.Cancel asChild>
+                                            <Button>Close</Button>
+                                        </AlertDialog.Cancel>}
+                                        {alert_props.buttons.map((button, index) => (
+                                            // <AlertDialog.Action key={index} asChild>
+                                            <Button key={index} onPress={button.onPress}>
+                                                {button.text}
+                                            </Button>
+                                            // </AlertDialog.Action>
+                                        ))}
+                                    </XStack>
+                                </YStack>
+                            )}
+                        </AlertDialog.Content>
+                    </AlertDialog.Portal>
+                </AlertDialog>
+            }
         </PlannerTabContext.Provider>
     )
 }

@@ -35,8 +35,10 @@ function ActivityFormFields() {
 }
 
 export default function ActivityForm({title, initial_values, onSubmit, submit_text}: FormProps<Activity>) {
+    const [save_button_disabled, setSaveButtonDisabled] = React.useState<boolean>(true)
     const [global_error, setGlobalError] = React.useState<string | undefined>(undefined)
     const formikOnSubmit = React.useCallback(generateFormikOnSubmit(onSubmit, setGlobalError), [onSubmit])
+
 
     return (
         <Formik initialValues={initial_values ?? EMPTY_ACTIVITY} onSubmit={formikOnSubmit}

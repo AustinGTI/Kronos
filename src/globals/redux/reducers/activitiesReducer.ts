@@ -29,6 +29,7 @@ const activitiesSlice = createSlice({
         },
 
         deleteActivity: (state, {payload}: { type: string, payload: number }) => {
+            console.log('deleting activity', payload)
             delete state[payload]
         },
 

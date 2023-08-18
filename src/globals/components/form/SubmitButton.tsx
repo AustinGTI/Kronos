@@ -8,11 +8,8 @@ interface SubmitButtonProps {
 }
 
 export default function SubmitButton<Record extends FormikValues>({text}: SubmitButtonProps) {
-    const {handleSubmit} = useFormikContext<Record>()
-    React.useEffect(() => {
-        handleSubmit()
-        console.log('submitting')
-    }, [])
+    const { handleSubmit} = useFormikContext<Record>()
+
     return (
         <XStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
             <Button onPress={() => handleSubmit()}

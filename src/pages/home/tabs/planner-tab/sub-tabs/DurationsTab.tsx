@@ -1,14 +1,24 @@
 import React, {useCallback, useMemo} from 'react'
-import {Circle, Paragraph, Separator, Sheet, Square, Stack, XStack, YStack} from "tamagui";
+import {Button, Circle, Paragraph, Separator, Sheet, Square, Stack, XStack, YStack} from "tamagui";
 import {Duration, Segment, SegmentType} from "../../../../../globals/types/main";
-import {ChevronDown, ChevronUp, Delete, Edit, Play} from "@tamagui/lucide-icons";
+import {ChevronDown, ChevronUp, Delete, Edit, Play, Trash} from "@tamagui/lucide-icons";
 import {ActivityStat} from "./ActivitiesTab";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
 import {FlatList} from "react-native";
-import usePlannerTabContext from "../../../../../globals/contexts/PlannerTabContext";
+import usePlannerTabContext, {PlannerTabContext} from "../../../../../globals/contexts/PlannerTabContext";
+import {deleteDuration, updateDuration} from "../../../../../globals/redux/reducers/durationsReducer";
+import {
+    deleteDurationValidation,
+    updateDurationValidation
+} from "../../../../../globals/redux/validators/durationValidators";
+import {ValidationStatus} from "../../../../../globals/redux/types";
+import {deleteActivityValidation} from "../../../../../globals/redux/validators/activityValidators";
+import {deleteActivity} from "../../../../../globals/redux/reducers/activitiesReducer";
+import selectPlannerState from "../../../../../globals/redux/selectors/plannerSelector";
 
 interface DurationPaneProps {
+    app_state: AppState,
     duration: Duration
     open_duration: Duration | null
     setOpenDuration: React.Dispatch<React.SetStateAction<Duration | null>>
@@ -69,7 +79,13 @@ function DurationSegmentTimeline({duration}: DurationSegmentTimelineProps) {
 
 }
 
-function DurationPane({duration, open_duration, setOpenDuration}: DurationPaneProps) {
+function DurationPane({app_state, duration, open_duration, setOpenDuration}: DurationPaneProps) {
+    const dispatch = useDispatch()
+    const {
+        modal_data: {setFormModalIsOpen, setAlertModalIsOpen},
+        form_data: {setFormProps},
+        alert_data: {setAlertProps}
+    } = React.useContext(PlannerTabContext)
 
     const handleOnClickPane = useCallback(() => {
         if (open_duration === duration) {
@@ -78,6 +94,86 @@ function DurationPane({duration, open_duration, setOpenDuration}: DurationPanePr
             setOpenDuration(duration)
         }
     }, [open_duration, duration, setOpenDuration]);
+
+    const handleOnClickEditButton = React.useCallback(() => {
+        setFormProps({
+            title: 'Edit Duration',
+            submit_text: 'Save',
+            initial_values: duration,
+            onSubmit: (updated_duration: Duration) => {
+                const validation = updateDurationValidation(app_state, updated_duration)
+                if (validation.status === ValidationStatus.ERROR) {
+                    return validation
+                }
+                dispatch(updateDuration(updated_duration))
+                // close the modal
+                setFormModalIsOpen(false)
+                // display success message
+                setAlertProps({
+                    title: 'Success',
+                    description: 'Duration updated successfully',
+                    buttons: [],
+                    with_cancel_button: true
+                })
+                setAlertModalIsOpen(true)
+                return validation
+            }
+        })
+        setFormModalIsOpen(true)
+    }, [setFormProps, duration, dispatch, setFormModalIsOpen, setAlertProps, setAlertModalIsOpen])
+
+    const handleOnClickDeleteButton = React.useCallback(() => {
+        setAlertProps({
+            title: 'Delete Duration',
+            description: 'Are you sure you want to delete this duration?',
+            buttons: [
+                {
+                    text: 'No',
+                    onPress: () => {
+                        setAlertModalIsOpen(false)
+                    }
+                },
+                {
+                    text: 'Yes',
+                    onPress: () => {
+                        // validate the crud request
+                        const validation = deleteDurationValidation(app_state, duration.id)
+                        // if validation fails, display the error message after a short delay
+                        if (validation.status === ValidationStatus.ERROR) {
+                            setAlertModalIsOpen(false)
+                            setTimeout(() => {
+                                setAlertProps({
+                                    title: 'Error',
+                                    description: validation.error?.message ?? '',
+                                    buttons: [],
+                                    with_cancel_button: true
+                                })
+                                setAlertModalIsOpen(true)
+                            }, 500)
+                            return
+                        }
+                        // else delete the activity
+                        dispatch(deleteDuration(duration.id))
+                        setAlertModalIsOpen(false)
+                        // close the modal after a short delay
+                        setTimeout(() => {
+                            // display success message
+                            setAlertProps({
+                                title: 'Success',
+                                description: 'Duration deleted successfully',
+                                buttons: [],
+                                with_cancel_button: true
+                            })
+                            setAlertModalIsOpen(true)
+                        }, 500)
+                    }
+                },
+            ],
+            with_cancel_button: false
+        })
+        setAlertModalIsOpen(true)
+    }, [setAlertProps, setAlertModalIsOpen, dispatch, duration.id])
+
 
     const is_open = useMemo(() => {
         return open_duration?.id === duration.id
@@ -121,9 +217,13 @@ function DurationPane({duration, open_duration, setOpenDuration}: DurationPanePr
                                 ))}
                             </YStack>
                             <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={10}>
-                                <Edit size={20} color={'#777'}/>
+                                <Button onPress={handleOnClickEditButton} padding={0} margin={0} height={20}>
+                                    <Edit size={20} color={'#777'}/>
+                                </Button>
                                 <Play size={20} color={'#777'}/>
-                                <Delete size={20} color={'#777'}/>
+                                <Button onPress={handleOnClickDeleteButton} padding={0} margin={0} height={20}>
+                                    <Trash size={20} color={'#777'}/>
+                                </Button>
                             </XStack>
                         </YStack>
                     </React.Fragment>
@@ -134,7 +234,7 @@ function DurationPane({duration, open_duration, setOpenDuration}: DurationPanePr
 }
 
 export default function DurationsTab() {
-    const durations = useSelector((state: AppState) => state.durations)
+    const planner_app_state = useSelector(selectPlannerState)
 
     // only one duration can be open at a time to simulate an accordion
     const [open_duration, setOpenDuration] = React.useState<Duration | null>(null)
@@ -142,9 +242,9 @@ export default function DurationsTab() {
     return (
         <FlatList
             style={{width: '100%', marginVertical: 10}}
-            data={Object.values(durations)}
+            data={Object.values(planner_app_state.durations)}
             renderItem={({item}) => (
-                <DurationPane duration={item} open_duration={open_duration} setOpenDuration={setOpenDuration}/>
+                <DurationPane app_state={planner_app_state} duration={item} open_duration={open_duration} setOpenDuration={setOpenDuration}/>
             )}/>
     )
 }
