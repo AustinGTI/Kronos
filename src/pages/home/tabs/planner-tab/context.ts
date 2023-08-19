@@ -1,9 +1,9 @@
 import React from "react";
-import {FormProps} from "../types/form";
-import {Activity, Duration} from "../types/main";
-import {ValidationStatus} from "../redux/types";
-import {AppState} from "../redux/reducers";
-import {AlertProps, DEFAULT_ALERT_PROPS} from "../types/alert";
+import {FormProps} from "../../../../globals/types/form";
+import {Activity, Duration} from "../../../../globals/types/main";
+import {ValidationStatus} from "../../../../globals/redux/types";
+import {AppState} from "../../../../globals/redux/reducers";
+import {AlertProps, DEFAULT_ALERT_PROPS} from "../../../../globals/types/alert";
 
 export interface PlannerTabFormData {
     form_props: FormProps<Activity> | FormProps<Duration> | null

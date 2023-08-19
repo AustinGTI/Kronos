@@ -1,3 +1,6 @@
+export const EMPTY_RECORD_ID = -1;
+export const UNTITLED_RECORD_ID = -2;
+
 export type SegmentType = {
     name: string;
     color: string;
@@ -29,7 +32,7 @@ export interface Activity {
     name: string;
     // description: string;
     color: string;
-    default_duration_id: number;
+    default_duration_id: number | null;
 
     stats_data: {
         total_time: number;
@@ -38,10 +41,21 @@ export interface Activity {
 }
 
 export const EMPTY_ACTIVITY: Activity = {
-    id: -1,
+    id: EMPTY_RECORD_ID,
     name: '',
     color: '#fff',
-    default_duration_id: -1,
+    default_duration_id: null,
+    stats_data: {
+        total_time: 0,
+        total_sessions: 0
+    }
+}
+
+export const UNTITLED_ACTIVITY: Activity = {
+    id: UNTITLED_RECORD_ID,
+    name: '',
+    color: '#ccc',
+    default_duration_id: null,
     stats_data: {
         total_time: 0,
         total_sessions: 0
@@ -57,7 +71,7 @@ export interface Duration {
 }
 
 export const EMPTY_DURATION: Duration = {
-    id: -1,
+    id: EMPTY_RECORD_ID,
     name: '',
     segments: []
 }

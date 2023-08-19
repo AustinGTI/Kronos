@@ -6,7 +6,7 @@ import {ActivityStat} from "./ActivitiesTab";
 import {useDispatch, useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
 import {FlatList} from "react-native";
-import usePlannerTabContext, {PlannerTabContext} from "../../../../../globals/contexts/PlannerTabContext";
+import usePlannerTabContext, {PlannerTabContext} from "../context";
 import {deleteDuration, updateDuration} from "../../../../../globals/redux/reducers/durationsReducer";
 import {
     deleteDurationValidation,
@@ -15,7 +15,7 @@ import {
 import {ValidationStatus} from "../../../../../globals/redux/types";
 import {deleteActivityValidation} from "../../../../../globals/redux/validators/activityValidators";
 import {deleteActivity} from "../../../../../globals/redux/reducers/activitiesReducer";
-import selectPlannerState from "../../../../../globals/redux/selectors/plannerSelector";
+import selectPlannerState from "../../../../../globals/redux/selectors/plannerTabSelector";
 
 interface DurationPaneProps {
     app_state: AppState,
@@ -85,7 +85,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
         modal_data: {setFormModalIsOpen, setAlertModalIsOpen},
         form_data: {setFormProps},
         alert_data: {setAlertProps}
-    } = React.useContext(PlannerTabContext)
+    } = usePlannerTabContext()
 
     const handleOnClickPane = useCallback(() => {
         if (open_duration === duration) {

@@ -32,7 +32,7 @@ export default function DurationPicker({active_duration_id, setDuration}: Durati
     const [dialog_open, setDialogOpen] = React.useState(false)
 
     const selected_duration = React.useMemo(() => (
-        active_duration_id !== undefined ? durations[active_duration_id] : null
+        active_duration_id !== undefined && durations[active_duration_id] ? durations[active_duration_id] : null
     ), [active_duration_id, durations])
 
     const handleClickDuration = React.useCallback((duration: Duration) => {
@@ -50,7 +50,7 @@ export default function DurationPicker({active_duration_id, setDuration}: Durati
             </XStack>
             {dialog_open &&
                 <DialogContainer onClose={() => setDialogOpen(false)}>
-                    <ScrollView maxHeight={200} width={'100%'}>
+                    <YStack width={'100%'}>
                         {Object.values(durations).map((duration) => (
                             <DurationPickerPane
                                 key={duration.id}
@@ -58,7 +58,7 @@ export default function DurationPicker({active_duration_id, setDuration}: Durati
                                 is_active={selected_duration?.id === duration.id}
                                 onClick={() => handleClickDuration(duration)}/>
                         ))}
-                    </ScrollView>
+                    </YStack>
                 </DialogContainer>
             }
         </React.Fragment>

@@ -6,7 +6,7 @@ import {
     PlannerTabContext,
     PlannerTabContextProps,
     PlannerTabFormData
-} from "../../../../globals/contexts/PlannerTabContext";
+} from "./context";
 import {Plus} from "@tamagui/lucide-icons";
 import ActivityForm from "./forms/ActivityForm";
 import {Activity, Duration, Session} from "../../../../globals/types/main";
@@ -22,7 +22,7 @@ import {createDuration} from "../../../../globals/redux/reducers/durationsReduce
 import {Keyboard, TouchableWithoutFeedback} from "react-native";
 import {SessionsState} from "../../../../globals/redux/reducers/sessionsReducer";
 import {createSelector} from "@reduxjs/toolkit";
-import selectPlannerState from "../../../../globals/redux/selectors/plannerSelector";
+import selectPlannerState from "../../../../globals/redux/selectors/plannerTabSelector";
 import {AlertProps, DEFAULT_ALERT_PROPS} from "../../../../globals/types/alert";
 
 

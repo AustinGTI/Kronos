@@ -6,7 +6,7 @@ import {Activity, Session} from "../../../../../globals/types/main";
 // import {ArrowDown, Delete, Edit, Play} from "@tamagui/lucide-icons";
 import {FlatList} from "react-native";
 import {ChevronDown, ChevronUp, Delete, Edit, Play, Trash} from "@tamagui/lucide-icons";
-import {PlannerTabContext} from "../../../../../globals/contexts/PlannerTabContext";
+import usePlannerTabContext, {PlannerTabContext} from "../context";
 import {
     deleteActivityValidation,
     updateActivityValidation
@@ -14,7 +14,7 @@ import {
 import {ValidationStatus} from "../../../../../globals/redux/types";
 import {deleteActivity, updateActivity} from "../../../../../globals/redux/reducers/activitiesReducer";
 import {SessionsState} from "../../../../../globals/redux/reducers/sessionsReducer";
-import selectPlannerState from "../../../../../globals/redux/selectors/plannerSelector";
+import selectPlannerState from "../../../../../globals/redux/selectors/plannerTabSelector";
 
 interface ActivityPaneProps {
     app_state: AppState
@@ -43,7 +43,7 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
         modal_data: {setFormModalIsOpen, setAlertModalIsOpen},
         form_data: {setFormProps},
         alert_data: {setAlertProps}
-    } = React.useContext(PlannerTabContext)
+    } = usePlannerTabContext()
 
     const handleOnClickPane = React.useCallback(() => {
         if (open_activity === activity) {
