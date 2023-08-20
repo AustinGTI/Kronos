@@ -3,6 +3,7 @@ import {Button, Input, Paragraph, View, XStack, YStack} from "tamagui";
 import {Segment, SEGMENT_TYPES, SegmentType} from "../../../types/main";
 import {Plus, Trash} from "@tamagui/lucide-icons";
 import CarouselInput, {CarouselItem} from "../input/CarouselInput";
+import SegmentsBarView from "../../duration/SegmentsBarView";
 
 
 interface SegmentPickerProps {
@@ -22,21 +23,6 @@ interface InputSegmentPaneDurationPickerProps {
     setDuration: (duration: number) => void
 }
 
-function SegmentsBarView({segments}: { segments: Segment[] }) {
-    const total_duration = segments.reduce((total, segment) => {
-        return total + segment.duration
-    }, 0)
-    return (
-        <XStack w={'100%'} marginTop={10} h={20} alignItems={'center'} justifyContent={'center'} overflow={'hidden'} borderRadius={10}>
-            {segments.map((segment) => {
-                const width = (segment.duration / total_duration) * 100
-                return (
-                    <View key={segment.key} w={`${width.toFixed(2)}%`} h={'100%'} backgroundColor={segment.type.color}/>
-                );
-            })}
-        </XStack>
-    )
-}
 
 function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegmentPaneDurationPickerProps) {
     const [duration_hours, setDurationHours] = React.useState(Math.floor(duration / 60))
@@ -237,7 +223,7 @@ export default function SegmentPicker({active_segments: segments, setSegments,se
                         ))}
                     </YStack>
                 )}
-                <SegmentsBarView segments={segments}/>
+                <SegmentsBarView segments={segments} marginTop={10}/>
             </YStack>
         </React.Fragment>
     )

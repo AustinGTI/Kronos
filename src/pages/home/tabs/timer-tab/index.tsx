@@ -9,16 +9,23 @@ import {Keyboard, TouchableWithoutFeedback} from "react-native";
 import ActivityForm from "../planner-tab/forms/ActivityForm";
 import {ValidationResponse} from "../../../../globals/redux/types";
 import DurationForm from "../planner-tab/forms/DurationForm";
+import SelectActivityModal from "./modals/SelectActivityModal";
+import Default_activities from "../../../../globals/redux/defaults/default_activities";
+import DEFAULT_ACTIVITIES_STATE from "../../../../globals/redux/defaults/default_activities";
 
+enum TIMER_TAB_SHEET_MODAL {
+    SELECT_ACTIVITY = 'SELECT_ACTIVITY',
+    SELECT_DURATION = 'SELECT_DURATION',
+}
 
 export default function TimerTab() {
     const [timer_duration, setTimerDuration] = React.useState<Duration | null>(null)
     const [timer_activity, setTimerActivity] = React.useState<Activity | null>(null)
 
     const [sheet_modal_is_open, setSheetModalIsOpen] = React.useState<boolean>(false)
-    const [sheet_modal_element, setSheetModalElement] = React.useState<React.ReactElement | null>(null)
+    const [active_sheet_modal, setSheetModalElement] = React.useState<TIMER_TAB_SHEET_MODAL | null>(null)
 
-    const [alert_is_open, setAlertIsOpen] = React.useState<boolean>(false)
+    const [alert_modal_is_open, setAlertModalIsOpen] = React.useState<boolean>(false)
     const [alert_props, setAlertProps] = React.useState<AlertProps | null>(null)
 
     const timer_tab_context: TimerTabContextProps = React.useMemo(() => ({
@@ -27,9 +34,20 @@ export default function TimerTab() {
                 timer_duration, setTimerDuration,
                 timer_activity, setTimerActivity,
             },
+        },
+        sheet_data: {
+            sheet_modal_is_open, setSheetModalIsOpen,
+        },
+        alert_data: {
+            alert_modal_is_open, setAlertModalIsOpen,
+            alert_props, setAlertProps,
         }
-    }), [timer_duration, timer_activity])
+    }), [timer_duration, timer_activity, sheet_modal_is_open, alert_modal_is_open, alert_props])
 
+    const openSelectActivityModal = React.useCallback(() => {
+        setSheetModalElement(TIMER_TAB_SHEET_MODAL.SELECT_ACTIVITY)
+        setSheetModalIsOpen(true)
+    }, [])
 
     return (
         <TimerTabContext.Provider value={timer_tab_context}>
@@ -37,7 +55,7 @@ export default function TimerTab() {
                 <YStack w={'100%'} h={'40%'}>
                     <Button>{timer_duration?.name ?? 'Select Duration'}</Button>
                 </YStack>
-                <Button>{timer_activity?.name ?? 'Select Activity'}</Button>
+                <Button onPress={openSelectActivityModal}>{timer_activity?.name ?? 'Select Activity'}</Button>
             </YStack>
             <Sheet modal={true}
                    open={sheet_modal_is_open}
@@ -61,7 +79,14 @@ export default function TimerTab() {
                 }
                 <Sheet.Frame height={400} backgroundColor={'transparent'}>
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                        <Sheet.ScrollView w={'100%'} h={'100%'} backgroundColor={'white'}></Sheet.ScrollView>
+                        <Sheet.ScrollView w={'100%'} h={'100%'} backgroundColor={'white'}>
+                            {
+                                active_sheet_modal === TIMER_TAB_SHEET_MODAL.SELECT_ACTIVITY ?
+                                    <SelectActivityModal current_activity={timer_activity} setCurrentActivity={setTimerActivity} setCurrentDuration={setTimerDuration} closeSheetModal={() => setSheetModalIsOpen(false)}/> :
+                                    active_sheet_modal === TIMER_TAB_SHEET_MODAL.SELECT_DURATION ?
+                                        <div>select duration</div> : null
+                            }
+                        </Sheet.ScrollView>
                     </TouchableWithoutFeedback>
                 </Sheet.Frame>
             </Sheet>

@@ -53,7 +53,7 @@ export const EMPTY_ACTIVITY: Activity = {
 
 export const UNTITLED_ACTIVITY: Activity = {
     id: UNTITLED_RECORD_ID,
-    name: '',
+    name: 'Untitled Activity',
     color: '#ccc',
     default_duration_id: null,
     stats_data: {
