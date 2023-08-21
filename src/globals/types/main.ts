@@ -76,6 +76,12 @@ export const EMPTY_DURATION: Duration = {
     segments: []
 }
 
+export const CUSTOM_DURATION: Duration = {
+    id: UNTITLED_RECORD_ID,
+    name: 'Custom Duration',
+    segments: []
+}
+
 export type Session = {
     id: number;
     activity_id?: number;

@@ -199,7 +199,7 @@ export default function SegmentPicker({active_segments: segments, setSegments,se
                     <Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>MINUTES</Paragraph>
                 </YStack>
             </XStack>
-            <YStack w={'100%'}>
+            <YStack w={'100%'} paddingBottom={10}>
                 {segments.length === 0 ? (
                     <YStack w={'100%'} gap={10} paddingTop={10}>
                         <Paragraph textAlign={'center'} fontSize={10} color={'#aaa'}>
@@ -223,7 +223,6 @@ export default function SegmentPicker({active_segments: segments, setSegments,se
                         ))}
                     </YStack>
                 )}
-                <SegmentsBarView segments={segments} marginTop={10}/>
             </YStack>
         </React.Fragment>
     )

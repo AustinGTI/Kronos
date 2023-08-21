@@ -9,6 +9,7 @@ import {FormProps} from "../../../../../globals/types/form";
 import {generateFormikOnSubmit, getFirstError} from "../../../../../globals/helpers/form_functions";
 import SegmentPicker from "../../../../../globals/components/form/pickers/SegmentPicker";
 import SubmitButton from "../../../../../globals/components/form/SubmitButton";
+import SegmentsBarView from "../../../../../globals/components/duration/SegmentsBarView";
 
 function DurationFormFields() {
     const {errors, values, touched, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
@@ -39,6 +40,7 @@ function DurationFormFields() {
                             error={segments_touched ? segment_error : undefined}>
                 <SegmentPicker setSegments={(segments) => setValues({...values, segments})}
                                active_segments={values['segments']} setTouched={() => setSegmentsTouched(true)}/>
+                <SegmentsBarView segments={values['segments']} marginTop={10}/>
             </InputContainer>
         </YStack>
     )

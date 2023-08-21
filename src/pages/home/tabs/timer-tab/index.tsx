@@ -12,6 +12,7 @@ import DurationForm from "../planner-tab/forms/DurationForm";
 import SelectActivityModal from "./modals/SelectActivityModal";
 import Default_activities from "../../../../globals/redux/defaults/default_activities";
 import DEFAULT_ACTIVITIES_STATE from "../../../../globals/redux/defaults/default_activities";
+import SelectDurationModal from "./modals/SelectDurationModal";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
@@ -49,11 +50,16 @@ export default function TimerTab() {
         setSheetModalIsOpen(true)
     }, [])
 
+    const openSelectDurationModal = React.useCallback(() => {
+        setSheetModalElement(TIMER_TAB_SHEET_MODAL.SELECT_DURATION)
+        setSheetModalIsOpen(true)
+    }, [])
+
     return (
         <TimerTabContext.Provider value={timer_tab_context}>
             <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'}>
                 <YStack w={'100%'} h={'40%'}>
-                    <Button>{timer_duration?.name ?? 'Select Duration'}</Button>
+                    <Button onPress={openSelectDurationModal}>{timer_duration?.name ?? 'Select Duration'}</Button>
                 </YStack>
                 <Button onPress={openSelectActivityModal}>{timer_activity?.name ?? 'Select Activity'}</Button>
             </YStack>
@@ -82,9 +88,15 @@ export default function TimerTab() {
                         <Sheet.ScrollView w={'100%'} h={'100%'} backgroundColor={'white'}>
                             {
                                 active_sheet_modal === TIMER_TAB_SHEET_MODAL.SELECT_ACTIVITY ?
-                                    <SelectActivityModal current_activity={timer_activity} setCurrentActivity={setTimerActivity} setCurrentDuration={setTimerDuration} closeSheetModal={() => setSheetModalIsOpen(false)}/> :
+                                    <SelectActivityModal current_activity={timer_activity}
+                                                         setCurrentActivity={setTimerActivity}
+                                                         setCurrentDuration={setTimerDuration}
+                                                         closeSheetModal={() => setSheetModalIsOpen(false)}/> :
                                     active_sheet_modal === TIMER_TAB_SHEET_MODAL.SELECT_DURATION ?
-                                        <div>select duration</div> : null
+                                        <SelectDurationModal current_duration={timer_duration}
+                                                             setCurrentDuration={setTimerDuration}
+                                                             closeSheetModal={() => setSheetModalIsOpen(false)}/>
+                                        : null
                             }
                         </Sheet.ScrollView>
                     </TouchableWithoutFeedback>

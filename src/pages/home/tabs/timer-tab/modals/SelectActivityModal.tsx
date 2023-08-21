@@ -34,14 +34,11 @@ function SelectActivityPane({activity, duration, setToTimerActivity, is_selected
                 <Paragraph textTransform={'uppercase'}>{activity.name}</Paragraph>
                 <Square size={22} borderRadius={7} backgroundColor={activity.color}/>
             </XStack>
-            <XStack flexGrow={1} w={'100%'} alignItems={'center'} justifyContent={'space-between'} paddingTop={1} paddingBottom={5}>
+            <XStack flexGrow={1} w={'100%'} alignItems={'center'} justifyContent={'space-between'} paddingTop={1}
+                    paddingBottom={5}>
                 <YStack w={'80%'}>
                     <Paragraph textTransform={'uppercase'} color={'#ccc'} fontSize={10}>Default Duration</Paragraph>
-                    {
-                        duration ?
-                            <SegmentsBarView segments={duration.segments} h={15} borderRadius={3}/> :
-                            <View w={'100%'} backgroundColor={'gray'} h={15} borderRadius={3}/>
-                    }
+                    <SegmentsBarView segments={duration?.segments ?? []} h={15} borderRadius={3}/>
                 </YStack>
                 <YStack alignItems={'center'} justifyContent={'center'}>
                     <Paragraph fontSize={25} height={25} lineHeight={25}>
@@ -60,7 +57,7 @@ function SelectActivityPane({activity, duration, setToTimerActivity, is_selected
     )
 }
 
-export default function SelectActivityModal({current_activity, setCurrentActivity,setCurrentDuration, closeSheetModal}: SelectActivityModalProps) {
+export default function SelectActivityModal({current_activity, setCurrentActivity, setCurrentDuration, closeSheetModal}: SelectActivityModalProps) {
     const {durations, activities} = useSelector(selectTimerState)
     const setTimerActivityAndCloseModal = React.useCallback((activity: Activity) => {
         setCurrentActivity(activity)
