@@ -19,6 +19,14 @@ enum TIMER_TAB_SHEET_MODAL {
     SELECT_DURATION = 'SELECT_DURATION',
 }
 
+class Timer {
+    // constructor takes in a duration
+    constructor(duration: Duration) {
+    }
+
+
+}
+
 export default function TimerTab() {
     const [timer_duration, setTimerDuration] = React.useState<Duration | null>(null)
     const [timer_activity, setTimerActivity] = React.useState<Activity | null>(null)

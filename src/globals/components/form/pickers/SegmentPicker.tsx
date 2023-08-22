@@ -57,7 +57,8 @@ function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegmen
                                hours = 24
                            }
                            setDurationHours(hours)
-                       }} onEndEditing={onEndEditing}/>
+                           setDuration(hours * 60 + duration_minutes)
+                       }}/>
                 <Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>HOURS</Paragraph>
             </YStack>
             <XStack h={'100%'} paddingBottom={12} alignItems={'center'} justifyContent={'center'}>
@@ -73,7 +74,8 @@ function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegmen
                         minutes = 60
                     }
                     setDurationMinutes(minutes)
-                }} onEndEditing={onEndEditing}/>
+                    setDuration(duration_hours * 60 + minutes)
+                }}/>
                 <Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>MINUTES</Paragraph>
             </YStack>
         </XStack>
@@ -141,6 +143,7 @@ function InputSegmentPaneDurationPicker({duration, setDuration}: InputSegmentPan
 function InputSegmentPane({segment, segments, setSegments}: InputSegmentPaneProps) {
     const onClickDeleteButton = React.useCallback(() => {
         setSegments(segments.filter((prev_segment) => prev_segment.key !== segment.key))
+        console.log(segments)
     }, [setSegments, segment.key])
     return (
         <XStack w={'100%'} h={60} alignItems={'center'} borderColor={'#aaa'} borderWidth={1} borderRadius={10}
