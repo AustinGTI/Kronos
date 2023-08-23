@@ -13,21 +13,16 @@ import SelectActivityModal from "./modals/SelectActivityModal";
 import Default_activities from "../../../../globals/redux/defaults/default_activities";
 import DEFAULT_ACTIVITIES_STATE from "../../../../globals/redux/defaults/default_activities";
 import SelectDurationModal from "./modals/SelectDurationModal";
+import {TimerState, timerStateReducer} from "./timer_state";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
     SELECT_DURATION = 'SELECT_DURATION',
 }
 
-class Timer {
-    // constructor takes in a duration
-    constructor(duration: Duration) {
-    }
-
-
-}
-
 export default function TimerTab() {
+    const [timer_state, updateTimerState] = React.useReducer(timerStateReducer, null)
+
     const [timer_duration, setTimerDuration] = React.useState<Duration | null>(null)
     const [timer_activity, setTimerActivity] = React.useState<Activity | null>(null)
 
