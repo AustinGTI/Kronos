@@ -1,12 +1,9 @@
 import {Day, SegmentType, Session} from "../../types/main";
 import {createSlice} from "@reduxjs/toolkit";
 import {dateToDDMMYYYY, getStartOfDay} from "../../helpers/datetime_functions";
-import {extractSessionDateKey, generateSessionId} from "../../helpers/session_functions";
 import generateDummyDay from "../dummies/dummy_sessions";
 
 export type SessionsState = { [date_key: string]: Day }
-
-export type NewSession = { activity_id?: number, duration_id?: number }
 
 const initial_state: SessionsState = {}
 
@@ -15,37 +12,31 @@ const sessionsSlice = createSlice({
     name: 'sessions',
     initialState: initial_state,
     reducers: {
-        startSession: (state, {payload}: { type: string, payload: NewSession }) => {
-            // a new session will have no id, so we need to generate one
-            const start_time = new Date()
-            const id = generateSessionId(start_time, Object.keys(state[dateToDDMMYYYY(start_time)]?.sessions).length ?? 0)
+        startSession: (state, {payload}: { type: string, payload: Session }) => {
+            // the id in the payload is the exact unix timestamp when the session was started, get the start time from it
+            const start_time = new Date(payload.id)
 
-            const new_session: Session = {
-                ...payload,
-                id, start_time,
-                is_ongoing: true,
-                end_time: null,
-                segments: []
-            }
+            const new_session = payload
+
             // check if there is already a day for today
             const today = dateToDDMMYYYY(start_time)
             if (state[today]) {
                 // if there is, add the new session to it
-                state[today].sessions[id] = new_session
+                state[today].sessions[new_session.id] = new_session
             }
             // if there isn't, create a day for today and add the new session to it
             else {
                 state[today] = {
                     // the date should be 00:00:00 of today
                     date: getStartOfDay(start_time),
-                    sessions: {[id]: new_session}
+                    sessions: {[new_session.id]: new_session}
                 }
             }
         },
 
         endSession: (state, {payload}: { type: string, payload: { session_id: number, end_time?: Date } }) => {
-            // first get the session
-            const date_key = extractSessionDateKey(payload.session_id)
+            // first get the session, the session id is the unix timestamp when the session was started
+            const date_key = dateToDDMMYYYY(new Date(payload.session_id))
             const session = state[date_key]?.sessions[payload.session_id] as Session
 
             // set is_on_going to false and end_time to the current time if not provided
@@ -68,12 +59,12 @@ const sessionsSlice = createSlice({
         // * - computationally expensive, there needs to be a call to incrementSession every minute
 
         // durations are assumed to be in minutes
-        incrementSegment: (state, {payload}: {
+        incrementSessionSegment: (state, {payload}: {
             type: string,
             payload: { session_id: number, segment_type: SegmentType }
         }) => {
-            // first get the session
-            const date_key = extractSessionDateKey(payload.session_id)
+            // the session id is the unix timestamp when the session was started
+            const date_key = dateToDDMMYYYY(new Date(payload.session_id))
             const session = state[date_key]?.sessions[payload.session_id] as Session
 
             // if the last segment is of the same type as given in the payload, increment its duration
@@ -102,12 +93,13 @@ const sessionsSlice = createSlice({
         // * - more complex to determine end time of a session because all previous segments need to be summed up and added to the start time
         // * - confusion if a segment is not ended before the next one is started
 
-        startSegment: (state, {payload}: {
+        startSessionSegment: (state, {payload}: {
             type: string,
             payload: { session_id: number, segment_type: SegmentType }
         }) => {
             // first get the session
-            const date_key = extractSessionDateKey(payload.session_id)
+            // the session id is the unix timestamp when the session was started
+            const date_key = dateToDDMMYYYY(new Date(payload.session_id))
             const session = state[date_key]?.sessions[payload.session_id] as Session
 
             // add a new segment of the given type and set its duration to 0
@@ -121,9 +113,10 @@ const sessionsSlice = createSlice({
             state[date_key].sessions[payload.session_id] = session
         },
 
-        endSegment: (state, {payload}: { type: string, payload: { session_id: number } }) => {
+        endSessionSegment: (state, {payload}: { type: string, payload: { session_id: number } }) => {
             // first get the session
-            const date_key = extractSessionDateKey(payload.session_id)
+            // the session id is the unix timestamp when the session was started
+            const date_key = dateToDDMMYYYY(new Date(payload.session_id))
             const session = state[date_key]?.sessions[payload.session_id] as Session
 
             // get the duration of the most recent segment
@@ -150,7 +143,8 @@ const sessionsSlice = createSlice({
         // ? Its unclear if this will every be used, I don't see a reason to delete a session, but I'll leave it here for now
         deleteSession: (state, {payload}: { type: string, payload: number }) => {
             // first get the date_key from the session id
-            const date_key = extractSessionDateKey(payload)
+            // the session id is the unix timestamp when the session was started
+            const date_key = dateToDDMMYYYY(new Date(payload))
 
             // delete the session from the state
             delete state[date_key].sessions[payload]
@@ -181,9 +175,8 @@ const sessionsSlice = createSlice({
 export const {
     startSession,
     endSession,
-    incrementSegment,
-    startSegment,
-    endSegment,
+    incrementSessionSegment,
+    startSessionSegment,
     deleteSession,
     generateDummySessions,
     clearSessions

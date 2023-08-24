@@ -6,7 +6,7 @@ export type SegmentType = {
     color: string;
 }
 
-export const SEGMENT_TYPES: { [key: string]: SegmentType } = {
+export const SegmentTypes: { [key: string]: SegmentType } = {
     FOCUS: {
         name: 'focus',
         color: '#db9cff'
@@ -14,6 +14,10 @@ export const SEGMENT_TYPES: { [key: string]: SegmentType } = {
     BREAK: {
         name: 'break',
         color: '#ffe169'
+    },
+    PAUSE: {
+        name: 'pause',
+        color: '#999'
     }
 }
 
@@ -84,8 +88,8 @@ export const CUSTOM_DURATION: Duration = {
 
 export type Session = {
     id: number;
-    activity_id?: number;
-    duration_id?: number;
+    activity_id: number;
+    duration_id: number;
 
     start_time: Date,
 

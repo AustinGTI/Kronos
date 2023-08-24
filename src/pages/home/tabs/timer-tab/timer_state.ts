@@ -1,4 +1,4 @@
-import {Duration, SEGMENT_TYPES, SegmentType, Session} from "../../../../globals/types/main";
+import {Duration, SegmentTypes, SegmentType, Session} from "../../../../globals/types/main";
 import React from "react";
 
 /**
@@ -46,7 +46,8 @@ export interface TimerState {
     },
     timing_state: {
         is_running: boolean,
-        elapsed_time: number, // in seconds
+        elapsed_time: number, // the time elapsed since the timer started in seconds
+        active_time: number, // the time elapsed since the timer started in which the timer was running in secondssince the timer started in which the timer was running in secondssince the timer started in which the timer was running in secondssince the timer started in which the timer was running in seconds
     },
     info_state: {
         on_stop_alert_props: TimerAlertProps
@@ -66,12 +67,12 @@ export function durationToTimerState(duration: Duration): TimerState {
             on_complete_alert_props.message = 'Congratulations, this pomodoro session has been successfully completed! Click OK to record this session.'
         } else {
             // if the segment is a focus segment, then the user needs to be informed that it is time for a break
-            if (segment.type === SEGMENT_TYPES.FOCUS) {
+            if (segment.type === SegmentTypes.FOCUS) {
                 on_complete_alert_props.title = 'Time for a break!'
                 // get the duration of the next segment (which is a break segment)
                 const break_duration = duration.segments[index + 1].duration
                 on_complete_alert_props.message = `Take a ${break_duration} minute break to get some rest. Click OK to start the break.`
-            } else if (segment.type === SEGMENT_TYPES.BREAK) {
+            } else if (segment.type === SegmentTypes.BREAK) {
                 // if the segment is a break segment, then the user needs to be informed that it is time to focus
                 on_complete_alert_props.title = 'Break is over!'
                 // get the duration of the next segment (which is a focus segment)
@@ -97,7 +98,8 @@ export function durationToTimerState(duration: Duration): TimerState {
         },
         timing_state: {
             is_running: false,
-            elapsed_time: 0
+            elapsed_time: 0,
+            active_time: 0
         },
         info_state: {
             // when the timer is stopped before the entire duration is completed, the user needs to be informed that the session
@@ -112,21 +114,21 @@ export function durationToTimerState(duration: Duration): TimerState {
 }
 
 export enum TimerStateActionTypes {
-    GENERATE_TIMER_STATE = 'GENERATE_TIMER_STATE',
     START_TIMER = 'START_TIMER',
+    RESUME_TIMER = 'RESUME_TIMER',
     PAUSE_TIMER = 'PAUSE_TIMER',
     INCREMENT_TIMER = 'INCREMENT_TIMER',
     COMPLETE_SEGMENT = 'COMPLETE_SEGMENT',
     STOP_TIMER = 'STOP_TIMER'
 }
 
-interface GenerateTimerStateAction {
-    type: TimerStateActionTypes.GENERATE_TIMER_STATE,
+interface StartTimerAction {
+    type: TimerStateActionTypes.START_TIMER,
     payload: Duration
 }
 
-interface StartTimerAction {
-    type: TimerStateActionTypes.START_TIMER,
+interface ResumeTimerAction {
+    type: TimerStateActionTypes.RESUME_TIMER,
     payload: null
 }
 
@@ -151,8 +153,8 @@ interface StopTimerAction {
 }
 
 export type TimerStateActions =
-    GenerateTimerStateAction
-    | StartTimerAction
+    StartTimerAction
+    | ResumeTimerAction
     | PauseTimerAction
     | IncrementTimerAction
     | CompleteSegmentAction
@@ -163,11 +165,11 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
     // if the state is null
     if (state === null) {
         // if the action is to generate a timer state
-        if (type === TimerStateActionTypes.GENERATE_TIMER_STATE) {
+        if (type === TimerStateActionTypes.START_TIMER) {
             // then generate a timer state from the payload
             return durationToTimerState(payload)
         } else {
-            throw new Error('Invalid action')
+            throw new Error(`Invalid action ${type} for null state`)
         }
     }
 
@@ -175,6 +177,9 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
 
     switch (type) {
         case TimerStateActionTypes.START_TIMER:
+            return durationToTimerState(payload)
+
+        case TimerStateActionTypes.RESUME_TIMER:
             return {
                 ...state,
                 timing_state: {
@@ -191,28 +196,42 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                 }
             }
         case TimerStateActionTypes.INCREMENT_TIMER:
-            return {
-                ...state,
-                timing_state: {
-                    ...state.timing_state,
-                    elapsed_time: state.timing_state.elapsed_time + 1
-                },
-                segments_state: {
-                    ...state.segments_state,
-                    // increment the elapsed duration of the segment at the end of the list
-                    segments_remaining: state.segments_state.segments_remaining.map((segment, index) => {
-                        state = state as TimerState // ! without this line for some reason, the compiler will complain that state might be null though it has been casted to TimerState
-                        if (index === state.segments_state.segments_remaining.length - 1) {
-                            return {
-                                ...segment,
-                                elapsed_duration: segment.elapsed_duration + 1
+            // if the timer is running, elapsed time,active time and the segment time should be incremented
+            // if not, only the elapsed time should be incremented
+            if (state.timing_state.is_running) {
+                return {
+                    ...state,
+                    timing_state: {
+                        ...state.timing_state,
+                        elapsed_time: state.timing_state.elapsed_time + 1,
+                        active_time: state.timing_state.active_time + 1,
+                    },
+                    segments_state: {
+                        ...state.segments_state,
+                        // increment the elapsed duration of the segment at the end of the list
+                        segments_remaining: state.segments_state.segments_remaining.map((segment, index) => {
+                            state = state as TimerState // ! without this line for some reason, the compiler will complain that state might be null though it has been casted to TimerState
+                            if (index === state.segments_state.segments_remaining.length - 1) {
+                                return {
+                                    ...segment,
+                                    elapsed_duration: segment.elapsed_duration + 1
+                                }
+                            } else {
+                                return segment
                             }
-                        } else {
-                            return segment
-                        }
-                    })
+                        })
+                    }
+                }
+            } else {
+                return {
+                    ...state,
+                    timing_state: {
+                        ...state.timing_state,
+                        elapsed_time: state.timing_state.elapsed_time + 1,
+                    }
                 }
             }
+
         case TimerStateActionTypes.COMPLETE_SEGMENT:
             // pop the last segment from the segments_remaining array and add it to the segments_completed array
             return {
@@ -224,7 +243,6 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                 }
             }
         case TimerStateActionTypes.STOP_TIMER:
-            // todo: maybe add functionality to record the session
             return null
 
         default:

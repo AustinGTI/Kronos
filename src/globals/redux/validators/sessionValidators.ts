@@ -1,9 +1,10 @@
 import {AppState} from "../reducers";
-import {NewSession} from "../reducers/sessionsReducer";
 import {SpecialField, ValidationResponse, ValidationStatus} from "../types";
 import {extractSessionDateKey} from "../../helpers/session_functions";
+import {Session} from "../../types/main";
+import {dateToDDMMYYYY} from "../../helpers/datetime_functions";
 
-export function startSessionValidation(app_state: AppState, new_session: NewSession): ValidationResponse {
+export function startSessionValidation(app_state: AppState, new_session: Session): ValidationResponse {
     // check that the activity exists if given
     if (new_session.activity_id && !app_state.activities[new_session.activity_id]) {
         return {
@@ -31,7 +32,7 @@ export function startSessionValidation(app_state: AppState, new_session: NewSess
 
 export function updateSessionValidation(app_state: AppState, session_id: number): ValidationResponse {
     // check that the day exists
-    const date_key = extractSessionDateKey(session_id)
+    const date_key = dateToDDMMYYYY(new Date(session_id))
     if (!app_state.sessions[date_key]) {
         return {
             status: ValidationStatus.ERROR,

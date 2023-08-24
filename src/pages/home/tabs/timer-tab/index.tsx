@@ -1,19 +1,14 @@
 import React from 'react'
-import {Button, Paragraph, Sheet, YStack} from "tamagui";
-import {useDispatch} from "react-redux";
-import {Activity, Duration} from "../../../../globals/types/main";
-import {FormProps} from "../../../../globals/types/form";
+import {Button, Sheet, YStack} from "tamagui";
+import {Activity, Duration, SegmentTypes, Session} from "../../../../globals/types/main";
 import {AlertProps} from "../../../../globals/types/alert";
 import {TimerTabContext, TimerTabContextProps} from "./context";
 import {Keyboard, TouchableWithoutFeedback} from "react-native";
-import ActivityForm from "../planner-tab/forms/ActivityForm";
-import {ValidationResponse} from "../../../../globals/redux/types";
-import DurationForm from "../planner-tab/forms/DurationForm";
 import SelectActivityModal from "./modals/SelectActivityModal";
-import Default_activities from "../../../../globals/redux/defaults/default_activities";
-import DEFAULT_ACTIVITIES_STATE from "../../../../globals/redux/defaults/default_activities";
 import SelectDurationModal from "./modals/SelectDurationModal";
-import {TimerState, timerStateReducer} from "./timer_state";
+import {TimerStateActionTypes, timerStateReducer} from "./timer_state";
+import {useDispatch} from "react-redux";
+import {endSession, incrementSessionSegment, startSession} from "../../../../globals/redux/reducers/sessionsReducer";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
@@ -21,7 +16,11 @@ enum TIMER_TAB_SHEET_MODAL {
 }
 
 export default function TimerTab() {
+    const dispatch = useDispatch()
+    const timer_interval_ref = React.useRef<number | null>(null)
+
     const [timer_state, updateTimerState] = React.useReducer(timerStateReducer, null)
+    const [session_id, setSessionId] = React.useState<number | null>(null)
 
     const [timer_duration, setTimerDuration] = React.useState<Duration | null>(null)
     const [timer_activity, setTimerActivity] = React.useState<Activity | null>(null)
@@ -31,6 +30,87 @@ export default function TimerTab() {
 
     const [alert_modal_is_open, setAlertModalIsOpen] = React.useState<boolean>(false)
     const [alert_props, setAlertProps] = React.useState<AlertProps | null>(null)
+
+    const startTimer = React.useCallback(() => {
+        if (!timer_duration || !timer_activity) {
+            throw new Error('Cannot start timer if duration or activity is not set')
+        }
+        updateTimerState({
+            type: TimerStateActionTypes.START_TIMER, payload: timer_duration
+        })
+        const start_time = new Date()
+        const session : Session = {
+            id: start_time.getTime(),
+            activity_id: timer_activity!.id,
+            duration_id: timer_duration!.id,
+            start_time,
+            is_ongoing: true,
+            end_time: null,
+            segments: []
+        }
+        setSessionId(session.id)
+        dispatch(startSession(session))
+    }, [timer_duration, timer_activity, dispatch])
+
+    const pauseTimer = React.useCallback(() => {
+        if (!timer_state?.timing_state.is_running) {
+            throw new Error('Cannot pause if timer is not running')
+        }
+        updateTimerState({
+            type: TimerStateActionTypes.PAUSE_TIMER, payload: null
+        })
+    }, [timer_state?.timing_state.is_running])
+
+    const resumeTimer = React.useCallback(() => {
+        if (timer_state?.timing_state.is_running) {
+            throw new Error('Cannot resume if timer is running')
+        }
+        updateTimerState({
+            type: TimerStateActionTypes.RESUME_TIMER, payload: null
+        })
+    }, [timer_state?.timing_state.is_running])
+
+    const stopTimer = React.useCallback(() => {
+        updateTimerState({
+            type: TimerStateActionTypes.STOP_TIMER, payload: null
+        })
+        const end_time = new Date()
+        dispatch(endSession({
+            session_id: session_id!,
+            end_time,
+        }))
+        setSessionId(null)
+    }, [dispatch, session_id])
+
+    const incrementTimer = React.useCallback(() => {
+        if (!session_id) {
+            throw new Error('Cannot increment timer if session is not set')
+        }
+        if (!timer_state) {
+            throw new Error('Cannot increment timer if timer state is not set')
+        }
+        updateTimerState({
+            type: TimerStateActionTypes.INCREMENT_TIMER, payload: null
+        })
+        // at every 60 sec interval, increment the session as well
+        if (timer_state.timing_state.elapsed_time % 60 === 0) {
+            // if the timer is running, increment with the active segment
+            if (timer_state.timing_state.is_running) {
+                const segments_remaining = timer_state.segments_state.segments_remaining
+                dispatch(incrementSessionSegment({
+                    session_id: session_id!,
+                    // the active segment is the last segment in the array
+                    segment_type: segments_remaining[segments_remaining.length - 1].segment_type,
+                }))
+            } else {
+                // otherwise, increment with the PAUSE segment
+                dispatch(incrementSessionSegment({
+                    session_id: session_id!,
+                    segment_type: SegmentTypes.PAUSE,
+                }))
+            }
+        }
+    }, [session_id, timer_state, dispatch])
 
     const timer_tab_context: TimerTabContextProps = React.useMemo(() => ({
         timer_data: {
@@ -57,6 +137,18 @@ export default function TimerTab() {
         setSheetModalElement(TIMER_TAB_SHEET_MODAL.SELECT_DURATION)
         setSheetModalIsOpen(true)
     }, [])
+
+    React.useEffect(() => {
+        if (timer_state) {
+            timer_interval_ref.current = window.setInterval(incrementTimer, 1000)
+        } else {
+            window.clearInterval(timer_interval_ref.current!)
+            timer_interval_ref.current = null
+        }
+        return () => {
+            window.clearInterval(timer_interval_ref.current!)
+        }
+    }, [timer_state, incrementTimer])
 
     return (
         <TimerTabContext.Provider value={timer_tab_context}>

@@ -1,6 +1,6 @@
 import {AppState} from "../reducers";
 import {SpecialField, ValidationStatus, ValidationResponse} from "../types";
-import {Duration, SEGMENT_TYPES} from "../../types/main";
+import {Duration, SegmentTypes} from "../../types/main";
 import {compareStrings} from "../../helpers/string_functions";
 
 function genericDurationValidation(app_state: AppState, duration: Duration): ValidationResponse {
@@ -17,7 +17,7 @@ function genericDurationValidation(app_state: AppState, duration: Duration): Val
     }
     // ? 2. the first and last segments must be focus segments
     console.log('segments ', duration.segments)
-    if (duration.segments[0].type.name !== SEGMENT_TYPES.FOCUS.name || duration.segments[duration.segments.length - 1].type.name !== SEGMENT_TYPES.FOCUS.name) {
+    if (duration.segments[0].type.name !== SegmentTypes.FOCUS.name || duration.segments[duration.segments.length - 1].type.name !== SegmentTypes.FOCUS.name) {
         return {
             status: ValidationStatus.ERROR,
             error: {

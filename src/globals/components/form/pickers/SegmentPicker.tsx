@@ -1,6 +1,6 @@
 import React from 'react'
 import {Button, Input, Paragraph, View, XStack, YStack} from "tamagui";
-import {Segment, SEGMENT_TYPES, SegmentType} from "../../../types/main";
+import {Segment, SegmentTypes, SegmentType} from "../../../types/main";
 import {Plus, Trash} from "@tamagui/lucide-icons";
 import CarouselInput, {CarouselItem} from "../input/CarouselInput";
 import SegmentsBarView from "../../duration/SegmentsBarView";
@@ -175,11 +175,11 @@ export default function SegmentPicker({active_segments: segments, setSegments,se
         const last_segment = segments[segments.length - 1]
         let new_segment_type: SegmentType
         let new_segment_duration: number
-        if (last_segment && last_segment.type.name === SEGMENT_TYPES.FOCUS.name) {
-            new_segment_type = SEGMENT_TYPES.BREAK
+        if (last_segment && last_segment.type.name === SegmentTypes.FOCUS.name) {
+            new_segment_type = SegmentTypes.BREAK
             new_segment_duration = 5
         } else {
-            new_segment_type = SEGMENT_TYPES.FOCUS
+            new_segment_type = SegmentTypes.FOCUS
             new_segment_duration = 25
         }
         const new_segment: Segment = {

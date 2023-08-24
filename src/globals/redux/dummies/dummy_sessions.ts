@@ -1,4 +1,13 @@
-import {Activity, Day, Duration, Segment, SEGMENT_TYPES, SegmentType, Session} from "../../types/main";
+import {
+    Activity, CUSTOM_DURATION,
+    Day,
+    Duration,
+    Segment,
+    SegmentTypes,
+    SegmentType,
+    Session,
+    UNTITLED_ACTIVITY
+} from "../../types/main";
 import DEFAULT_ACTIVITIES_STATE from "../defaults/default_activities";
 import DEFAULT_DURATION_STATE from "../defaults/default_durations";
 
@@ -30,7 +39,7 @@ function getRandomActivity(): Activity | undefined {
  */
 function getRandomDuration(activity: Activity): Duration | undefined {
     if (Math.random() < RANDOM_SESSION_CONFIG.probabilities.duration_is_defined) {
-        if (Math.random() < RANDOM_SESSION_CONFIG.probabilities.duration_is_default) {
+        if (Math.random() < RANDOM_SESSION_CONFIG.probabilities.duration_is_default && activity?.default_duration_id) {
             return DEFAULT_DURATION_STATE[activity.default_duration_id];
         } else {
             return DEFAULT_DURATION_STATE[Math.floor(Math.random() * Object.keys(DEFAULT_DURATION_STATE).length) + 1];
@@ -61,13 +70,13 @@ function generateCustomDuration(): Duration {
         custom_duration.segments.push({
             key: i+1,
             duration: focus_length,
-            type: SEGMENT_TYPES.FOCUS
+            type: SegmentTypes.FOCUS
         })
         if (i < num_focus_segments - 1) {
             custom_duration.segments.push({
                 key: i+1,
                 duration: break_length,
-                type: SEGMENT_TYPES.BREAK,
+                type: SegmentTypes.BREAK,
             })
         }
     }
@@ -167,9 +176,9 @@ export default function generateDummyDay(date: Date): Day {
         }
 
         const session: Session = {
-            id: i + 1,
-            activity_id: activity?.id,
-            duration_id: duration?.id,
+            id: session_start_time.getTime(),
+            activity_id: activity?.id ?? UNTITLED_ACTIVITY.id,
+            duration_id: duration?.id ?? CUSTOM_DURATION.id,
             start_time: session_start_time,
             is_ongoing: false,
             end_time: session_end_time,
