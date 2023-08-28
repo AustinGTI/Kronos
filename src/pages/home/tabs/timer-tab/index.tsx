@@ -1,5 +1,5 @@
 import React from 'react'
-import {Button, Sheet, YStack} from "tamagui";
+import {AlertDialog, Button, Paragraph, Sheet, XStack, YStack} from "tamagui";
 import {Activity, Duration, SegmentTypes, Session} from "../../../../globals/types/main";
 import {AlertProps} from "../../../../globals/types/alert";
 import {TimerTabContext, TimerTabContextProps} from "./context";
@@ -13,6 +13,12 @@ import {endSession, incrementSessionSegment, startSession} from "../../../../glo
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
     SELECT_DURATION = 'SELECT_DURATION',
+}
+
+function durationInSecondsToTimerString(duration: number) {
+    const minutes = Math.floor(duration / 60)
+    const seconds = duration % 60
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
 export default function TimerTab() {
@@ -39,7 +45,7 @@ export default function TimerTab() {
             type: TimerStateActionTypes.START_TIMER, payload: timer_duration
         })
         const start_time = new Date()
-        const session : Session = {
+        const session: Session = {
             id: start_time.getTime(),
             activity_id: timer_activity!.id,
             duration_id: timer_duration!.id,
@@ -110,7 +116,16 @@ export default function TimerTab() {
                 }))
             }
         }
+        // if the active segment elapsed time, is higher than the initial time, then the segment is complete, set modal is open to true
     }, [session_id, timer_state, dispatch])
+
+    const active_segment = React.useMemo(() => {
+        if (!timer_state) {
+            return null
+        } else {
+            return timer_state.segments_state.segments_remaining[timer_state.segments_state.segments_remaining.length - 1]
+        }
+    }, [timer_state])
 
     const timer_tab_context: TimerTabContextProps = React.useMemo(() => ({
         timer_data: {
@@ -150,10 +165,43 @@ export default function TimerTab() {
         }
     }, [timer_state, incrementTimer])
 
+    // if the timer_state is set, set the alert props to the on_complete_alert_props of the active
+    // segment
+    React.useEffect(() => {
+        const is_last_segment = timer_state?.segments_state.segments_remaining.length === 1
+
+        if (active_segment?.on_complete_alert_props.is_open) {
+            const alert_props: AlertProps = {
+                title: active_segment.on_complete_alert_props.title,
+                description: active_segment.on_complete_alert_props.description,
+                with_cancel_button: false,
+                // the button runs a function that closes the alert modal and completes the active segment
+                buttons: [{
+                    text: is_last_segment ? 'Complete Session' : 'Proceed',
+                    onPress: () => {
+                        // if this is the last segment, stop the timer else complete the segment
+                        if (is_last_segment) {
+                            stopTimer()
+                        } else {
+                            updateTimerState({
+                                type: TimerStateActionTypes.COMPLETE_SEGMENT,
+                                payload: null
+                            })
+                        }
+                    }
+                }]
+            }
+            setAlertProps(alert_props)
+        }
+    }, [active_segment?.on_complete_alert_props.is_open])
+
     return (
         <TimerTabContext.Provider value={timer_tab_context}>
             <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'}>
                 <YStack w={'100%'} h={'40%'}>
+                    <Paragraph>TIMER</Paragraph>
+                    {timer_state &&
+                        <Paragraph>{durationInSecondsToTimerString(timer_state?.timing_state.elapsed_time)}</Paragraph>}
                     <Button onPress={openSelectDurationModal}>{timer_duration?.name ?? 'Select Duration'}</Button>
                 </YStack>
                 <Button onPress={openSelectActivityModal}>{timer_activity?.name ?? 'Select Activity'}</Button>
@@ -197,6 +245,65 @@ export default function TimerTab() {
                     </TouchableWithoutFeedback>
                 </Sheet.Frame>
             </Sheet>
+            <AlertDialog
+                open={alert_modal_is_open}
+                onOpenChange={setAlertModalIsOpen}>
+                <AlertDialog.Portal>
+                    <AlertDialog.Overlay
+                        key="overlay"
+                        animation="quick"
+                        opacity={0.5}
+                        enterStyle={{opacity: 0}}
+                        exitStyle={{opacity: 0}}
+                    />
+                    <AlertDialog.Content
+                        bordered
+                        elevate
+                        key="content"
+                        animation={[
+                            'quick',
+                            {
+                                opacity: {
+                                    overshootClamping: true,
+                                },
+                            },
+                        ]}
+                        enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+                        exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+                        x={0}
+                        scale={1}
+                        opacity={1}
+                        y={0}
+                    >
+                        {alert_props && (
+                            <YStack space>
+                                <AlertDialog.Title w={'100%'} textAlign={'center'} textTransform={'uppercase'}
+                                                   textDecorationLine={'underline'} fontSize={20}>
+                                    {alert_props.title}
+                                </AlertDialog.Title>
+                                <AlertDialog.Description w={'100%'} textAlign={'center'}>
+                                    {alert_props.description}
+                                </AlertDialog.Description>
+
+                                <XStack space="$3" justifyContent={
+                                    alert_props.buttons.length + (alert_props.with_cancel_button ? 1 : 0) > 1 ? 'space-between' : 'center'
+                                }>
+                                    {alert_props.with_cancel_button && <AlertDialog.Cancel asChild>
+                                        <Button>Close</Button>
+                                    </AlertDialog.Cancel>}
+                                    {alert_props.buttons.map((button, index) => (
+                                        // <AlertDialog.Action key={index} asChild>
+                                        <Button key={index} onPress={button.onPress}>
+                                            {button.text}
+                                        </Button>
+                                        // </AlertDialog.Action>
+                                    ))}
+                                </XStack>
+                            </YStack>
+                        )}
+                    </AlertDialog.Content>
+                </AlertDialog.Portal>
+            </AlertDialog>
         </TimerTabContext.Provider>
     )
 }

@@ -28,7 +28,7 @@ import React from "react";
 interface TimerAlertProps {
     is_open: boolean,
     title: string,
-    message: string
+    description: string,
 }
 
 interface TimerSegment {
@@ -56,28 +56,28 @@ export interface TimerState {
 
 export function durationToTimerState(duration: Duration): TimerState {
     const timer_segments: TimerSegment[] = duration.segments.map((segment, index) => {
-        const on_complete_alert_props = {
+        const on_complete_alert_props: TimerAlertProps = {
             is_open: false,
             title: '',
-            message: ''
+            description: ''
         }
         // if the segment is the last segment, then the user needs to be informed that the entire duration has been completed
         if (index === duration.segments.length - 1) {
             on_complete_alert_props.title = 'Pomodoro Session Completed'
-            on_complete_alert_props.message = 'Congratulations, this pomodoro session has been successfully completed! Click OK to record this session.'
+            on_complete_alert_props.description = 'Congratulations, this pomodoro session has been successfully completed! Click OK to record this session.'
         } else {
             // if the segment is a focus segment, then the user needs to be informed that it is time for a break
             if (segment.type === SegmentTypes.FOCUS) {
                 on_complete_alert_props.title = 'Time for a break!'
                 // get the duration of the next segment (which is a break segment)
                 const break_duration = duration.segments[index + 1].duration
-                on_complete_alert_props.message = `Take a ${break_duration} minute break to get some rest. Click OK to start the break.`
+                on_complete_alert_props.description = `Take a ${break_duration} minute break to get some rest. Click OK to start the break.`
             } else if (segment.type === SegmentTypes.BREAK) {
                 // if the segment is a break segment, then the user needs to be informed that it is time to focus
                 on_complete_alert_props.title = 'Break is over!'
                 // get the duration of the next segment (which is a focus segment)
                 const focus_duration = duration.segments[index + 1].duration
-                on_complete_alert_props.message = `Time to focus again for ${focus_duration} minutes. Click OK to start focusing.`
+                on_complete_alert_props.description = `Time to focus again for ${focus_duration} minutes. Click OK to start focusing.`
             } else {
                 throw new Error('Invalid segment type')
             }
@@ -107,7 +107,7 @@ export function durationToTimerState(duration: Duration): TimerState {
             on_stop_alert_props: {
                 is_open: false,
                 title: 'Session is unfinished!',
-                message: 'Are you sure you want to stop the timer? This session will be recorded as incomplete, Click OK to confirm this action.'
+                description: 'Are you sure you want to stop the timer? This session will be recorded as incomplete, Click OK to confirm this action.'
             }
         }
     }
@@ -212,9 +212,14 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                         segments_remaining: state.segments_state.segments_remaining.map((segment, index) => {
                             state = state as TimerState // ! without this line for some reason, the compiler will complain that state might be null though it has been casted to TimerState
                             if (index === state.segments_state.segments_remaining.length - 1) {
+                                // increase the elapsed duration, if the elapsed duration is more than the initial duration, set the alert modal open state to true
                                 return {
                                     ...segment,
-                                    elapsed_duration: segment.elapsed_duration + 1
+                                    elapsed_duration: segment.elapsed_duration + 1,
+                                    on_complete_alert_props: {
+                                        ...segment.on_complete_alert_props,
+                                        is_open: segment.elapsed_duration + 1 >= segment.initial_duration
+                                    }
                                 }
                             } else {
                                 return segment

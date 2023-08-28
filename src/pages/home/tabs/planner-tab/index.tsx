@@ -164,8 +164,8 @@ export default function PlannerTab() {
                        if (!open) {
                            // wait for the sheet to close before clearing the form props
                            setTimeout(() => {
-                                 setFormProps(null)
-                            }, 500)
+                               setFormProps(null)
+                           }, 500)
                        }
                        setFormIsOpen(open)
                    }}
@@ -200,67 +200,65 @@ export default function PlannerTab() {
                     </TouchableWithoutFeedback>
                 </Sheet.Frame>
             </Sheet>
-            {
-                <AlertDialog
-                    open={alert_is_open}
-                    onOpenChange={setAlertIsOpen}>
-                    <AlertDialog.Portal>
-                        <AlertDialog.Overlay
-                            key="overlay"
-                            animation="quick"
-                            opacity={0.5}
-                            enterStyle={{opacity: 0}}
-                            exitStyle={{opacity: 0}}
-                        />
-                        <AlertDialog.Content
-                            bordered
-                            elevate
-                            key="content"
-                            animation={[
-                                'quick',
-                                {
-                                    opacity: {
-                                        overshootClamping: true,
-                                    },
+            <AlertDialog
+                open={alert_is_open}
+                onOpenChange={setAlertIsOpen}>
+                <AlertDialog.Portal>
+                    <AlertDialog.Overlay
+                        key="overlay"
+                        animation="quick"
+                        opacity={0.5}
+                        enterStyle={{opacity: 0}}
+                        exitStyle={{opacity: 0}}
+                    />
+                    <AlertDialog.Content
+                        bordered
+                        elevate
+                        key="content"
+                        animation={[
+                            'quick',
+                            {
+                                opacity: {
+                                    overshootClamping: true,
                                 },
-                            ]}
-                            enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
-                            exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
-                            x={0}
-                            scale={1}
-                            opacity={1}
-                            y={0}
-                        >
-                            {alert_props && (
-                                <YStack space>
-                                    <AlertDialog.Title w={'100%'} textAlign={'center'} textTransform={'uppercase'}
-                                                       textDecorationLine={'underline'} fontSize={20}>
-                                        {alert_props.title}
-                                    </AlertDialog.Title>
-                                    <AlertDialog.Description w={'100%'} textAlign={'center'}>
-                                        {alert_props.description}
-                                    </AlertDialog.Description>
+                            },
+                        ]}
+                        enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+                        exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+                        x={0}
+                        scale={1}
+                        opacity={1}
+                        y={0}
+                    >
+                        {alert_props && (
+                            <YStack space>
+                                <AlertDialog.Title w={'100%'} textAlign={'center'} textTransform={'uppercase'}
+                                                   textDecorationLine={'underline'} fontSize={20}>
+                                    {alert_props.title}
+                                </AlertDialog.Title>
+                                <AlertDialog.Description w={'100%'} textAlign={'center'}>
+                                    {alert_props.description}
+                                </AlertDialog.Description>
 
-                                    <XStack space="$3" justifyContent={
-                                        alert_props.buttons.length + (alert_props.with_cancel_button ? 1 : 0) > 1 ? 'space-between' : 'center'
-                                    }>
-                                        {alert_props.with_cancel_button && <AlertDialog.Cancel asChild>
-                                            <Button>Close</Button>
-                                        </AlertDialog.Cancel>}
-                                        {alert_props.buttons.map((button, index) => (
-                                            // <AlertDialog.Action key={index} asChild>
-                                            <Button key={index} onPress={button.onPress}>
-                                                {button.text}
-                                            </Button>
-                                            // </AlertDialog.Action>
-                                        ))}
-                                    </XStack>
-                                </YStack>
-                            )}
-                        </AlertDialog.Content>
-                    </AlertDialog.Portal>
-                </AlertDialog>
-            }
+                                <XStack space="$3" justifyContent={
+                                    alert_props.buttons.length + (alert_props.with_cancel_button ? 1 : 0) > 1 ? 'space-between' : 'center'
+                                }>
+                                    {alert_props.with_cancel_button && <AlertDialog.Cancel asChild>
+                                        <Button>Close</Button>
+                                    </AlertDialog.Cancel>}
+                                    {alert_props.buttons.map((button, index) => (
+                                        // <AlertDialog.Action key={index} asChild>
+                                        <Button key={index} onPress={button.onPress}>
+                                            {button.text}
+                                        </Button>
+                                        // </AlertDialog.Action>
+                                    ))}
+                                </XStack>
+                            </YStack>
+                        )}
+                    </AlertDialog.Content>
+                </AlertDialog.Portal>
+            </AlertDialog>
         </PlannerTabContext.Provider>
     )
 }
