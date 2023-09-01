@@ -1,5 +1,5 @@
 import React from 'react'
-import {AlertDialog, Button, Paragraph, Sheet, XStack, YStack} from "tamagui";
+import {AlertDialog, Button, Paragraph, ScrollView, Sheet, XStack, YStack} from "tamagui";
 import {Activity, Duration, SegmentTypes, Session} from "../../../../globals/types/main";
 import {AlertProps} from "../../../../globals/types/alert";
 import {TimerTabContext, TimerTabContextProps} from "./context";
@@ -22,6 +22,9 @@ function durationInSecondsToTimerString(duration: number) {
 }
 
 export default function TimerTab() {
+    // Region STATES
+    // ? ........................
+
     const dispatch = useDispatch()
     const timer_interval_ref = React.useRef<number | null>(null)
 
@@ -37,6 +40,13 @@ export default function TimerTab() {
     const [alert_modal_is_open, setAlertModalIsOpen] = React.useState<boolean>(false)
     const [alert_props, setAlertProps] = React.useState<AlertProps | null>(null)
 
+    // ? ........................
+    // End
+
+
+    // Region TIMER CALLBACKS
+    // ? ........................
+
     const startTimer = React.useCallback(() => {
         if (!timer_duration || !timer_activity) {
             throw new Error('Cannot start timer if duration or activity is not set')
@@ -49,7 +59,7 @@ export default function TimerTab() {
             id: start_time.getTime(),
             activity_id: timer_activity!.id,
             duration_id: timer_duration!.id,
-            start_time,
+            start_time: start_time.toISOString(),
             is_ongoing: true,
             end_time: null,
             segments: []
@@ -77,15 +87,26 @@ export default function TimerTab() {
     }, [timer_state?.timing_state.is_running])
 
     const stopTimer = React.useCallback(() => {
-        updateTimerState({
-            type: TimerStateActionTypes.STOP_TIMER, payload: null
+        setAlertProps({
+            title: 'Session is unfinished!',
+            description: 'Are you sure you want to stop the timer? This session will be recorded as incomplete, Click OK to confirm this action.',
+            with_cancel_button: true,
+            buttons: [{
+                text: 'OK',
+                onPress: () => {
+                    updateTimerState({
+                        type: TimerStateActionTypes.STOP_TIMER, payload: null
+                    })
+                    const end_time = new Date()
+                    dispatch(endSession({
+                        session_id: session_id!,
+                        end_time:end_time.toISOString()
+                    }))
+                    setSessionId(null)
+                }
+            }]
         })
-        const end_time = new Date()
-        dispatch(endSession({
-            session_id: session_id!,
-            end_time,
-        }))
-        setSessionId(null)
+        setAlertModalIsOpen(true)
     }, [dispatch, session_id])
 
     const incrementTimer = React.useCallback(() => {
@@ -119,6 +140,23 @@ export default function TimerTab() {
         // if the active segment elapsed time, is higher than the initial time, then the segment is complete, set modal is open to true
     }, [session_id, timer_state, dispatch])
 
+    // ? ........................
+    // Region METADATA CALLBACKS
+    // ? ........................
+
+    const openSelectActivityModal = React.useCallback(() => {
+        setSheetModalElement(TIMER_TAB_SHEET_MODAL.SELECT_ACTIVITY)
+        setSheetModalIsOpen(true)
+    }, [])
+
+    const openSelectDurationModal = React.useCallback(() => {
+        setSheetModalElement(TIMER_TAB_SHEET_MODAL.SELECT_DURATION)
+        setSheetModalIsOpen(true)
+    }, [])
+
+    // ? ........................
+    // End
+
     const active_segment = React.useMemo(() => {
         if (!timer_state) {
             return null
@@ -143,15 +181,9 @@ export default function TimerTab() {
         }
     }), [timer_duration, timer_activity, sheet_modal_is_open, alert_modal_is_open, alert_props])
 
-    const openSelectActivityModal = React.useCallback(() => {
-        setSheetModalElement(TIMER_TAB_SHEET_MODAL.SELECT_ACTIVITY)
-        setSheetModalIsOpen(true)
-    }, [])
 
-    const openSelectDurationModal = React.useCallback(() => {
-        setSheetModalElement(TIMER_TAB_SHEET_MODAL.SELECT_DURATION)
-        setSheetModalIsOpen(true)
-    }, [])
+    // Region EFFECTS
+    // ? ........................
 
     React.useEffect(() => {
         if (timer_state) {
@@ -195,16 +227,49 @@ export default function TimerTab() {
         }
     }, [active_segment?.on_complete_alert_props.is_open])
 
+    // ? ........................
+    // End
+
+
     return (
         <TimerTabContext.Provider value={timer_tab_context}>
             <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'}>
                 <YStack w={'100%'} h={'40%'}>
                     <Paragraph>TIMER</Paragraph>
                     {timer_state &&
-                        <Paragraph>{durationInSecondsToTimerString(timer_state?.timing_state.elapsed_time)}</Paragraph>}
-                    <Button onPress={openSelectDurationModal}>{timer_duration?.name ?? 'Select Duration'}</Button>
+                        // <Paragraph>{durationInSecondsToTimerString(timer_state?.timing_state.elapsed_time)}</Paragraph>}
+                        <ScrollView w={'100%'} h={100}>
+                            <YStack w={'100%'} h={'100%'} ai={'center'} jc={'center'}>
+                                {
+                                    timer_state.segments_state.segments_remaining.reverse().map((segment, index) => {
+                                        const is_active_segment = index == 0
+                                        return (
+                                            <XStack key={segment.key} w={'100%'} h={50} ai={'center'}
+                                                    jc={'space-around'} backgroundColor={is_active_segment ? 'black' : 'gray'}>
+                                                <Paragraph color={'white'}>{segment.segment_type.name}</Paragraph>
+                                                <Paragraph color={'white'}>{durationInSecondsToTimerString(segment.initial_duration - segment.elapsed_duration)}</Paragraph>
+                                            </XStack>
+                                        )
+                                    })
+                                }
+                            </YStack>
+                        </ScrollView>}
+                    <Button disabled={timer_state !== null}
+                            onPress={openSelectDurationModal}>{timer_duration?.name ?? 'Select Duration'}</Button>
                 </YStack>
-                <Button onPress={openSelectActivityModal}>{timer_activity?.name ?? 'Select Activity'}</Button>
+                <Button disabled={timer_state !== null}
+                        onPress={openSelectActivityModal}>{timer_activity?.name ?? 'Select Activity'}</Button>
+                <XStack w={'100%'}>
+                    {/* if timer_state does not exist, a play button, else if timer is running, a pause button and stop button else a resume button */}
+                    {timer_state ?
+                        timer_state.timing_state.is_running ?
+                            <Button onPress={pauseTimer}>Pause</Button> :
+                                <React.Fragment>
+                                    <Button onPress={resumeTimer}>Resume</Button>
+                                    <Button onPress={stopTimer}>Stop</Button>
+                                </React.Fragment> : <Button onPress={startTimer}>Start</Button>
+                    }
+                </XStack>
             </YStack>
             <Sheet modal={true}
                    open={sheet_modal_is_open}

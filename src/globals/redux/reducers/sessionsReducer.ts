@@ -34,14 +34,14 @@ const sessionsSlice = createSlice({
             }
         },
 
-        endSession: (state, {payload}: { type: string, payload: { session_id: number, end_time?: Date } }) => {
+        endSession: (state, {payload}: { type: string, payload: { session_id: number, end_time?: string } }) => {
             // first get the session, the session id is the unix timestamp when the session was started
             const date_key = dateToDDMMYYYY(new Date(payload.session_id))
             const session = state[date_key]?.sessions[payload.session_id] as Session
 
             // set is_on_going to false and end_time to the current time if not provided
             session.is_ongoing = false
-            session.end_time = payload.end_time ?? new Date()
+            session.end_time = payload.end_time ?? new Date().toISOString()
 
             // update the session in the state
             state[date_key].sessions[payload.session_id] = session
@@ -130,7 +130,7 @@ const sessionsSlice = createSlice({
             const previous_segments_duration = session.segments.slice(0, -1).reduce((acc, segment) => acc + segment.duration, 0)
 
             // add this to the start time to get the current segment start time
-            const current_segment_start_time = new Date(session.start_time.getTime() + previous_segments_duration * 60 * 1000)
+            const current_segment_start_time = new Date(new Date(session.start_time).getTime() + previous_segments_duration * 60 * 1000)
 
             // subtract this from the current time to get the current segment duration, convert to minutes
             // set the duration of the last segment to the current segment duration

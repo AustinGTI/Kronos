@@ -91,12 +91,12 @@ export type Session = {
     activity_id: number;
     duration_id: number;
 
-    start_time: Date,
+    start_time: string, // an ISO string of the start time
 
     segments: Segment[]
 } & (
     { is_ongoing: true, end_time: null } |
-    { is_ongoing: false, end_time: Date }
+    { is_ongoing: false, end_time: string } // end time is an ISO string
     )
 
 export interface Day {
