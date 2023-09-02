@@ -100,9 +100,10 @@ export default function TimerTab() {
                     const end_time = new Date()
                     dispatch(endSession({
                         session_id: session_id!,
-                        end_time:end_time.toISOString()
+                        end_time: end_time.toISOString()
                     }))
                     setSessionId(null)
+                    setAlertModalIsOpen(false)
                 }
             }]
         })
@@ -186,6 +187,8 @@ export default function TimerTab() {
     // ? ........................
 
     React.useEffect(() => {
+        console.log('timing state is', timer_state?.timing_state)
+        console.log('segments remaining are', active_segment)
         if (timer_state) {
             timer_interval_ref.current = window.setInterval(incrementTimer, 1000)
         } else {
@@ -213,17 +216,28 @@ export default function TimerTab() {
                     onPress: () => {
                         // if this is the last segment, stop the timer else complete the segment
                         if (is_last_segment) {
-                            stopTimer()
+                            updateTimerState({
+                                type: TimerStateActionTypes.STOP_TIMER, payload: null
+                            })
+                            const end_time = new Date()
+                            dispatch(endSession({
+                                session_id: session_id!,
+                                end_time: end_time.toISOString()
+                            }))
+                            setSessionId(null)
+                            setAlertModalIsOpen(false)
                         } else {
                             updateTimerState({
                                 type: TimerStateActionTypes.COMPLETE_SEGMENT,
                                 payload: null
                             })
+                            setAlertModalIsOpen(false)
                         }
                     }
                 }]
             }
             setAlertProps(alert_props)
+            setAlertModalIsOpen(true)
         }
     }, [active_segment?.on_complete_alert_props.is_open])
 
@@ -241,13 +255,18 @@ export default function TimerTab() {
                         <ScrollView w={'100%'} h={100}>
                             <YStack w={'100%'} h={'100%'} ai={'center'} jc={'center'}>
                                 {
-                                    timer_state.segments_state.segments_remaining.reverse().map((segment, index) => {
+                                    timer_state.segments_state.segments_remaining
+                                        // reverse the array so the active segment is at the top
+                                        .slice().reverse()
+                                        .map((segment, index) => {
                                         const is_active_segment = index == 0
                                         return (
                                             <XStack key={segment.key} w={'100%'} h={50} ai={'center'}
-                                                    jc={'space-around'} backgroundColor={is_active_segment ? 'black' : 'gray'}>
+                                                    jc={'space-around'}
+                                                    backgroundColor={is_active_segment ? 'black' : 'gray'}>
                                                 <Paragraph color={'white'}>{segment.segment_type.name}</Paragraph>
-                                                <Paragraph color={'white'}>{durationInSecondsToTimerString(segment.initial_duration - segment.elapsed_duration)}</Paragraph>
+                                                <Paragraph
+                                                    color={'white'}>{durationInSecondsToTimerString(segment.initial_duration - segment.elapsed_duration)}</Paragraph>
                                             </XStack>
                                         )
                                     })
@@ -264,10 +283,10 @@ export default function TimerTab() {
                     {timer_state ?
                         timer_state.timing_state.is_running ?
                             <Button onPress={pauseTimer}>Pause</Button> :
-                                <React.Fragment>
-                                    <Button onPress={resumeTimer}>Resume</Button>
-                                    <Button onPress={stopTimer}>Stop</Button>
-                                </React.Fragment> : <Button onPress={startTimer}>Start</Button>
+                            <React.Fragment>
+                                <Button onPress={resumeTimer}>Resume</Button>
+                                <Button onPress={stopTimer}>Stop</Button>
+                            </React.Fragment> : <Button onPress={startTimer}>Start</Button>
                     }
                 </XStack>
             </YStack>
@@ -339,6 +358,7 @@ export default function TimerTab() {
                         scale={1}
                         opacity={1}
                         y={0}
+                        maxWidth={'90%'}
                     >
                         {alert_props && (
                             <YStack space>

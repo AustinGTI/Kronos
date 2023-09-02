@@ -67,11 +67,11 @@ const sessionsSlice = createSlice({
             const date_key = dateToDDMMYYYY(new Date(payload.session_id))
             const session = state[date_key]?.sessions[payload.session_id] as Session
 
-            // if the last segment is of the same type as given in the payload, increment its duration
-            if (session.segments[session.segments.length - 1].type === payload.segment_type) {
+            // if the last segment exists and is of the same type as given in the payload, increment its duration
+            if (session.segments[session.segments.length - 1]?.type === payload.segment_type) {
                 session.segments[session.segments.length - 1].duration += 1
             } else {
-                // if the last segment is of a different type, add a new segment of the given type and set its duration to 1
+                // if the last segment is of a different type or the first segment, add a new segment of the given type and set its duration to 1
                 session.segments.push({
                     key: session.segments.length + 1,
                     type: payload.segment_type,

@@ -67,25 +67,25 @@ export function durationToTimerState(duration: Duration): TimerState {
             on_complete_alert_props.description = 'Congratulations, this pomodoro session has been successfully completed! Click OK to record this session.'
         } else {
             // if the segment is a focus segment, then the user needs to be informed that it is time for a break
-            if (segment.type === SegmentTypes.FOCUS) {
+            if (segment.type.name === SegmentTypes.FOCUS.name) {
                 on_complete_alert_props.title = 'Time for a break!'
                 // get the duration of the next segment (which is a break segment)
                 const break_duration = duration.segments[index + 1].duration
                 on_complete_alert_props.description = `Take a ${break_duration} minute break to get some rest. Click OK to start the break.`
-            } else if (segment.type === SegmentTypes.BREAK) {
+            } else if (segment.type.name === SegmentTypes.BREAK.name) {
                 // if the segment is a break segment, then the user needs to be informed that it is time to focus
                 on_complete_alert_props.title = 'Break is over!'
                 // get the duration of the next segment (which is a focus segment)
                 const focus_duration = duration.segments[index + 1].duration
                 on_complete_alert_props.description = `Time to focus again for ${focus_duration} minutes. Click OK to start focusing.`
             } else {
-                throw new Error('Invalid segment type')
+                throw new Error(`Invalid segment type ${segment.type.name}`)
             }
         }
 
         return {
             key: index,
-            initial_duration: segment.duration,
+            initial_duration: segment.duration * 60,
             elapsed_duration: 0,
             segment_type: segment.type,
             on_complete_alert_props: on_complete_alert_props
@@ -94,7 +94,8 @@ export function durationToTimerState(duration: Duration): TimerState {
     return {
         segments_state: {
             segments_completed: [],
-            segments_remaining: timer_segments.reverse()
+            // reverse of the timer_segments array
+            segments_remaining: timer_segments.sort((a, b) => a.key > b.key ? -1 : 1)
         },
         timing_state: {
             is_running: false,
@@ -166,8 +167,11 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
     if (state === null) {
         // if the action is to generate a timer state
         if (type === TimerStateActionTypes.START_TIMER) {
-            // then generate a timer state from the payload
-            return durationToTimerState(payload)
+            const timer_state = durationToTimerState(payload)
+            //set running to true
+            timer_state.timing_state.is_running = true
+            console.log('new timing state is', timer_state)
+            return timer_state
         } else {
             throw new Error(`Invalid action ${type} for null state`)
         }
@@ -177,7 +181,7 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
 
     switch (type) {
         case TimerStateActionTypes.START_TIMER:
-            return durationToTimerState(payload)
+            throw Error('Cannot start timer that has already started')
 
         case TimerStateActionTypes.RESUME_TIMER:
             return {
@@ -212,6 +216,7 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                         segments_remaining: state.segments_state.segments_remaining.map((segment, index) => {
                             state = state as TimerState // ! without this line for some reason, the compiler will complain that state might be null though it has been casted to TimerState
                             if (index === state.segments_state.segments_remaining.length - 1) {
+                                console.log('incrementing segment', segment, 'at index', index)
                                 // increase the elapsed duration, if the elapsed duration is more than the initial duration, set the alert modal open state to true
                                 return {
                                     ...segment,
@@ -222,6 +227,7 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                                     }
                                 }
                             } else {
+                                console.log('ignoring segment',segment,' at index',index)
                                 return segment
                             }
                         })
