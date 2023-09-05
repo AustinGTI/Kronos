@@ -7,10 +7,14 @@ export interface CalendarTabContextProps {
         setActiveDate: (date: Date) => void
     },
     modal_data: {
-        modal_is_open: boolean
-        setModalIsOpen: React.Dispatch<React.SetStateAction<boolean>>
+        modal_visible: boolean
+        setModalVisibility: React.Dispatch<React.SetStateAction<boolean>>
         session_in_modal: Session | null
         setSessionInModal: React.Dispatch<React.SetStateAction<Session | null>>
+    },
+    dimensions_data: {
+        calendar_width: number
+        calendar_height: number
     }
 }
 
@@ -20,9 +24,13 @@ export const CalendarTabContext = React.createContext<CalendarTabContextProps>({
         setActiveDate: () => undefined
     },
     modal_data: {
-        modal_is_open: false,
-        setModalIsOpen: () => undefined,
+        modal_visible: false,
+        setModalVisibility: () => undefined,
         session_in_modal: null,
         setSessionInModal: () => undefined
+    },
+    dimensions_data: {
+        calendar_width: 0,
+        calendar_height: 0
     }
 })

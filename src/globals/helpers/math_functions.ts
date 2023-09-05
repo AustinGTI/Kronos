@@ -4,7 +4,7 @@
  * @param {number} standard_distribution - The standard deviation of the normal distribution
  * @returns {number} A random number over a normal distribution with the given mean and standard deviation
  */
-function generateRandomNormal(mean: number, standard_distribution:number): number {
+export function generateRandomNormal(mean: number, standard_distribution:number): number {
     let u, v, s;
     do {
         u = 2 * Math.random() - 1;

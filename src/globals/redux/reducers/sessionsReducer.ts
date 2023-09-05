@@ -28,7 +28,7 @@ const sessionsSlice = createSlice({
             else {
                 state[today] = {
                     // the date should be 00:00:00 of today
-                    date: getStartOfDay(start_time),
+                    date: getStartOfDay(start_time).toISOString(),
                     sessions: {[new_session.id]: new_session}
                 }
             }

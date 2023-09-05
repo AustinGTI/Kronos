@@ -1,9 +1,12 @@
 import React from 'react'
 import {Activity, Day, SegmentType, Session} from "../../../../globals/types/main";
-import {Paragraph, XStack, YStack} from "tamagui";
+import {Paragraph, View, XStack, YStack} from "tamagui";
 import {ActivitiesState} from "../../../../globals/redux/reducers/activitiesReducer";
 import {useSelector} from "react-redux";
 import {AppState} from "../../../../globals/redux/reducers";
+import {useWindowDimensions} from "react-native";
+import {useHeaderHeight} from "react-native-screens/native-stack";
+import {CalendarTabContext} from "./context";
 
 interface DayPaneProps {
     day: Day
@@ -33,7 +36,7 @@ interface TimelineSession {
 function SideBar({date, sessions}: SideBarProps) {
     const [day_of_week, day_date, month, year] = React.useMemo(() => {
         return [
-            date.toLocaleString('default', {weekday: 'short'}),
+            date.toLocaleString('default', {weekday: 'short'}).split(',')[0],
             date.getDate(),
             date.toLocaleString('default', {month: 'short'}),
             date.getFullYear()
@@ -51,6 +54,7 @@ function SideBar({date, sessions}: SideBarProps) {
         }, 0)
         return [no_of_sessions, Math.round(total_session_duration_in_hours / 60)]
     }, [sessions])
+
 
     return (
         <YStack w={'20%'} h={'100%'}>
@@ -75,6 +79,10 @@ function SideBar({date, sessions}: SideBarProps) {
 }
 
 function Timeline({sessions}: TimelineProps) {
+    const {
+        dimensions_data: {calendar_height}
+    } = React.useContext(CalendarTabContext)
+
     const activities = useSelector((state: AppState) => state.activities)
     // convert sessions to timeline sessions
     const timeline_sessions = React.useMemo(() => {
@@ -87,7 +95,9 @@ function Timeline({sessions}: TimelineProps) {
             const to = Math.min(1, (new Date(session.end_time ?? new Date()).getTime() - start_of_day.getTime()) / (24 * 60 * 60 * 1000))
             const timeline_session: TimelineSession = {
                 from, to,
-                activity: activities[session.activity_id],
+                activity: activities[session.activity_id] ?? {
+                    id: '-1', name: 'Custom Activity', color: '#ddd'
+                },
                 segments: []
             }
             const total_segments_duration = session.segments.reduce((total, segment) => total + segment.duration, 0)
@@ -102,16 +112,30 @@ function Timeline({sessions}: TimelineProps) {
         return timeline_sessions
     }, [sessions, activities])
     return (
-        <YStack w={'80%'} h={'100%'}>
+        <YStack position={'relative'} w={'80%'} h={'100%'}>
+            {
+                timeline_sessions.map((timeline_session, index) => {
+                        return (
+                            <View key={index} position={'absolute'} w={"100%"} top={timeline_session.from * calendar_height}
+                                  height={(timeline_session.to - timeline_session.from) * calendar_height}
+                                  backgroundColor={timeline_session.activity.color}/>
+                        )
+                    }
+                )
+            }
         </YStack>
     )
 }
 
 
 export default function DayPane({day}: DayPaneProps) {
+    const {
+        dimensions_data: {calendar_height}
+    } = React.useContext(CalendarTabContext)
     return (
-        <XStack w={'100%'} h={'100%'}>
-            <SideBar date={day.date} sessions={Object.values(day.sessions)}/>
+        <XStack w={'100%'} h={calendar_height} borderWidth={1}>
+            <SideBar date={new Date(day.date)} sessions={Object.values(day.sessions)}/>
+            <Timeline sessions={Object.values(day.sessions)}/>
         </XStack>
     )
 }

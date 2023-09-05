@@ -10,6 +10,7 @@ import {
 } from "../../types/main";
 import DEFAULT_ACTIVITIES_STATE from "../defaults/default_activities";
 import DEFAULT_DURATION_STATE from "../defaults/default_durations";
+import {generateRandomNormal} from "../../helpers/math_functions";
 
 const RANDOM_SESSION_CONFIG = {
     probabilities: {
@@ -133,12 +134,13 @@ function checkForSessionOverlap(start_date: Date, session_segments: Segment[], e
     // check if the new session overlaps with any existing sessions
     for (const existing_session of existing_sessions) {
         // get the end date of the existing session
+        const existing_start_date = new Date(existing_session.start_time)
         const existing_end_date = new Date(existing_session.start_time)
         for (const segment of existing_session.segments) {
             existing_end_date.setMinutes(existing_end_date.getMinutes() + segment.duration)
         }
         // check if the new session overlaps with the existing session
-        if (start_date < existing_end_date && end_date > existing_session.start_time) {
+        if (start_date < existing_end_date && end_date > existing_start_date) {
             return true
         }
     }
@@ -179,16 +181,16 @@ export default function generateDummyDay(date: Date): Day {
             id: session_start_time.getTime(),
             activity_id: activity?.id ?? UNTITLED_ACTIVITY.id,
             duration_id: duration?.id ?? CUSTOM_DURATION.id,
-            start_time: session_start_time,
+            start_time: session_start_time.toISOString(),
             is_ongoing: false,
-            end_time: session_end_time,
+            end_time: session_end_time.toISOString(),
             segments: session_segments
         }
         sessions.push(session)
     }
 
     return {
-        date: date,
+        date: date.toISOString(),
         sessions: sessions.reduce((obj, session) => {
             obj[session.id] = session
             return obj
