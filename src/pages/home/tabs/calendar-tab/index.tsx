@@ -65,6 +65,8 @@ export default function CalendarTab() {
                         setFlatlistDimensions({width, height})
                     }}
                     snapToInterval={flatlist_dimensions.height}
+                    decelerationRate={'fast'}
+                    disableIntervalMomentum={true}
                     keyExtractor={(item) => item}
                     getItemLayout={(data, index) => {
                         return {

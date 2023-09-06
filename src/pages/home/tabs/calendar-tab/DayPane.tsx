@@ -1,6 +1,6 @@
 import React from 'react'
 import {Activity, Day, SegmentType, Session} from "../../../../globals/types/main";
-import {Paragraph, View, XStack, YStack} from "tamagui";
+import {Paragraph, View, XStack, XStackProps, YStack} from "tamagui";
 import {ActivitiesState} from "../../../../globals/redux/reducers/activitiesReducer";
 import {useSelector} from "react-redux";
 import {AppState} from "../../../../globals/redux/reducers";
@@ -21,6 +21,10 @@ interface TimelineProps {
     sessions: Session[]
 }
 
+interface TimelineMarkerProps extends XStackProps {
+    hour: number // the hour of the day between 0 and 23
+}
+
 interface TimelineSegment {
     size: number // a float between 0 and 1
     type: SegmentType
@@ -32,6 +36,7 @@ interface TimelineSession {
     activity: Activity
     segments: TimelineSegment[]
 }
+
 
 function SideBar({date, sessions}: SideBarProps) {
     const [day_of_week, day_date, month, year] = React.useMemo(() => {
@@ -58,23 +63,48 @@ function SideBar({date, sessions}: SideBarProps) {
 
     return (
         <YStack w={'20%'} h={'100%'}>
-            <YStack w={'100%'} alignItems={'center'} justifyContent={'center'}>
-                <Paragraph>{day_of_week}</Paragraph>
-                <Paragraph>{day_date}</Paragraph>
-                <Paragraph>{month}</Paragraph>
-                <Paragraph>{year}</Paragraph>
+            <YStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
+                <Paragraph fontSize={22} marginVertical={2} textTransform={'uppercase'}>{day_of_week}</Paragraph>
+                <Paragraph fontSize={36} lineHeight={40} marginVertical={2}
+                           textTransform={'uppercase'}>{day_date.toString().padStart(2, '0')}</Paragraph>
+                <Paragraph fontSize={22} marginVertical={2} textTransform={'uppercase'}>{month}</Paragraph>
+                <Paragraph fontSize={19} marginVertical={2} textTransform={'uppercase'}>{year}</Paragraph>
             </YStack>
-            <YStack w={'100%'} flexGrow={1} alignItems={'center'} justifyContent={'flex-end'}>
-                <YStack>
-                    <Paragraph>No. of Sessions</Paragraph>
-                    <Paragraph>{no_of_sessions}</Paragraph>
+            <YStack w={'100%'} flexGrow={1} alignItems={'center'} justifyContent={'flex-end'} paddingVertical={5}>
+                <YStack alignItems={'center'} justifyContent={'center'} paddingVertical={5}>
+                    <Paragraph color={'#555'} textTransform={'uppercase'} fontSize={12}>Sessions</Paragraph>
+                    <Paragraph fontSize={36} lineHeight={40}>{no_of_sessions.toString().padStart(2, '0')}</Paragraph>
                 </YStack>
-                <YStack>
-                    <Paragraph>Hours Focused</Paragraph>
-                    <Paragraph>{total_session_duration_in_hours}</Paragraph>
+                <YStack alignItems={'center'} justifyContent={'center'} paddingVertical={5}>
+                    <Paragraph color={'#555'} textTransform={'uppercase'} fontSize={12}>Hours</Paragraph>
+                    <Paragraph fontSize={36}
+                               lineHeight={40}>{total_session_duration_in_hours.toString().padStart(2, '0')}</Paragraph>
                 </YStack>
             </YStack>
         </YStack>
+    )
+}
+
+function TimelineMarker({hour,...stack_props}: TimelineMarkerProps) {
+    // convert the hour to a 12 hour formatted string
+    const hour_string = React.useMemo(() => {
+        if (hour === 0) {
+            return '12am'
+        } else if (hour === 12) {
+            return '12pm'
+        } else if (hour < 12) {
+            return `${hour}am`
+        } else {
+            return `${hour - 12}pm`
+        }
+    }, [hour])
+
+    return (
+        // the timeline marker is a vertical line with a label to the left
+        <XStack alignItems={'center'} {...stack_props}>
+            <Paragraph fontSize={10} lineHeight={10} color={'#aaa'} paddingRight={5}>{hour_string}</Paragraph>
+            <View flexGrow={1} h={1} backgroundColor={'#aaa'}/>
+        </XStack>
     )
 }
 
@@ -112,17 +142,41 @@ function Timeline({sessions}: TimelineProps) {
         return timeline_sessions
     }, [sessions, activities])
     return (
-        <YStack position={'relative'} w={'80%'} h={'100%'}>
+        <YStack position={'relative'} flexGrow={1} h={'100%'} alignItems={'center'}>
             {
                 timeline_sessions.map((timeline_session, index) => {
                         return (
-                            <View key={index} position={'absolute'} w={"100%"} top={timeline_session.from * calendar_height}
-                                  height={(timeline_session.to - timeline_session.from) * calendar_height}
-                                  backgroundColor={timeline_session.activity.color}/>
+                            <View key={index}
+                                  paddingLeft={30} paddingRight={10}
+                                  position={'absolute'} w={"100%"} top={timeline_session.from * calendar_height}
+                                  height={(timeline_session.to - timeline_session.from) * calendar_height}>
+                                <View
+                                    w={'100%'} h={'100%'}
+                                    backgroundColor={timeline_session.activity.color}
+                                    opacity={0.8}
+                                    borderRadius={5}>
+                                    <Paragraph fontSize={12} textTransform={'uppercase'}
+                                               paddingVertical={5} paddingHorizontal={10}>
+                                        {timeline_session.activity.name}
+                                    </Paragraph>
+                                </View>
+                            </View>
                         )
                     }
                 )
             }
+                {
+                    // add timeline markers for every 2nd hour from 0 to 23
+                    [...Array(24).keys()].filter(hour => hour%2).map((hour) => {
+                        const top = hour / 24 * calendar_height - 5
+                        return (
+                            <TimelineMarker
+                                key={hour} hour={hour}
+                                paddingRight={5} w={'100%'}
+                                zIndex={-1} top={top} position={'absolute'} h={10}/>
+                        )
+                    })
+                }
         </YStack>
     )
 }
@@ -133,7 +187,7 @@ export default function DayPane({day}: DayPaneProps) {
         dimensions_data: {calendar_height}
     } = React.useContext(CalendarTabContext)
     return (
-        <XStack w={'100%'} h={calendar_height} borderWidth={1}>
+        <XStack w={'100%'} h={calendar_height}>
             <SideBar date={new Date(day.date)} sessions={Object.values(day.sessions)}/>
             <Timeline sessions={Object.values(day.sessions)}/>
         </XStack>
