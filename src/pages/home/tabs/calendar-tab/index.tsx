@@ -1,7 +1,7 @@
 import React from 'react'
 import {Paragraph, Sheet, YStack} from "tamagui";
 import {useSelector} from "react-redux";
-import {FlatList, Keyboard, TouchableWithoutFeedback} from "react-native";
+import {FlatList, Keyboard, ListRenderItemInfo, TouchableWithoutFeedback} from "react-native";
 import {AppState} from "../../../../globals/redux/reducers";
 import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../../globals/helpers/datetime_functions";
 import DayPane from "./DayPane";
@@ -56,6 +56,18 @@ export default function CalendarTab() {
         }
     }, [active_date, modal_visible, session_in_modal, flatlist_dimensions.width, flatlist_dimensions.height])
 
+    const renderDayPane = React.useCallback(({item}:ListRenderItemInfo<string>) => {
+        // item is a date string (dd/mm/yyyy), get the corresponding day object from sessions,
+        // if it doesn't exist, create it
+        const day = sessions[item] ?? {
+            date: DDMMYYYYToDate(item).toISOString(),
+            sessions: {}
+        }
+        return (
+            <DayPane day={day}/>
+        )
+    }, [sessions])
+
     return (
         <CalendarTabContext.Provider value={calendar_tab_context}>
             <YStack height={'100%'} ai={'center'} backgroundColor={'$background'}>
@@ -82,17 +94,7 @@ export default function CalendarTab() {
                     windowSize={3}
                     removeClippedSubviews={true}
                     renderItem={
-                        ({item}) => {
-                            // item is a date string (dd/mm/yyyy), get the corresponding day object from sessions,
-                            // if it doesn't exist, create it
-                            const day = sessions[item] ?? {
-                                date: DDMMYYYYToDate(item).toISOString(),
-                                sessions: {}
-                            }
-                            return (
-                                <DayPane day={day}/>
-                            )
-                        }
+                        renderDayPane
                     }/>
             </YStack>
             <Sheet modal={true}
