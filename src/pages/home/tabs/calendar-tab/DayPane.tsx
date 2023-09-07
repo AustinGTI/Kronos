@@ -18,7 +18,7 @@ interface SideBarProps {
 }
 
 interface TimelineProps {
-    sessions: Session[]
+    sessions: { [id: number]: Session }
 }
 
 interface TimelineMarkerProps extends XStackProps {
@@ -31,6 +31,7 @@ interface TimelineSegment {
 }
 
 interface TimelineSession {
+    id: number
     from: number // a float between 0 and 1
     to: number // a float between 0 and 1
     activity: Activity
@@ -110,20 +111,22 @@ function TimelineMarker({hour,...stack_props}: TimelineMarkerProps) {
 
 function Timeline({sessions}: TimelineProps) {
     const {
-        dimensions_data: {calendar_height}
+        dimensions_data: {calendar_height},
+        modal_data: {setModalVisibility, setSessionInModal}
     } = React.useContext(CalendarTabContext)
 
     const activities = useSelector((state: AppState) => state.activities)
     // convert sessions to timeline sessions
     const timeline_sessions = React.useMemo(() => {
         const timeline_sessions: TimelineSession[] = []
-        for (const session of sessions) {
+        for (const session of Object.values(sessions)) {
             // get the start time in terms of a float between 0 and 1
             const start_of_day = new Date(session.start_time)
             start_of_day.setHours(0, 0, 0, 0)
             const from = (new Date(session.start_time).getTime() - start_of_day.getTime()) / (24 * 60 * 60 * 1000)
             const to = Math.min(1, (new Date(session.end_time ?? new Date()).getTime() - start_of_day.getTime()) / (24 * 60 * 60 * 1000))
             const timeline_session: TimelineSession = {
+                id: session.id,
                 from, to,
                 activity: activities[session.activity_id] ?? {
                     id: '-1', name: 'Custom Activity', color: '#ddd'
@@ -141,6 +144,13 @@ function Timeline({sessions}: TimelineProps) {
         }
         return timeline_sessions
     }, [sessions, activities])
+
+    const showSessionDetailsInModal = React.useCallback((timeline_session: TimelineSession) => {
+        const session = sessions[timeline_session.id]
+        setSessionInModal(session)
+        setModalVisibility(true)
+    }, [sessions, setSessionInModal, setModalVisibility])
+
     return (
         <YStack position={'relative'} flexGrow={1} h={'100%'} alignItems={'center'}>
             {
@@ -153,6 +163,7 @@ function Timeline({sessions}: TimelineProps) {
                                 <View
                                     w={'100%'} h={'100%'}
                                     backgroundColor={timeline_session.activity.color}
+                                    onPress={() => showSessionDetailsInModal(timeline_session)}
                                     opacity={0.8}
                                     borderRadius={5}>
                                     <Paragraph fontSize={12} textTransform={'uppercase'}
@@ -189,7 +200,7 @@ export default function DayPane({day}: DayPaneProps) {
     return (
         <XStack w={'100%'} h={calendar_height}>
             <SideBar date={new Date(day.date)} sessions={Object.values(day.sessions)}/>
-            <Timeline sessions={Object.values(day.sessions)}/>
+            <Timeline sessions={day.sessions}/>
         </XStack>
     )
 }

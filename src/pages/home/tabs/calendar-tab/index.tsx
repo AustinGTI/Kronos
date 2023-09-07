@@ -1,12 +1,15 @@
 import React from 'react'
-import {Paragraph, YStack} from "tamagui";
+import {Paragraph, Sheet, YStack} from "tamagui";
 import {useSelector} from "react-redux";
-import {FlatList} from "react-native";
+import {FlatList, Keyboard, TouchableWithoutFeedback} from "react-native";
 import {AppState} from "../../../../globals/redux/reducers";
 import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../../globals/helpers/datetime_functions";
 import DayPane from "./DayPane";
 import {CalendarTabContext, CalendarTabContextProps} from "./context";
 import {Session} from "../../../../globals/types/main";
+import SelectActivityModal from "../timer-tab/modals/SelectActivityModal";
+import SelectDurationModal from "../timer-tab/modals/SelectDurationModal";
+import SessionViewModal from "./modals/SessionViewModal";
 
 interface Dimensions {
     width: number
@@ -61,7 +64,7 @@ export default function CalendarTab() {
                     data={dates}
                     inverted={true}
                     onLayout={(event) => {
-                        const {height,width} = event.nativeEvent.layout
+                        const {height, width} = event.nativeEvent.layout
                         setFlatlistDimensions({width, height})
                     }}
                     snapToInterval={flatlist_dimensions.height}
@@ -76,6 +79,8 @@ export default function CalendarTab() {
                         }
                     }}
                     initialNumToRender={3}
+                    windowSize={3}
+                    removeClippedSubviews={true}
                     renderItem={
                         ({item}) => {
                             // item is a date string (dd/mm/yyyy), get the corresponding day object from sessions,
@@ -90,6 +95,32 @@ export default function CalendarTab() {
                         }
                     }/>
             </YStack>
+            <Sheet modal={true}
+                   open={modal_visible}
+                   onOpenChange={(open: boolean) => {
+                       if (!open) {
+                           // wait for the sheet to close before clearing the modal element
+                           setTimeout(() => {
+                               setSessionInModal(null)
+                           }, 500)
+                       }
+                       setModalVisibility(open)
+                   }}
+                   dismissOnSnapToBottom
+                   disableDrag>
+                <Sheet.Overlay/>
+                <Sheet.Handle/>
+                {
+                    // ! There is a bug that causes the sheet frame to glitch upwards when the window frame is open for a few milliseconds
+                    // ! This is a fix that sets the background color of the frame to transparent so the glitch can't be seen
+                    // ! then creates a View in the sheet with max dimensions and bg white
+                }
+                <Sheet.Frame height={400} backgroundColor={'transparent'}>
+                    <Sheet.ScrollView w={'100%'} h={'100%'} backgroundColor={'white'}>
+                        <SessionViewModal session={session_in_modal}/>
+                    </Sheet.ScrollView>
+                </Sheet.Frame>
+            </Sheet>
         </CalendarTabContext.Provider>
     )
 }
