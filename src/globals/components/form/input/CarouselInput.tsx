@@ -35,5 +35,4 @@ export default function CarouselInput({items,orientation,initial_item, setActive
             )}
         />
     )
-
 }

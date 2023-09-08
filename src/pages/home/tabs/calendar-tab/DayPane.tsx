@@ -4,12 +4,13 @@ import {Paragraph, View, XStack, XStackProps, YStack} from "tamagui";
 import {ActivitiesState} from "../../../../globals/redux/reducers/activitiesReducer";
 import {useSelector} from "react-redux";
 import {AppState} from "../../../../globals/redux/reducers";
-import {useWindowDimensions} from "react-native";
+import {TouchableOpacity, useWindowDimensions} from "react-native";
 import {useHeaderHeight} from "react-native-screens/native-stack";
 import {CalendarTabContext} from "./context";
+import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../../globals/helpers/datetime_functions";
 
 interface DayPaneProps {
-    day: Day
+    date: string
 }
 
 interface SideBarProps {
@@ -18,7 +19,9 @@ interface SideBarProps {
 }
 
 interface TimelineProps {
-    sessions: { [id: number]: Session }
+    sessions: {
+        [id: number]: Session
+    }
 }
 
 interface TimelineMarkerProps extends XStackProps {
@@ -86,7 +89,7 @@ function SideBar({date, sessions}: SideBarProps) {
     )
 }
 
-function TimelineMarker({hour,...stack_props}: TimelineMarkerProps) {
+function TimelineMarker({hour, ...stack_props}: TimelineMarkerProps) {
     // convert the hour to a 12 hour formatted string
     const hour_string = React.useMemo(() => {
         if (hour === 0) {
@@ -160,43 +163,61 @@ function Timeline({sessions}: TimelineProps) {
                                   paddingLeft={30} paddingRight={10}
                                   position={'absolute'} w={"100%"} top={timeline_session.from * calendar_height}
                                   height={(timeline_session.to - timeline_session.from) * calendar_height}>
-                                <View
-                                    w={'100%'} h={'100%'}
-                                    backgroundColor={timeline_session.activity.color}
-                                    onPress={() => showSessionDetailsInModal(timeline_session)}
-                                    opacity={0.8}
-                                    borderRadius={5}>
-                                    <Paragraph fontSize={12} textTransform={'uppercase'}
-                                               paddingVertical={5} paddingHorizontal={10}>
-                                        {timeline_session.activity.name}
-                                    </Paragraph>
-                                </View>
+                                <TouchableOpacity
+                                    onPress={() => showSessionDetailsInModal(timeline_session)}>
+                                    <View
+                                        w={'100%'} h={'100%'}
+                                        backgroundColor={timeline_session.activity.color}
+                                        opacity={0.8}
+                                        borderRadius={5}>
+                                        <Paragraph fontSize={12} textTransform={'uppercase'}
+                                                   paddingVertical={5} paddingHorizontal={10}>
+                                            {timeline_session.activity.name}
+                                        </Paragraph>
+                                    </View>
+                                </TouchableOpacity>
                             </View>
                         )
                     }
                 )
             }
-                {
-                    // add timeline markers for every 2nd hour from 0 to 23
-                    [...Array(24).keys()].filter(hour => hour%2).map((hour) => {
-                        const top = hour / 24 * calendar_height - 5
-                        return (
-                            <TimelineMarker
-                                key={hour} hour={hour}
-                                paddingRight={5} w={'100%'}
-                                zIndex={-1} top={top} position={'absolute'} h={10}/>
-                        )
-                    })
-                }
+            {
+                // add timeline markers for every 2nd hour from 0 to 23
+                [...Array(24).keys()].filter(hour => hour % 2).map((hour) => {
+                    const top = hour / 24 * calendar_height - 5
+                    return (
+                        <TimelineMarker
+                            key={hour} hour={hour}
+                            paddingRight={5} w={'100%'}
+                            zIndex={-1} top={top} position={'absolute'} h={10}/>
+                    )
+                })
+            }
         </YStack>
     )
 }
 
 
-export default function DayPane({day}: DayPaneProps) {
+export default function DayPane({date}: DayPaneProps) {
     const {
         dimensions_data: {calendar_height}
     } = React.useContext(CalendarTabContext)
+
+    const sessions = useSelector((state: AppState) => state.sessions)
+
+    const day: Day = React.useMemo(() => {
+        // if there are no sessions for the day, return a day object with an empty sessions object
+        if (!sessions[date]) {
+            return {
+                date: DDMMYYYYToDate(date).toISOString(),
+                sessions: {}
+            }
+        } else {
+            return sessions[date]
+        }
+    }, [sessions, date])
+
+    console.log('rerendering day pane',dateToDDMMYYYY(new Date(day.date)))
     return (
         <XStack w={'100%'} h={calendar_height}>
             <SideBar date={new Date(day.date)} sessions={Object.values(day.sessions)}/>

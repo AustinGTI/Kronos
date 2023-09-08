@@ -7,9 +7,7 @@ export interface CalendarTabContextProps {
         setActiveDate: (date: Date) => void
     },
     modal_data: {
-        modal_visible: boolean
         setModalVisibility: React.Dispatch<React.SetStateAction<boolean>>
-        session_in_modal: Session | null
         setSessionInModal: React.Dispatch<React.SetStateAction<Session | null>>
     },
     dimensions_data: {
@@ -24,9 +22,7 @@ export const CalendarTabContext = React.createContext<CalendarTabContextProps>({
         setActiveDate: () => undefined
     },
     modal_data: {
-        modal_visible: false,
         setModalVisibility: () => undefined,
-        session_in_modal: null,
         setSessionInModal: () => undefined
     },
     dimensions_data: {
