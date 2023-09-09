@@ -164,7 +164,7 @@ function Timeline({sessions}: TimelineProps) {
                                   position={'absolute'} w={"100%"} top={timeline_session.from * calendar_height}
                                   height={(timeline_session.to - timeline_session.from) * calendar_height}>
                                 <TouchableOpacity
-                                    onPress={() => showSessionDetailsInModal(timeline_session)}>
+                                    onPressIn={() => showSessionDetailsInModal(timeline_session)}>
                                     <View
                                         w={'100%'} h={'100%'}
                                         backgroundColor={timeline_session.activity.color}
@@ -200,7 +200,8 @@ function Timeline({sessions}: TimelineProps) {
 
 export default function DayPane({date}: DayPaneProps) {
     const {
-        dimensions_data: {calendar_height}
+        dimensions_data: {calendar_height},
+        date_data: {active_date}
     } = React.useContext(CalendarTabContext)
 
     const sessions = useSelector((state: AppState) => state.sessions)
@@ -217,11 +218,22 @@ export default function DayPane({date}: DayPaneProps) {
         }
     }, [sessions, date])
 
-    console.log('rerendering day pane',dateToDDMMYYYY(new Date(day.date)))
+    // the pane is rendered only if it is one day before or after the active date
+    const render_page = React.useMemo(() => {
+        const yesterday = dateToDDMMYYYY(new Date(active_date.getTime() - 24 * 60 * 60 * 1000))
+        const today = dateToDDMMYYYY(active_date)
+        const tomorrow = dateToDDMMYYYY(new Date(active_date.getTime() + 24 * 60 * 60 * 1000))
+
+
+        return date === yesterday || date === today || date === tomorrow
+    }, [date, active_date])
+
     return (
         <XStack w={'100%'} h={calendar_height}>
-            <SideBar date={new Date(day.date)} sessions={Object.values(day.sessions)}/>
-            <Timeline sessions={day.sessions}/>
+            {render_page ? <React.Fragment>
+                <SideBar date={new Date(day.date)} sessions={Object.values(day.sessions)}/>
+                <Timeline sessions={day.sessions}/>
+            </React.Fragment> : <Paragraph>Blank {dateToDDMMYYYY(new Date(day.date))}</Paragraph>}
         </XStack>
     )
 }

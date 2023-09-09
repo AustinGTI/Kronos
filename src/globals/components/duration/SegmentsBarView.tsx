@@ -17,7 +17,8 @@ export default function SegmentsBarView({segments, ...stack_props}: SegmentsBarV
                 {segments.map((segment, index) => {
                     const width = (segment.duration / total_duration) * 100
                     return (
-                        <View key={segment.key} w={`${width.toFixed(2)}%`} h={'100%'}
+                        // todo: fix the key issue when dummy sessions are regenerated
+                        <View key={`${segment.key}-${index}`} w={`${width.toFixed(2)}%`} h={'100%'}
                               backgroundColor={segment.type.color}/>
                     );
                 })}

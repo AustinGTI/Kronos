@@ -96,8 +96,12 @@ export default function CalendarTab() {
                         setFlatlistDimensions({width, height})
                     }}
                     onScroll={(event) => {
+                        const index = Math.round(event.nativeEvent.contentOffset.y / flatlist_dimensions.height)
+                        // set the active date if it is not already the active date
+                        if (dates[index] !== dateToDDMMYYYY(active_date)) {
+                            setActiveDate(DDMMYYYYToDate(dates[index]))
+                        }
                         // if the index is 2 or less away from the end of the list, extend the list
-                        const index = Math.floor(event.nativeEvent.contentOffset.y / flatlist_dimensions.height)
                         if (dates.length - index <= 2) {
                             extendDateStrings()
                         }
@@ -147,9 +151,9 @@ export default function CalendarTab() {
                         // ! then creates a View in the sheet with max dimensions and bg white
                     }
                     <Sheet.Frame height={400} backgroundColor={"transparent"}>
-                        <Sheet.ScrollView w={"100%"} h={"100%"} backgroundColor={"white"}>
+                        <Sheet.Frame w={"100%"} h={"100%"} backgroundColor={"white"}>
                             <SessionViewModal session={session_in_modal}/>
-                        </Sheet.ScrollView>
+                        </Sheet.Frame>
                     </Sheet.Frame>
                 </Sheet>
             </YStack>

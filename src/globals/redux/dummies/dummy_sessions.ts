@@ -67,18 +67,21 @@ function generateCustomDuration(): Duration {
     // pick a break length between 5 and 15 minutes
     const break_length = Math.floor(Math.random() * 10) + 5
     // generate the segments
+    let no_of_segments = 0
     for (let i = 0; i < num_focus_segments; i++) {
         custom_duration.segments.push({
-            key: i+1,
+            key: no_of_segments+1,
             duration: focus_length,
             type: SegmentTypes.FOCUS
         })
+        no_of_segments++
         if (i < num_focus_segments - 1) {
             custom_duration.segments.push({
-                key: i+1,
+                key: no_of_segments+1,
                 duration: break_length,
                 type: SegmentTypes.BREAK,
             })
+            no_of_segments++
         }
     }
     return custom_duration
