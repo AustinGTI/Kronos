@@ -1,5 +1,5 @@
 import React from 'react'
-import {Paragraph, Sheet, YStack} from "tamagui";
+import {AlertDialog, Button, Paragraph, Sheet, XStack, YStack} from "tamagui";
 import {useSelector} from "react-redux";
 import {FlatList, Keyboard, ListRenderItemInfo, TouchableWithoutFeedback} from "react-native";
 import {AppState} from "../../../../globals/redux/reducers";
@@ -7,11 +7,8 @@ import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../../globals/helpers/dateti
 import DayPane from "./DayPane";
 import {CalendarTabContext, CalendarTabContextProps} from "./context";
 import {Session} from "../../../../globals/types/main";
-import SelectActivityModal from "../timer-tab/modals/SelectActivityModal";
-import SelectDurationModal from "../timer-tab/modals/SelectDurationModal";
 import SessionViewModal from "./modals/SessionViewModal";
-import Carousel, {CarouselRenderItem} from "react-native-reanimated-carousel";
-import {CarouselRenderItemInfo} from "react-native-reanimated-carousel/lib/typescript/types";
+import CalendarPicker from 'react-native-calendar-picker'
 
 interface Dimensions {
     width: number
@@ -37,10 +34,14 @@ export default function CalendarTab() {
         return date_strings
     })
 
+    const flatlist_ref = React.useRef<FlatList<string>>(null)
     const [active_date, setActiveDate] = React.useState<Date>(new Date())
+    const [target_date_string, setTargetDateString] = React.useState<string | null>(null)
 
     const [modal_visible, setModalVisibility] = React.useState<boolean>(false)
     const [session_in_modal, setSessionInModal] = React.useState<Session | null>(null)
+
+    const [date_picker_visible, setDatePickerVisibility] = React.useState<boolean>(false)
 
 
     const calendar_tab_context: CalendarTabContextProps = React.useMemo(() => {
@@ -53,12 +54,40 @@ export default function CalendarTab() {
                 setModalVisibility,
                 setSessionInModal
             },
+            date_picker_data: {
+                setDatePickerVisibility
+            },
             dimensions_data: {
                 calendar_width: flatlist_dimensions.width,
                 calendar_height: flatlist_dimensions.height
             }
         }
     }, [active_date, flatlist_dimensions.width, flatlist_dimensions.height])
+
+    React.useEffect(() => {
+        // an effect that scrolls the flatlist to the target date if it is not null
+        if (!target_date_string) return
+        // if the target date is not within dates, extend dates until it is
+        if (!dates.includes(target_date_string)) {
+            const new_dates = [...dates]
+            // starting from the last date in dates, generate a series of dates until the selected date is included
+            let last_date_string = dates[dates.length - 1]
+            while (last_date_string !== target_date_string) {
+                const date = DDMMYYYYToDate(last_date_string)
+                date.setDate(date.getDate() - 1)
+                last_date_string = dateToDDMMYYYY(date)
+                new_dates.push(last_date_string)
+            }
+            setDates(new_dates)
+        } else {
+            // scroll to the target date and set the target date to null
+            const index = dates.findIndex((date) => date === target_date_string)
+            console.log('scrolling to index', index)
+            flatlist_ref.current?.scrollToIndex({index, animated: true})
+            setTargetDateString(null)
+        }
+    }, [target_date_string, dates])
+
 
     const extendDateStrings = React.useCallback(() => {
         // this is meant to be called when the user scrolls to the top of the flatlist
@@ -88,6 +117,7 @@ export default function CalendarTab() {
                 }
             } height={'100%'} ai={'center'} backgroundColor={'$background'}>
                 <FlatList
+                    ref={flatlist_ref}
                     style={{width: '100%', flexGrow: 1}}
                     data={dates}
                     inverted={true}
@@ -156,6 +186,53 @@ export default function CalendarTab() {
                         </Sheet.Frame>
                     </Sheet.Frame>
                 </Sheet>
+                <AlertDialog
+                    open={date_picker_visible}
+                    onOpenChange={setDatePickerVisibility}>
+                    <AlertDialog.Portal>
+                        <AlertDialog.Overlay
+                            key="overlay"
+                            animation="quick"
+                            opacity={0.5}
+                            enterStyle={{opacity: 0}}
+                            exitStyle={{opacity: 0}}
+                        />
+                        <AlertDialog.Content
+                            bordered
+                            elevate
+                            key="content"
+                            animation={[
+                                'quick',
+                                {
+                                    opacity: {
+                                        overshootClamping: true,
+                                    },
+                                },
+                            ]}
+                            enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+                            exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+                            x={0}
+                            scale={1}
+                            opacity={1}
+                            y={0}
+                            maxWidth={'90%'}>
+                            <YStack w={'100%'}>
+                                <CalendarPicker
+                                    initialDate={active_date}
+                                    width={300}
+                                    disabledDates={(date) => {
+                                        // any date after today is disabled
+                                        return date.isAfter(new Date())
+                                    }}
+                                    onDateChange={(date) => {
+                                        // convert from moment to Date and set to active date then close the date picker
+                                        setTargetDateString(dateToDDMMYYYY(date.toDate()))
+                                        setDatePickerVisibility(false)
+                                    }}/>
+                            </YStack>
+                        </AlertDialog.Content>
+                    </AlertDialog.Portal>
+                </AlertDialog>
             </YStack>
         </CalendarTabContext.Provider>
     )

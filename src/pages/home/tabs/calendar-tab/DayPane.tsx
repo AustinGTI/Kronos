@@ -43,6 +43,10 @@ interface TimelineSession {
 
 
 function SideBar({date, sessions}: SideBarProps) {
+    const {
+        date_picker_data: {setDatePickerVisibility}
+    } = React.useContext(CalendarTabContext)
+
     const [day_of_week, day_date, month, year] = React.useMemo(() => {
         return [
             date.toLocaleString('default', {weekday: 'short'}).split(',')[0],
@@ -67,7 +71,9 @@ function SideBar({date, sessions}: SideBarProps) {
 
     return (
         <YStack w={'20%'} h={'100%'}>
-            <YStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
+            <YStack
+                onPress={() => setDatePickerVisibility(true)}
+                w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
                 <Paragraph fontSize={22} marginVertical={2} textTransform={'uppercase'}>{day_of_week}</Paragraph>
                 <Paragraph fontSize={36} lineHeight={40} marginVertical={2}
                            textTransform={'uppercase'}>{day_date.toString().padStart(2, '0')}</Paragraph>

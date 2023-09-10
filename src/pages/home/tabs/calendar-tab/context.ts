@@ -10,6 +10,9 @@ export interface CalendarTabContextProps {
         setModalVisibility: React.Dispatch<React.SetStateAction<boolean>>
         setSessionInModal: React.Dispatch<React.SetStateAction<Session | null>>
     },
+    date_picker_data: {
+        setDatePickerVisibility: React.Dispatch<React.SetStateAction<boolean>>
+    }
     dimensions_data: {
         calendar_width: number
         calendar_height: number
@@ -24,6 +27,9 @@ export const CalendarTabContext = React.createContext<CalendarTabContextProps>({
     modal_data: {
         setModalVisibility: () => undefined,
         setSessionInModal: () => undefined
+    },
+    date_picker_data: {
+        setDatePickerVisibility: () => undefined
     },
     dimensions_data: {
         calendar_width: 0,
