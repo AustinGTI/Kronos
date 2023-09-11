@@ -10,6 +10,8 @@ import {NavigationContainer} from "@react-navigation/native";
 import {Provider} from "react-redux";
 import {persistor, store} from "./src/globals/redux";
 import {PersistGate} from "redux-persist/integration/react";
+import StatisticsPage from "./src/pages/statistics";
+import SettingsPage from "./src/pages/settings";
 
 
 
@@ -36,6 +38,8 @@ export default function App() {
                         <NavigationContainer>
                             <Drawer.Navigator initialRouteName={'Home'}>
                                 <Drawer.Screen name={'Home'} component={HomePage}/>
+                                <Drawer.Screen name={'Statistics'} component={StatisticsPage}/>
+                                <Drawer.Screen name={'Settings'} component={SettingsPage}/>
                             </Drawer.Navigator>
                         </NavigationContainer>
                     </Theme>
