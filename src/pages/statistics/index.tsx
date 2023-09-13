@@ -34,6 +34,27 @@ const testChartData = [
         day: 'Wed',
         work: 5,
         play: 2,
+    },
+
+    {
+        day: 'Thur',
+        work: 3,
+        play: 2,
+    },
+    {
+        day: 'Fri',
+        work: 1,
+        play: 4,
+    },
+    {
+        day: 'Sat',
+        work: 5,
+        play: 2,
+    },
+    {
+        day: 'Sun',
+        work: 5,
+        play: 2,
     }
 ]
 
