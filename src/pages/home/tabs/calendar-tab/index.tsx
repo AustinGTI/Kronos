@@ -110,12 +110,7 @@ export default function CalendarTab() {
 
     return (
         <CalendarTabContext.Provider value={calendar_tab_context}>
-            <YStack onLayout={
-                (event) => {
-                    const {height, width} = event.nativeEvent.layout
-                    setFlatlistDimensions({width, height})
-                }
-            } height={'100%'} ai={'center'} backgroundColor={'$background'}>
+            <YStack height={'100%'} ai={'center'} backgroundColor={'$background'}>
                 <FlatList
                     ref={flatlist_ref}
                     style={{width: '100%', flexGrow: 1}}
