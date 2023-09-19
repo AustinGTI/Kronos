@@ -30,22 +30,28 @@ export default function DailyStackedBarChart({
     const flatlist_ref = React.useRef<FlatList<string>>(null)
 
     const [data, setData] = React.useState<string[]>([active_lead_date_string])
-    const [flatlist_dimensions, setFlatlistDimensions] = React.useState<{ width: number, height: number }>({width: 0, height: 0})
+    const [flatlist_dimensions, setFlatlistDimensions] = React.useState<{ width: number, height: number }>({
+        width: 0,
+        height: 0
+    })
 
     const title_string = React.useMemo(() => {
         // get the first and last date in the interval
         const last_date = DDMMYYYYToDate(active_lead_date_string)
-        const first_date = new  Date(last_date)
+        const first_date = new Date(last_date)
         first_date.setDate(first_date.getDate() - columns + 1)
         // the title string will be in the format '12 Aug 2021 - 16 Aug 2021'
-        return `${first_date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short'})} - ${last_date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short'})}`
+        return `${first_date.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short'
+        })} - ${last_date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short'})}`
     }, [active_lead_date_string, columns])
 
     const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
         const date = DDMMYYYYToDate(lead_date_string)
-        date.setDate(date.getDate() - 1)
+        date.setDate(date.getDate() - columns)
         return dateToDDMMYYYY(date)
-    }, [])
+    }, [columns])
 
     const getDataFromLeadDateString = React.useCallback((lead_date_string: string) => {
         const data: StackedBarChartDataPoint[] = []

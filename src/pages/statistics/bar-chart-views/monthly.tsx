@@ -49,11 +49,11 @@ export default function MonthlyStackedBarChart({
 
     const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
         const date = DDMMYYYYToDate(lead_date_string)
-        date.setMonth(date.getMonth() - 1)
+        date.setMonth(date.getMonth() - columns)
         // move date to the first of that month
         date.setDate(1)
         return dateToDDMMYYYY(date)
-    }, [])
+    }, [columns])
 
     const getDataFromLeadDateString = React.useCallback((lead_date_string: string) => {
         const data: StackedBarChartDataPoint[] = []

@@ -4,7 +4,10 @@ import {useSelector} from "react-redux";
 import {AppState} from "../../../globals/redux/reducers";
 import {FlatList} from "react-native";
 import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../globals/helpers/datetime_functions";
-import StackedBarChart, {StackedBarChartDataPoint, StackedBarChartKey} from "../../../globals/components/charts/StackedBarChart";
+import StackedBarChart, {
+    StackedBarChartDataPoint,
+    StackedBarChartKey
+} from "../../../globals/components/charts/StackedBarChart";
 import {Day} from "../../../globals/types/main";
 import {ChevronLeft, ChevronRight} from "@tamagui/lucide-icons";
 
@@ -55,10 +58,10 @@ export default function WeeklyStackedBarChart({
         date.setDate(date.getDate() - 7)
         // move date to sunday of that week
         if (date.getDay() !== 0) {
-            date.setDate(date.getDate() - date.getDay() + 7)
+            date.setDate(date.getDate() - date.getDay() + 7 * columns)
         }
         return dateToDDMMYYYY(date)
-    }, [])
+    }, [columns])
 
     const getDataFromLeadDateString = React.useCallback((lead_date_string: string) => {
         const data: StackedBarChartDataPoint[] = []
