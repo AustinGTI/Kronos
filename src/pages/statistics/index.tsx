@@ -1,6 +1,10 @@
 import React, {useMemo} from 'react'
 import {Button, Grid, Paragraph, Select, Separator, Stack, ToggleGroup, XGroup, XStack, YStack} from "tamagui";
 import {StackedBarChart} from "react-native-svg-charts"
+import {dateToDDMMYYYY} from "../../globals/helpers/datetime_functions";
+import DailyStackedBarChart from "./bar-chart-views/daily";
+import WeeklyStackedBarChart from "./bar-chart-views/weekly";
+import MonthlyStackedBarChart from "./bar-chart-views/monthly";
 
 interface StatsCardProps {
     label: string
@@ -82,6 +86,7 @@ function ToggleItem({value, active_value, setValue}: ToggleItemProps) {
 
 export default function StatisticsPage() {
     const [bar_chart, setBarChart] = React.useState<BarChart>(BarChart.DAILY)
+    const [active_lead_date_string, setActiveLeadDateString] = React.useState<string>(dateToDDMMYYYY(new Date()))
     return (
         <YStack w={'100%'} h={'100%'} alignItems={'center'}>
             <YStack paddingVertical={5} alignItems={'center'} w={'100%'}>
@@ -107,8 +112,18 @@ export default function StatisticsPage() {
                     </XGroup>
                 </XStack>
                 <YStack w={'100%'}>
-                    <StackedBarChart
-                        style={{height: 200}} contentInset={{top: 30,bottom: 30}} data={testChartData} keys={['work','play']} colors={['#faa','#aaf']}/>
+                    {bar_chart === BarChart.DAILY && (
+                        <DailyStackedBarChart active_lead_date_string={active_lead_date_string}
+                                              setActiveLeadDateString={setActiveLeadDateString} columns={5}/>
+                    )}
+                    {bar_chart === BarChart.WEEKLY && (
+                        <WeeklyStackedBarChart active_lead_date_string={active_lead_date_string}
+                                               setActiveLeadDateString={setActiveLeadDateString} columns={7}/>
+                    )}
+                    {bar_chart === BarChart.MONTHLY && (
+                        <MonthlyStackedBarChart active_lead_date_string={active_lead_date_string}
+                                                setActiveLeadDateString={setActiveLeadDateString} columns={4}/>
+                    )}
                 </YStack>
             </YStack>
         </YStack>

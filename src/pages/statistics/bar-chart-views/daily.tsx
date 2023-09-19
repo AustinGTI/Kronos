@@ -43,9 +43,9 @@ export default function DailyStackedBarChart({
 
     const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
         const date = DDMMYYYYToDate(lead_date_string)
-        date.setDate(date.getDate() - columns)
+        date.setDate(date.getDate() - 1)
         return dateToDDMMYYYY(date)
-    }, [columns])
+    }, [])
 
     const getDataFromLeadDateString = React.useCallback((lead_date_string: string) => {
         const data: StackedBarChartDataPoint[] = []
