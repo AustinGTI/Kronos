@@ -1,5 +1,6 @@
 import React from 'react'
 import {Paragraph, View, XStack, YStack} from "tamagui";
+import {Dimensions} from "react-native";
 
 
 export interface StackedBarChartDataPoint {
@@ -44,10 +45,10 @@ export default function StackedBarChart({data, keys}: StackedBarChartProps) {
     }, [data.length])
 
     return (
-        <YStack w={'100%'}>
-            <XStack w={'100%'}>
+        <YStack w={300} h={50} backgroundColor={'purple'}>
+            <XStack w={'100%'} backgroundColor={'aqua'} flexGrow={1}>
                 {/* the amount labels on the left */}
-                <YStack w={50} h={'100%'}>
+                <YStack w={50} h={'100%'} backgroundColor={'pink'}>
                     {
                         x_labels.map((amount, index) => {
                             return (
@@ -63,7 +64,7 @@ export default function StackedBarChart({data, keys}: StackedBarChartProps) {
                     }
                 </YStack>
                 {/* the bars */}
-                <XStack flexGrow={1}>
+                <XStack flexGrow={1} backgroundColor={'yellow'}>
                     {data.map((data_point, index) => {
                         return (
                             <YStack key={index} flexGrow={1} h={'100%'} justifyContent={'flex-end'}>
@@ -81,7 +82,7 @@ export default function StackedBarChart({data, keys}: StackedBarChartProps) {
                     })}
                 </XStack>
             </XStack>
-            <XStack w={'100%'}>
+            <XStack w={'100%'} h={50} backgroundColor={'lime'}>
                 <View w={50}/>
                 {/* the labels on the bottom */}
                 <XStack flexGrow={1}>

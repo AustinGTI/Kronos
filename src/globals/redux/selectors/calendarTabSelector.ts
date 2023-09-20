@@ -1,17 +1,11 @@
-import {AppState} from "../reducers";
 import {createSelector} from "@reduxjs/toolkit";
+import selectSessionState from "./base_selectors/sessionsSelector";
+import selectActivityState from "./base_selectors/activitiesSelector";
 
-export function selectActivityState(state: AppState) {
-  return state.activities;
-}
 
-export function selectSessionState(state: AppState) {
-  return state.sessions;
-}
-
-const selectCalendarState = createSelector(selectActivityState,selectSessionState, (activities,sessions) => {
+const selectCalendarState = createSelector(selectActivityState, selectSessionState, (activities, sessions) => {
     return {
-        activities,sessions
+        activities, sessions
     };
 })
 

@@ -5,6 +5,9 @@ import {dateToDDMMYYYY} from "../../globals/helpers/datetime_functions";
 import DailyStackedBarChart from "./bar-chart-views/daily";
 import WeeklyStackedBarChart from "./bar-chart-views/weekly";
 import MonthlyStackedBarChart from "./bar-chart-views/monthly";
+import {useSelector} from "react-redux";
+import selectPlannerState from "../../globals/redux/selectors/plannerTabSelector";
+import selectStatisticsState from "../../globals/redux/selectors/statisticsPageSelector";
 
 interface StatsCardProps {
     label: string
@@ -65,7 +68,7 @@ const testChartData = [
 function StatsCard({label, value}: StatsCardProps) {
     return (
         <YStack alignItems={'center'} justifyContent={'center'} w={'45%'} borderRadius={10} backgroundColor={'white'}
-                padding={10} margin={5}>
+                padding={10} margin={5} h={'90%'}>
             <Paragraph color={'#999'} fontSize={11} textTransform={'uppercase'}>{label}</Paragraph>
             <Paragraph fontSize={36} lineHeight={36} paddingVertical={10}>{value}</Paragraph>
         </YStack>
@@ -85,23 +88,24 @@ function ToggleItem({value, active_value, setValue}: ToggleItemProps) {
 }
 
 export default function StatisticsPage() {
+    const {activities, sessions} = useSelector(selectStatisticsState)
     const [bar_chart, setBarChart] = React.useState<BarChart>(BarChart.DAILY)
     const [active_lead_date_string, setActiveLeadDateString] = React.useState<string>(dateToDDMMYYYY(new Date()))
     return (
-        <YStack w={'100%'} h={'100%'} alignItems={'center'}>
-            <YStack paddingVertical={5} alignItems={'center'} w={'100%'}>
-                <XStack w={'100%'} justifyContent={'center'} alignItems={'center'}>
+        <YStack w={'100%'} alignItems={'center'}>
+            <YStack paddingVertical={5} alignItems={'center'} w={'100%'} h={'35%'}>
+                <XStack w={'100%'} justifyContent={'center'} alignItems={'center'} h={'50%'}>
                     <StatsCard label={'Hours Focused'} value={0}/>
                     <StatsCard label={'Total Sessions'} value={0}/>
                 </XStack>
-                <XStack w={'100%'} justifyContent={'center'} alignItems={'center'}>
+                <XStack w={'100%'} justifyContent={'center'} alignItems={'center'} h={'50%'}>
                     <StatsCard label={'Active Days'} value={0}/>
                     <StatsCard label={'Activities'} value={0}/>
                 </XStack>
             </YStack>
-            <YStack w={'93%'} flexGrow={1} padding={10} marginBottom={10} alignItems={'center'} borderRadius={10}
-                    backgroundColor={'white'}>
-                <XStack w={'100%'}>
+            <YStack w={'93%'} padding={10} marginBottom={10} alignItems={'center'} borderRadius={10}
+                    backgroundColor={'white'} h={'63%'}>
+                <XStack w={'100%'} paddingVertical={5} h={'13%'}>
                     <XGroup>
                         <ToggleItem value={BarChart.DAILY} active_value={bar_chart}
                                     setValue={(value: string) => setBarChart(value as BarChart)}/>
@@ -111,18 +115,24 @@ export default function StatisticsPage() {
                                     setValue={(value: string) => setBarChart(value as BarChart)}/>
                     </XGroup>
                 </XStack>
-                <YStack w={'100%'}>
+                <YStack w={'100%'} paddingVertical={10} h={'87%'}>
                     {bar_chart === BarChart.DAILY && (
-                        <DailyStackedBarChart active_lead_date_string={active_lead_date_string}
-                                              setActiveLeadDateString={setActiveLeadDateString} columns={5}/>
+                        <DailyStackedBarChart
+                            activities={activities} sessions={sessions}
+                            active_lead_date_string={active_lead_date_string}
+                            setActiveLeadDateString={setActiveLeadDateString} columns={5}/>
                     )}
                     {bar_chart === BarChart.WEEKLY && (
-                        <WeeklyStackedBarChart active_lead_date_string={active_lead_date_string}
-                                               setActiveLeadDateString={setActiveLeadDateString} columns={7}/>
+                        <WeeklyStackedBarChart
+                            activities={activities} sessions={sessions}
+                            active_lead_date_string={active_lead_date_string}
+                            setActiveLeadDateString={setActiveLeadDateString} columns={7}/>
                     )}
                     {bar_chart === BarChart.MONTHLY && (
-                        <MonthlyStackedBarChart active_lead_date_string={active_lead_date_string}
-                                                setActiveLeadDateString={setActiveLeadDateString} columns={4}/>
+                        <MonthlyStackedBarChart
+                            activities={activities} sessions={sessions}
+                            active_lead_date_string={active_lead_date_string}
+                            setActiveLeadDateString={setActiveLeadDateString} columns={4}/>
                     )}
                 </YStack>
             </YStack>

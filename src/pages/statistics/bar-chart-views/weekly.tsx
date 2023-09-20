@@ -8,11 +8,15 @@ import StackedBarChart, {
     StackedBarChartDataPoint,
     StackedBarChartKey
 } from "../../../globals/components/charts/StackedBarChart";
-import {Day} from "../../../globals/types/main";
+import {Day, UNTITLED_ACTIVITY} from "../../../globals/types/main";
 import {ChevronLeft, ChevronRight} from "@tamagui/lucide-icons";
+import {ActivitiesState} from "../../../globals/redux/reducers/activitiesReducer";
+import {SessionsState} from "../../../globals/redux/reducers/sessionsReducer";
 
 
 interface WeeklyStackedBarChartProps {
+    activities: ActivitiesState
+    sessions: SessionsState
     active_lead_date_string: string
     setActiveLeadDateString: (date: string) => void
     columns: number
@@ -20,15 +24,11 @@ interface WeeklyStackedBarChartProps {
 
 
 export default function WeeklyStackedBarChart({
+                                                  activities, sessions,
                                                   active_lead_date_string,
                                                   setActiveLeadDateString,
                                                   columns = 5
                                               }: WeeklyStackedBarChartProps) {
-    const {activities, sessions} = useSelector((state: AppState) => ({
-        activities: state.activities,
-        sessions: state.sessions
-    }))
-
     const flatlist_ref = React.useRef<FlatList<string>>(null)
 
     const [data, setData] = React.useState<string[]>([active_lead_date_string])
@@ -105,9 +105,10 @@ export default function WeeklyStackedBarChart({
                     }, 0)
                     // add each activity to the keys if it is not already there
                     if (!keys[session.activity_id]) {
+                        const activity = activities[session.activity_id] ?? UNTITLED_ACTIVITY
                         keys[session.activity_id] = {
-                            color: activities[session.activity_id].color,
-                            label: activities[session.activity_id].name
+                            color: activity.color,
+                            label: activity.name
                         }
                     }
                     stack.set(session.activity_id, (stack.get(session.activity_id) ?? 0) + duration)

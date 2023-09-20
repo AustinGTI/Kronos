@@ -1,5 +1,5 @@
 import React from 'react'
-import {Activity, Day, SegmentType, Session} from "../../../../globals/types/main";
+import {Activity, Day, SegmentType, Session, UNTITLED_ACTIVITY} from "../../../../globals/types/main";
 import {Paragraph, View, XStack, XStackProps, YStack} from "tamagui";
 import {ActivitiesState} from "../../../../globals/redux/reducers/activitiesReducer";
 import {useSelector} from "react-redux";
@@ -137,9 +137,7 @@ function Timeline({sessions}: TimelineProps) {
             const timeline_session: TimelineSession = {
                 id: session.id,
                 from, to,
-                activity: activities[session.activity_id] ?? {
-                    id: '-1', name: 'Custom Activity', color: '#ddd'
-                },
+                activity: activities[session.activity_id] ?? UNTITLED_ACTIVITY,
                 segments: []
             }
             const total_segments_duration = session.segments.reduce((total, segment) => total + segment.duration, 0)
