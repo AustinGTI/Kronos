@@ -18,9 +18,11 @@ export type StackedBarChartProps = {
     keys: {
         [key: string]: StackedBarChartKey
     }
+    width: number
+    height: number
 }
 
-export default function StackedBarChart({data, keys}: StackedBarChartProps) {
+export default function StackedBarChart({data, keys, width, height}: StackedBarChartProps) {
     // this is the amount represented by the full height of the chart, the highest bar will be 90% of this height
     const max_amount = React.useMemo(() => {
         return data.reduce((max, data_point) => {
@@ -39,24 +41,30 @@ export default function StackedBarChart({data, keys}: StackedBarChartProps) {
         return intervals
     }, [max_amount])
 
+
     // calculate the interval over which the y_labels will be displayed. Only 5 labels can fit
     const y_label_interval = React.useMemo(() => {
         return Math.ceil(data.length / 5)
     }, [data.length])
 
+    const boundary_size = 40
+
     return (
-        <YStack w={300} h={50} backgroundColor={'purple'}>
-            <XStack w={'100%'} backgroundColor={'aqua'} flexGrow={1}>
+        <YStack w={width} h={height}>
+            <XStack w={'100%'} height={height - boundary_size}>
                 {/* the amount labels on the left */}
-                <YStack w={50} h={'100%'} backgroundColor={'pink'}>
+                <YStack w={boundary_size} h={'100%'} borderRightWidth={1} borderRightColor={'#ddd'}>
                     {
-                        x_labels.map((amount, index) => {
+                        x_labels.sort((a, b) => b - a).map((amount, index) => {
                             return (
-                                <XStack key={index} flexGrow={1}>
-                                    <Paragraph fontSize={10} lineHeight={10}
-                                               color={'#999'}>{amount.toFixed(0)}</Paragraph>
-                                    <YStack w={20} h={'100%'} justifyContent={'flex-end'}>
-                                        <View h={1} w={'100%'} backgroundColor={'#ddd'}/>
+                                <XStack key={index} flexBasis={10} flexGrow={1} justifyContent={'flex-end'} w={'100%'}>
+                                    <YStack h={'100%'} justifyContent={'flex-end'}>
+                                        <Paragraph fontSize={10} lineHeight={10} translateY={3} color={'#999'}>
+                                            {amount.toFixed(0)}
+                                        </Paragraph>
+                                    </YStack>
+                                    <YStack w={10} h={'100%'} justifyContent={'flex-end'} alignItems={'flex-end'}>
+                                        <View h={1} w={7} backgroundColor={'#ddd'}/>
                                     </YStack>
                                 </XStack>
                             )
@@ -64,7 +72,7 @@ export default function StackedBarChart({data, keys}: StackedBarChartProps) {
                     }
                 </YStack>
                 {/* the bars */}
-                <XStack flexGrow={1} backgroundColor={'yellow'}>
+                <XStack width={width - boundary_size} zIndex={-1}>
                     {data.map((data_point, index) => {
                         return (
                             <YStack key={index} flexGrow={1} h={'100%'} justifyContent={'flex-end'}>
@@ -73,7 +81,10 @@ export default function StackedBarChart({data, keys}: StackedBarChartProps) {
                                     const height = (amount / max_amount) * 100
                                     return (
                                         <View key={index} w={'90%'} h={`${height.toFixed(2)}%`}
-                                              {...(index === 0 ? {borderRadius: 5} : {})}
+                                              {...(index === 0 ? {
+                                                  borderTopRightRadius: 5,
+                                                  borderTopLeftRadius: 5
+                                              } : {})}
                                               backgroundColor={keys[key].color}/>
                                     )
                                 })}
@@ -82,20 +93,23 @@ export default function StackedBarChart({data, keys}: StackedBarChartProps) {
                     })}
                 </XStack>
             </XStack>
-            <XStack w={'100%'} h={50} backgroundColor={'lime'}>
-                <View w={50}/>
+            <XStack w={'100%'} h={boundary_size}>
+                <View w={boundary_size} h={boundary_size}/>
                 {/* the labels on the bottom */}
                 <XStack flexGrow={1}>
                     {data.map((data_point, index) => {
                         return (
-                            <YStack key={index} flexGrow={1} h={'100%'}>
+                            <YStack key={index} flexBasis={1} flexGrow={1} h={'100%'} borderTopWidth={1}
+                                    borderTopColor={'#ddd'}>
                                 {index % y_label_interval === 0 &&
                                     <React.Fragment>
-                                        <XStack w={'100%'} h={20} justifyContent={'center'}>
+                                        <XStack w={'100%'} h={7} justifyContent={'center'} mb={3}>
                                             <View w={1} h={'100%'} backgroundColor={'#ddd'}/>
                                         </XStack>
-                                        <Paragraph fontSize={10} lineHeight={10}
-                                                   color={'#999'}>{data_point.label}</Paragraph>
+                                        <XStack w={'100%'} justifyContent={'center'}>
+                                            <Paragraph fontSize={10} lineHeight={10}
+                                                       color={'#999'}>{data_point.label}</Paragraph>
+                                        </XStack>
                                     </React.Fragment>
                                 }
                             </YStack>

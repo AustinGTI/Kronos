@@ -54,13 +54,14 @@ export default function WeeklyStackedBarChart({
     }, [active_lead_date_string, columns])
 
     const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
-        const date = DDMMYYYYToDate(lead_date_string)
-        date.setDate(date.getDate() - 7)
-        // move date to sunday of that week
-        if (date.getDay() !== 0) {
-            date.setDate(date.getDate() - date.getDay() + 7 * columns)
+        // get the last day of the week within which the lead date string falls (Sun)
+        const last_date = DDMMYYYYToDate(lead_date_string)
+        if (last_date.getDay() !== 0) {
+            last_date.setDate(last_date.getDate() - last_date.getDay() + 7)
         }
-        return dateToDDMMYYYY(date)
+        // move date to sunday of that week
+        last_date.setDate(last_date.getDate() - last_date.getDay() - 7 * columns)
+        return dateToDDMMYYYY(last_date)
     }, [columns])
 
     const getDataFromLeadDateString = React.useCallback((lead_date_string: string) => {
@@ -133,6 +134,7 @@ export default function WeeklyStackedBarChart({
             for (let i = 0; i < 3; i++) {
                 new_data.push(getPreviousLeadDateString(new_data[new_data.length - 1]))
             }
+            console.log('the new weekly data is', new_data)
             return new_data
         })
     }, [getPreviousLeadDateString, setData])
@@ -146,7 +148,7 @@ export default function WeeklyStackedBarChart({
 
     return (
         <YStack w={'100%'}>
-            <XStack w={'100%'} h={40} justifyContent={'center'} alignItems={'center'}>
+            <XStack w={'100%'} h={'20%'} justifyContent={'center'} alignItems={'center'}>
                 <Button onPress={() => {
                     flatlist_ref.current?.scrollToIndex({
                         index: data.findIndex((date) => date === active_lead_date_string) - 1,
@@ -169,11 +171,12 @@ export default function WeeklyStackedBarChart({
                 <FlatList
                     data={data}
                     horizontal={true}
-                    style={{width: '100%', height: '100%'}}
+                    style={{width: '100%', height: '80%'}}
                     inverted={true}
                     initialNumToRender={3}
                     windowSize={2}
                     removeClippedSubviews={true}
+                    snapToInterval={flatlist_dimensions.width}
                     decelerationRate={'fast'}
                     disableIntervalMomentum={true}
                     keyExtractor={(item) => item}
@@ -181,7 +184,8 @@ export default function WeeklyStackedBarChart({
                         ({item}) => {
                             const {chart_data, chart_keys} = getDataFromLeadDateString(item)
                             return (
-                                <StackedBarChart data={chart_data} keys={chart_keys}/>
+                                <StackedBarChart data={chart_data} keys={chart_keys} width={flatlist_dimensions.width}
+                                                 height={flatlist_dimensions.height}/>
                             )
                         }
                     }
@@ -197,7 +201,8 @@ export default function WeeklyStackedBarChart({
                         setFlatlistDimensions({width, height})
                     }}
                     onScroll={(event) => {
-                        const index = Math.round(event.nativeEvent.contentOffset.y / flatlist_dimensions.height)
+                        const index = Math.round(event.nativeEvent.contentOffset.x / flatlist_dimensions.width)
+                        console.log('the index of the weekly bar is',index)
                         // set the active lead date string if it is not the same as the current one
                         if (data[index] !== active_lead_date_string) {
                             setActiveLeadDateString(data[index])

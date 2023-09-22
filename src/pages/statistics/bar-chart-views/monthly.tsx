@@ -142,7 +142,7 @@ export default function MonthlyStackedBarChart({
 
     return (
         <YStack w={'100%'}>
-            <XStack w={'100%'} h={40} justifyContent={'center'} alignItems={'center'}>
+            <XStack w={'100%'} h={'20%'} justifyContent={'center'} alignItems={'center'}>
                 <Button onPress={() => {
                     flatlist_ref.current?.scrollToIndex({
                         index: data.findIndex((date) => date === active_lead_date_string) - 1,
@@ -165,11 +165,12 @@ export default function MonthlyStackedBarChart({
                 <FlatList
                     data={data}
                     horizontal={true}
-                    style={{width: '100%', height: '100%'}}
+                    style={{width: '100%', height: '80%'}}
                     inverted={true}
                     initialNumToRender={3}
                     windowSize={2}
                     removeClippedSubviews={true}
+                    snapToInterval={flatlist_dimensions.width}
                     decelerationRate={'fast'}
                     disableIntervalMomentum={true}
                     keyExtractor={(item) => item}
@@ -177,7 +178,8 @@ export default function MonthlyStackedBarChart({
                         ({item}) => {
                             const {chart_data, chart_keys} = getDataFromLeadDateString(item)
                             return (
-                                <StackedBarChart data={chart_data} keys={chart_keys}/>
+                                <StackedBarChart data={chart_data} keys={chart_keys} width={flatlist_dimensions.width}
+                                                 height={flatlist_dimensions.height}/>
                             )
                         }
                     }
@@ -193,7 +195,7 @@ export default function MonthlyStackedBarChart({
                         setFlatlistDimensions({width, height})
                     }}
                     onScroll={(event) => {
-                        const index = Math.round(event.nativeEvent.contentOffset.y / flatlist_dimensions.height)
+                        const index = Math.round(event.nativeEvent.contentOffset.x / flatlist_dimensions.width)
                         // set the active lead date string if it is not the same as the current one
                         if (data[index] !== active_lead_date_string) {
                             setActiveLeadDateString(data[index])
