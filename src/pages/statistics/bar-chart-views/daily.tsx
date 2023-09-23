@@ -30,7 +30,7 @@ export default function DailyStackedBarChart({
 
     const flatlist_ref = React.useRef<FlatList<string>>(null)
 
-    const [data, setData] = React.useState<string[]>([active_lead_date_string])
+    const [data, setData] = React.useState<string[]>([dateToDDMMYYYY(new Date())])
     const [flatlist_dimensions, setFlatlistDimensions] = React.useState<{ width: number, height: number }>({
         width: 0,
         height: 0
@@ -44,8 +44,13 @@ export default function DailyStackedBarChart({
         // the title string will be in the format '12 Aug 2021 - 16 Aug 2021'
         return `${first_date.toLocaleDateString('en-GB', {
             day: 'numeric',
-            month: 'short'
-        })} - ${last_date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short'})}`
+            month: 'short',
+            year: 'numeric'
+        })} - ${last_date.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        })}`
     }, [active_lead_date_string, columns])
 
     const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
@@ -118,29 +123,45 @@ export default function DailyStackedBarChart({
         updateDataOnEndReached()
     }, [updateDataOnEndReached])
 
+
+    // on mount and flatlist ref available, scroll to the active lead date
+    React.useEffect(() => {
+        flatlist_ref.current?.scrollToIndex({
+            index: data.findIndex((date) => date === active_lead_date_string),
+        })
+    }, [flatlist_ref])
+
     return (
         <YStack w={'100%'} h={'90%'}>
             <XStack w={'100%'} h={40} justifyContent={'center'} alignItems={'center'}>
-                <Button onPress={() => {
-                    flatlist_ref.current?.scrollToIndex({
-                        index: data.findIndex((date) => date === active_lead_date_string) - 1,
-                    })
-                }}>
+                <Button
+                    backgroundColor={'transparent'}
+                    onPress={() => {
+                        flatlist_ref.current?.scrollToIndex({
+                            index: data.findIndex((date) => date === active_lead_date_string) + 1,
+                            animated: true
+                        })
+                    }}>
                     <ChevronLeft/>
                 </Button>
                 <Paragraph>
                     {title_string}
                 </Paragraph>
-                <Button onPress={() => {
-                    flatlist_ref.current?.scrollToIndex({
-                        index: data.findIndex((date) => date === active_lead_date_string) + 1,
-                    })
-                }}>
+                <Button
+                    backgroundColor={'transparent'}
+                    disabled={active_lead_date_string === dateToDDMMYYYY(new Date())}
+                    onPress={() => {
+                        flatlist_ref.current?.scrollToIndex({
+                            index: data.findIndex((date) => date === active_lead_date_string) - 1,
+                            animated: true
+                        })
+                    }}>
                     <ChevronRight/>
                 </Button>
             </XStack>
             <View w={'100%'} flexGrow={1}>
                 <FlatList
+                    ref={flatlist_ref}
                     data={data}
                     horizontal={true}
                     style={{width: '100%', height: '100%'}}
@@ -163,8 +184,8 @@ export default function DailyStackedBarChart({
                     }
                     getItemLayout={(data, index) => {
                         return {
-                            length: flatlist_dimensions.height,
-                            offset: flatlist_dimensions.height * index,
+                            length: flatlist_dimensions.width,
+                            offset: flatlist_dimensions.width * index,
                             index
                         }
                     }}

@@ -29,9 +29,18 @@ export default function WeeklyStackedBarChart({
                                                   setActiveLeadDateString,
                                                   columns = 5
                                               }: WeeklyStackedBarChartProps) {
+    const getLeadDateFromDateString = React.useCallback((date_string: string) => {
+        // get the last day of the week within which the lead date string falls (Sun)
+        const date = DDMMYYYYToDate(date_string)
+        if (date.getDay() !== 0) {
+            date.setDate(date.getDate() - date.getDay() + 7)
+        }
+        return dateToDDMMYYYY(date)
+    }, [])
+
     const flatlist_ref = React.useRef<FlatList<string>>(null)
 
-    const [data, setData] = React.useState<string[]>([active_lead_date_string])
+    const [data, setData] = React.useState<string[]>([getLeadDateFromDateString(dateToDDMMYYYY(new Date()))])
     const [flatlist_dimensions, setFlatlistDimensions] = React.useState<{ width: number, height: number }>({
         width: 0,
         height: 0
@@ -49,8 +58,13 @@ export default function WeeklyStackedBarChart({
         // the title string will be in the format '12 Aug 2021 - 16 Aug 2021'
         return `${first_date.toLocaleDateString('en-GB', {
             day: 'numeric',
-            month: 'short'
-        })} - ${last_date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short'})}`
+            month: 'short',
+            year: 'numeric'
+        })} - ${last_date.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        })}`
     }, [active_lead_date_string, columns])
 
     const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
@@ -145,30 +159,47 @@ export default function WeeklyStackedBarChart({
         updateDataOnEndReached()
     }, [updateDataOnEndReached])
 
+    // on mount and flatlist ref available, scroll to the active lead date
+    React.useEffect(() => {
+        console.log('the active lead date on mount is', active_lead_date_string)
+        console.log('on mount, scrolling to index', data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)))
+        flatlist_ref.current?.scrollToIndex({
+            index: data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)),
+        })
+    }, [flatlist_ref])
+
 
     return (
         <YStack w={'100%'}>
             <XStack w={'100%'} h={'20%'} justifyContent={'center'} alignItems={'center'}>
-                <Button onPress={() => {
-                    flatlist_ref.current?.scrollToIndex({
-                        index: data.findIndex((date) => date === active_lead_date_string) - 1,
-                    })
-                }}>
+                <Button
+                    backgroundColor={'transparent'}
+                    onPress={() => {
+                        flatlist_ref.current?.scrollToIndex({
+                            index: data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)) + 1,
+                            animated: true
+                        })
+                    }}>
                     <ChevronLeft/>
                 </Button>
                 <Paragraph>
                     {title_string}
                 </Paragraph>
-                <Button onPress={() => {
-                    flatlist_ref.current?.scrollToIndex({
-                        index: data.findIndex((date) => date === active_lead_date_string) + 1,
-                    })
-                }}>
+                <Button
+                    backgroundColor={'transparent'}
+                    disabled={getLeadDateFromDateString(active_lead_date_string) === getLeadDateFromDateString(dateToDDMMYYYY(new Date()))}
+                    onPress={() => {
+                        flatlist_ref.current?.scrollToIndex({
+                            index: data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)) - 1,
+                            animated: true
+                        })
+                    }}>
                     <ChevronRight/>
                 </Button>
             </XStack>
             <View w={'100%'} flexGrow={1}>
                 <FlatList
+                    ref={flatlist_ref}
                     data={data}
                     horizontal={true}
                     style={{width: '100%', height: '80%'}}
@@ -191,8 +222,8 @@ export default function WeeklyStackedBarChart({
                     }
                     getItemLayout={(data, index) => {
                         return {
-                            length: flatlist_dimensions.height,
-                            offset: flatlist_dimensions.height * index,
+                            length: flatlist_dimensions.width,
+                            offset: flatlist_dimensions.width * index,
                             index
                         }
                     }}
