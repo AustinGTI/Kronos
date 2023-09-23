@@ -91,16 +91,46 @@ export default function StatisticsPage() {
     const {activities, sessions} = useSelector(selectStatisticsState)
     const [bar_chart, setBarChart] = React.useState<BarChart>(BarChart.DAILY)
     const [active_lead_date_string, setActiveLeadDateString] = React.useState<string>(dateToDDMMYYYY(new Date()))
+
+    const hours_focused = React.useMemo(() => {
+        // iterate through each session and add up the total time
+        const total_minutes = Object.values(sessions).reduce((total: number, day) => {
+            return total + Object.values(day.sessions).reduce((day_total: number, session) => {
+                return day_total + session.segments.reduce((session_total: number, segment) => {
+                    return session_total + segment.duration
+                }, 0)
+            }, 0)
+        }, 0)
+
+        return Math.floor(total_minutes / 60)
+    }, [sessions])
+
+    const total_sessions = React.useMemo(() => {
+        return Object.values(sessions).reduce((total: number, day) => {
+            return total + Object.values(day.sessions).length
+        }, 0)
+    }, [sessions])
+
+    const active_days = React.useMemo(() => {
+        return Object.values(sessions).reduce((total: number, day) => {
+            return total + (Object.values(day.sessions).length > 0 ? 1 : 0)
+        }, 0)
+    }, [sessions])
+
+    const total_activities = React.useMemo(() => {
+        return Object.values(activities).length
+    }, [activities])
+
     return (
         <YStack w={'100%'} alignItems={'center'}>
             <YStack paddingVertical={5} alignItems={'center'} w={'100%'} h={'35%'}>
                 <XStack w={'100%'} justifyContent={'center'} alignItems={'center'} h={'50%'}>
-                    <StatsCard label={'Hours Focused'} value={0}/>
-                    <StatsCard label={'Total Sessions'} value={0}/>
+                    <StatsCard label={'Hours Focused'} value={hours_focused}/>
+                    <StatsCard label={'Total Sessions'} value={total_sessions}/>
                 </XStack>
                 <XStack w={'100%'} justifyContent={'center'} alignItems={'center'} h={'50%'}>
-                    <StatsCard label={'Active Days'} value={0}/>
-                    <StatsCard label={'Activities'} value={0}/>
+                    <StatsCard label={'Active Days'} value={active_days}/>
+                    <StatsCard label={'Activities'} value={total_activities}/>
                 </XStack>
             </YStack>
             <YStack w={'93%'} padding={10} marginBottom={10} alignItems={'center'} borderRadius={10}

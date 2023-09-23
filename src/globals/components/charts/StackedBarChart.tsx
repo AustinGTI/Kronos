@@ -76,18 +76,20 @@ export default function StackedBarChart({data, keys, width, height}: StackedBarC
                     {data.map((data_point, index) => {
                         return (
                             <YStack key={index} flexGrow={1} h={'100%'} justifyContent={'flex-end'}>
-                                {Array.from(data_point.stack.entries()).map((activity, index) => {
-                                    const [key, amount] = activity as [React.Key, number]
-                                    const height = (amount / max_amount) * 100
-                                    return (
-                                        <View key={index} w={'90%'} h={`${height.toFixed(2)}%`}
-                                              {...(index === 0 ? {
-                                                  borderTopRightRadius: 5,
-                                                  borderTopLeftRadius: 5
-                                              } : {})}
-                                              backgroundColor={keys[key].color}/>
-                                    )
-                                })}
+                                {Array.from(data_point.stack.entries())
+                                    .sort((a, b) => a[1] - b[1])
+                                    .map((activity, index) => {
+                                        const [key, amount] = activity as [React.Key, number]
+                                        const height = (amount / max_amount) * 100
+                                        return (
+                                            <View key={index} w={'90%'} h={`${height.toFixed(2)}%`}
+                                                  {...(index === 0 ? {
+                                                      borderTopRightRadius: 5,
+                                                      borderTopLeftRadius: 5
+                                                  } : {})}
+                                                  backgroundColor={keys[key].color}/>
+                                        )
+                                    })}
                             </YStack>
                         )
                     })}

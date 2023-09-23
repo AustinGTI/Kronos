@@ -27,16 +27,34 @@ export default function MonthlyStackedBarChart({
                                                    setActiveLeadDateString,
                                                    columns = 5
                                                }: MonthlyStackedBarChartProps) {
-    const getLeadDateFromDateString = React.useCallback((date_string: string) => {
+    const getIntervalDateFromDateString = React.useCallback((date_string: string) => {
         // get the first day of the month of the active lead date
         const date = DDMMYYYYToDate(date_string)
         date.setDate(1)
         return dateToDDMMYYYY(date)
     }, [])
 
+    const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
+        const date = DDMMYYYYToDate(lead_date_string)
+        date.setMonth(date.getMonth() - columns)
+        // move date to the first of that month
+        date.setDate(1)
+        return dateToDDMMYYYY(date)
+    }, [columns])
+
     const flatlist_ref = React.useRef<FlatList<string>>(null)
 
-    const [data, setData] = React.useState<string[]>([getLeadDateFromDateString(dateToDDMMYYYY(new Date()))])
+    const [data, setData] = React.useState<string[]>(() => {
+        const initial_data: string[] = [getIntervalDateFromDateString(dateToDDMMYYYY(new Date()))]
+        // increase data while the last date is more than active lead date or length of data is less than 3
+        while (initial_data.length < 3) {
+            initial_data.push(getPreviousLeadDateString(initial_data[initial_data.length - 1]))
+        }
+        return initial_data
+    })
+
+    const [active_date, setActiveDate] = React.useState<string>(getIntervalDateFromDateString(dateToDDMMYYYY(new Date())))
+
     const [flatlist_dimensions, setFlatlistDimensions] = React.useState<{ width: number, height: number }>({
         width: 0,
         height: 0
@@ -44,7 +62,7 @@ export default function MonthlyStackedBarChart({
 
     const title_string = React.useMemo(() => {
         // the leading date is within the first month
-        const last_date = DDMMYYYYToDate(active_lead_date_string)
+        const last_date = DDMMYYYYToDate(active_date)
         const first_date = new Date(last_date)
         // move back by the number of columns to the first of the month of the first month
         first_date.setMonth(first_date.getMonth() - columns + 1)
@@ -57,15 +75,7 @@ export default function MonthlyStackedBarChart({
             month: 'short',
             year: 'numeric'
         })}`
-    }, [active_lead_date_string, columns])
-
-    const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
-        const date = DDMMYYYYToDate(lead_date_string)
-        date.setMonth(date.getMonth() - columns)
-        // move date to the first of that month
-        date.setDate(1)
-        return dateToDDMMYYYY(date)
-    }, [columns])
+    }, [active_date, columns])
 
     const getDataFromLeadDateString = React.useCallback((lead_date_string: string) => {
         const data: StackedBarChartDataPoint[] = []
@@ -143,19 +153,26 @@ export default function MonthlyStackedBarChart({
     }, [getPreviousLeadDateString, setData])
 
 
-    // on mount populate data
-    React.useEffect(() => {
-        updateDataOnEndReached()
-    }, [updateDataOnEndReached])
-
     // on mount and flatlist ref available, scroll to the active lead date
-    React.useEffect(() => {
-        console.log('the active lead date on mount is', active_lead_date_string)
-        console.log('on mount, scrolling to index', data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)))
-        flatlist_ref.current?.scrollToIndex({
-            index: data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)),
-        })
-    }, [flatlist_ref])
+    // React.useEffect(() => {
+    //     let closest_lead_date = getIntervalDateFromDateString(active_lead_date_string)
+    //     let index = -1
+    //     // move 1 month at a time until the closest lead date is reached
+    //     while (true) {
+    //         if (data.findIndex((date) => date === closest_lead_date) !== -1) {
+    //             index = data.findIndex((date) => date === closest_lead_date)
+    //             break
+    //         }
+    //         const date = DDMMYYYYToDate(closest_lead_date)
+    //         date.setMonth(date.getMonth() + 1)
+    //         closest_lead_date = dateToDDMMYYYY(date)
+    //     }
+    //     console.log('the data is',data)
+    //     console.log('the active lead date on mount is', active_lead_date_string)
+    //     console.log('the closest lead date is',closest_lead_date)
+    //     console.log('on mount, scrolling to index', index)
+    //     flatlist_ref.current?.scrollToIndex({index})
+    // }, [flatlist_ref])
 
 
     return (
@@ -165,10 +182,10 @@ export default function MonthlyStackedBarChart({
                     backgroundColor={'transparent'}
                     onPress={() => {
                         console.log('the dates are', data)
-                        console.log('the active lead date string is', active_lead_date_string, ' and converted to a leaddatestring is ', getLeadDateFromDateString(active_lead_date_string))
-                        console.log('the previous index is', data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)) + 1)
+                        console.log('the active lead date string is', active_date, ' and converted to a leaddatestring is ', getIntervalDateFromDateString(active_date))
+                        console.log('the previous index is', data.findIndex((date) => date === getIntervalDateFromDateString(active_date)) + 1)
                         flatlist_ref.current?.scrollToIndex({
-                            index: data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)) + 1,
+                            index: data.findIndex((date) => date === getIntervalDateFromDateString(active_date)) + 1,
                             animated: true
                         })
                     }}>
@@ -179,10 +196,10 @@ export default function MonthlyStackedBarChart({
                 </Paragraph>
                 <Button
                     backgroundColor={'transparent'}
-                    disabled={getLeadDateFromDateString(active_lead_date_string) === getLeadDateFromDateString(dateToDDMMYYYY(new Date()))}
+                    disabled={getIntervalDateFromDateString(active_date) === getIntervalDateFromDateString(dateToDDMMYYYY(new Date()))}
                     onPress={() => {
                         flatlist_ref.current?.scrollToIndex({
-                            index: data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)) - 1,
+                            index: data.findIndex((date) => date === getIntervalDateFromDateString(active_date)) - 1,
                             animated: true
                         })
                     }}>
@@ -226,8 +243,8 @@ export default function MonthlyStackedBarChart({
                     onScroll={(event) => {
                         const index = Math.round(event.nativeEvent.contentOffset.x / flatlist_dimensions.width)
                         // set the active lead date string if it is not the same as the current one
-                        if (data[index] !== active_lead_date_string) {
-                            setActiveLeadDateString(data[index])
+                        if (data[index] !== active_date) {
+                            setActiveDate(data[index])
                         }
                         // if the lead date is within 2 interval of the end, update the data
                         if (index >= data.length - 2) {

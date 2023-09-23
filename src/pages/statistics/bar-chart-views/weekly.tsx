@@ -29,7 +29,7 @@ export default function WeeklyStackedBarChart({
                                                   setActiveLeadDateString,
                                                   columns = 5
                                               }: WeeklyStackedBarChartProps) {
-    const getLeadDateFromDateString = React.useCallback((date_string: string) => {
+    const getIntervalDateFromDateString = React.useCallback((date_string: string) => {
         // get the last day of the week within which the lead date string falls (Sun)
         const date = DDMMYYYYToDate(date_string)
         if (date.getDay() !== 0) {
@@ -38,9 +38,30 @@ export default function WeeklyStackedBarChart({
         return dateToDDMMYYYY(date)
     }, [])
 
+    const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
+        // get the last day of the week within which the lead date string falls (Sun)
+        const last_date = DDMMYYYYToDate(lead_date_string)
+        if (last_date.getDay() !== 0) {
+            last_date.setDate(last_date.getDate() - last_date.getDay() + 7)
+        }
+        // move date to sunday of that week
+        last_date.setDate(last_date.getDate() - last_date.getDay() - 7 * columns)
+        return dateToDDMMYYYY(last_date)
+    }, [columns])
+
     const flatlist_ref = React.useRef<FlatList<string>>(null)
 
-    const [data, setData] = React.useState<string[]>([getLeadDateFromDateString(dateToDDMMYYYY(new Date()))])
+    const [data, setData] = React.useState<string[]>(() => {
+        const initial_data: string[] = [getIntervalDateFromDateString(dateToDDMMYYYY(new Date()))]
+        // increase data while the last date is more than active lead date or length of data is less than 3
+        while (initial_data.length < 3) {
+            initial_data.push(getPreviousLeadDateString(initial_data[initial_data.length - 1]))
+        }
+        return initial_data
+    })
+
+    const [active_date, setActiveDate] = React.useState<string>(getIntervalDateFromDateString(dateToDDMMYYYY(new Date())))
+
     const [flatlist_dimensions, setFlatlistDimensions] = React.useState<{ width: number, height: number }>({
         width: 0,
         height: 0
@@ -48,7 +69,7 @@ export default function WeeklyStackedBarChart({
 
     const title_string = React.useMemo(() => {
         // get the first and last date in the interval
-        const last_date = DDMMYYYYToDate(active_lead_date_string)
+        const last_date = DDMMYYYYToDate(active_date)
         const first_date = new Date(last_date)
         // since these are weeks, the columns are multiplied by 7
         first_date.setDate(first_date.getDate() - columns * 7 + 1)
@@ -65,18 +86,8 @@ export default function WeeklyStackedBarChart({
             month: 'short',
             year: 'numeric'
         })}`
-    }, [active_lead_date_string, columns])
+    }, [active_date, columns])
 
-    const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
-        // get the last day of the week within which the lead date string falls (Sun)
-        const last_date = DDMMYYYYToDate(lead_date_string)
-        if (last_date.getDay() !== 0) {
-            last_date.setDate(last_date.getDate() - last_date.getDay() + 7)
-        }
-        // move date to sunday of that week
-        last_date.setDate(last_date.getDate() - last_date.getDay() - 7 * columns)
-        return dateToDDMMYYYY(last_date)
-    }, [columns])
 
     const getDataFromLeadDateString = React.useCallback((lead_date_string: string) => {
         const data: StackedBarChartDataPoint[] = []
@@ -153,20 +164,26 @@ export default function WeeklyStackedBarChart({
         })
     }, [getPreviousLeadDateString, setData])
 
-
-    // on mount populate data
-    React.useEffect(() => {
-        updateDataOnEndReached()
-    }, [updateDataOnEndReached])
-
     // on mount and flatlist ref available, scroll to the active lead date
-    React.useEffect(() => {
-        console.log('the active lead date on mount is', active_lead_date_string)
-        console.log('on mount, scrolling to index', data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)))
-        flatlist_ref.current?.scrollToIndex({
-            index: data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)),
-        })
-    }, [flatlist_ref])
+    // React.useEffect(() => {
+    //     let closest_lead_date = getIntervalDateFromDateString(active_lead_date_string)
+    //     let index = -1
+    //     // move 1 month at a time until the closest lead date is reached
+    //     while (true) {
+    //         if (data.findIndex((date) => date === closest_lead_date) !== -1) {
+    //             index = data.findIndex((date) => date === closest_lead_date)
+    //             break
+    //         }
+    //         const date = DDMMYYYYToDate(closest_lead_date)
+    //         date.setDate(date.getDate() + 7)
+    //         closest_lead_date = dateToDDMMYYYY(date)
+    //     }
+    //     console.log('the data is', data)
+    //     console.log('the active lead date on mount is', active_lead_date_string)
+    //     console.log('the closest lead date is', closest_lead_date)
+    //     console.log('on mount, scrolling to index', index)
+    //     flatlist_ref.current?.scrollToIndex({index})
+    // }, [flatlist_ref])
 
 
     return (
@@ -176,7 +193,7 @@ export default function WeeklyStackedBarChart({
                     backgroundColor={'transparent'}
                     onPress={() => {
                         flatlist_ref.current?.scrollToIndex({
-                            index: data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)) + 1,
+                            index: data.findIndex((date) => date === getIntervalDateFromDateString(active_date)) + 1,
                             animated: true
                         })
                     }}>
@@ -187,10 +204,10 @@ export default function WeeklyStackedBarChart({
                 </Paragraph>
                 <Button
                     backgroundColor={'transparent'}
-                    disabled={getLeadDateFromDateString(active_lead_date_string) === getLeadDateFromDateString(dateToDDMMYYYY(new Date()))}
+                    disabled={getIntervalDateFromDateString(active_date) === getIntervalDateFromDateString(dateToDDMMYYYY(new Date()))}
                     onPress={() => {
                         flatlist_ref.current?.scrollToIndex({
-                            index: data.findIndex((date) => date === getLeadDateFromDateString(active_lead_date_string)) - 1,
+                            index: data.findIndex((date) => date === getIntervalDateFromDateString(active_date)) - 1,
                             animated: true
                         })
                     }}>
@@ -233,10 +250,10 @@ export default function WeeklyStackedBarChart({
                     }}
                     onScroll={(event) => {
                         const index = Math.round(event.nativeEvent.contentOffset.x / flatlist_dimensions.width)
-                        console.log('the index of the weekly bar is',index)
+                        console.log('the index of the weekly bar is', index)
                         // set the active lead date string if it is not the same as the current one
-                        if (data[index] !== active_lead_date_string) {
-                            setActiveLeadDateString(data[index])
+                        if (data[index] !== active_date) {
+                            setActiveDate(data[index])
                         }
                         // if the lead date is within 2 interval of the end, update the data
                         if (index >= data.length - 2) {

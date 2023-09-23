@@ -30,7 +30,23 @@ export default function DailyStackedBarChart({
 
     const flatlist_ref = React.useRef<FlatList<string>>(null)
 
-    const [data, setData] = React.useState<string[]>([dateToDDMMYYYY(new Date())])
+    const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
+        const date = DDMMYYYYToDate(lead_date_string)
+        date.setDate(date.getDate() - columns)
+        return dateToDDMMYYYY(date)
+    }, [columns])
+
+    const [data, setData] = React.useState<string[]>(() => {
+        const initial_data: string[] = [dateToDDMMYYYY(new Date())]
+        // increase data while the last date is more than active lead date or length of data is less than 3
+        while (initial_data.length < 3) {
+            initial_data.push(getPreviousLeadDateString(initial_data[initial_data.length - 1]))
+        }
+        return initial_data
+    })
+
+    const [active_date, setActiveDate] = React.useState<string>(dateToDDMMYYYY(new Date()))
+
     const [flatlist_dimensions, setFlatlistDimensions] = React.useState<{ width: number, height: number }>({
         width: 0,
         height: 0
@@ -38,7 +54,7 @@ export default function DailyStackedBarChart({
 
     const title_string = React.useMemo(() => {
         // get the first and last date in the interval
-        const last_date = DDMMYYYYToDate(active_lead_date_string)
+        const last_date = DDMMYYYYToDate(active_date)
         const first_date = new Date(last_date)
         first_date.setDate(first_date.getDate() - columns + 1)
         // the title string will be in the format '12 Aug 2021 - 16 Aug 2021'
@@ -51,13 +67,8 @@ export default function DailyStackedBarChart({
             month: 'short',
             year: 'numeric'
         })}`
-    }, [active_lead_date_string, columns])
+    }, [active_date, columns])
 
-    const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
-        const date = DDMMYYYYToDate(lead_date_string)
-        date.setDate(date.getDate() - columns)
-        return dateToDDMMYYYY(date)
-    }, [columns])
 
     const getDataFromLeadDateString = React.useCallback((lead_date_string: string) => {
         const data: StackedBarChartDataPoint[] = []
@@ -118,18 +129,27 @@ export default function DailyStackedBarChart({
         })
     }, [getPreviousLeadDateString, setData])
 
-    // on mount populate data
-    React.useEffect(() => {
-        updateDataOnEndReached()
-    }, [updateDataOnEndReached])
-
 
     // on mount and flatlist ref available, scroll to the active lead date
-    React.useEffect(() => {
-        flatlist_ref.current?.scrollToIndex({
-            index: data.findIndex((date) => date === active_lead_date_string),
-        })
-    }, [flatlist_ref])
+    // React.useEffect(() => {
+    //     let closest_lead_date = active_lead_date_string
+    //     let index = -1
+    //     // move 1 month at a time until the closest lead date is reached
+    //     while (true) {
+    //         if (data.findIndex((date) => date === closest_lead_date) !== -1) {
+    //             index = data.findIndex((date) => date === closest_lead_date)
+    //             break
+    //         }
+    //         const date = DDMMYYYYToDate(closest_lead_date)
+    //         date.setDate(date.getDate() + 1)
+    //         closest_lead_date = dateToDDMMYYYY(date)
+    //     }
+    //     console.log('the data is', data)
+    //     console.log('the active lead date on mount is', active_lead_date_string)
+    //     console.log('the closest lead date is', closest_lead_date)
+    //     console.log('on mount, scrolling to index', index)
+    //     flatlist_ref.current?.scrollToIndex({index})
+    // }, [flatlist_ref])
 
     return (
         <YStack w={'100%'} h={'90%'}>
@@ -138,7 +158,7 @@ export default function DailyStackedBarChart({
                     backgroundColor={'transparent'}
                     onPress={() => {
                         flatlist_ref.current?.scrollToIndex({
-                            index: data.findIndex((date) => date === active_lead_date_string) + 1,
+                            index: data.findIndex((date) => date === active_date) + 1,
                             animated: true
                         })
                     }}>
@@ -149,10 +169,10 @@ export default function DailyStackedBarChart({
                 </Paragraph>
                 <Button
                     backgroundColor={'transparent'}
-                    disabled={active_lead_date_string === dateToDDMMYYYY(new Date())}
+                    disabled={active_date === dateToDDMMYYYY(new Date())}
                     onPress={() => {
                         flatlist_ref.current?.scrollToIndex({
-                            index: data.findIndex((date) => date === active_lead_date_string) - 1,
+                            index: data.findIndex((date) => date === active_date) - 1,
                             animated: true
                         })
                     }}>
@@ -196,8 +216,8 @@ export default function DailyStackedBarChart({
                     onScroll={(event) => {
                         const index = Math.round(event.nativeEvent.contentOffset.x / flatlist_dimensions.width)
                         // set the active lead date string if it is not the same as the current one
-                        if (data[index] !== active_lead_date_string) {
-                            setActiveLeadDateString(data[index])
+                        if (data[index] !== active_date) {
+                            setActiveDate(data[index])
                         }
                         // if the lead date is within 2 interval of the end, update the data
                         if (index >= data.length - 2) {
