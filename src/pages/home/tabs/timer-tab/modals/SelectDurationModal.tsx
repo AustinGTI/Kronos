@@ -1,7 +1,7 @@
 import React from 'react'
 import {CUSTOM_DURATION, Duration, Segment} from "../../../../../globals/types/main";
 import {useSelector} from "react-redux";
-import {selectDurationState} from "../../../../../globals/redux/selectors/timerTabSelector";
+import selectDurationState from "../../../../../globals/redux/selectors/base_selectors/durationsSelector";
 import {Button, Circle, Heading, Paragraph, Separator, XStack, YStack} from "tamagui";
 import SegmentsBarView from "../../../../../globals/components/duration/SegmentsBarView";
 import {ChevronDown, ChevronUp} from "@tamagui/lucide-icons";

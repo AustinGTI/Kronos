@@ -249,7 +249,9 @@ export default function TimerTab() {
         <TimerTabContext.Provider value={timer_tab_context}>
             <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'}>
                 <YStack w={'100%'} h={'40%'}>
-                    <Paragraph>TIMER</Paragraph>
+                    <XStack w={'90%'} justifyContent={'center'} py={10}>
+                        <Paragraph>TIMER</Paragraph>
+                    </XStack>
                     {timer_state &&
                         // <Paragraph>{durationInSecondsToTimerString(timer_state?.timing_state.elapsed_time)}</Paragraph>}
                         <ScrollView w={'100%'} h={100}>
@@ -259,26 +261,30 @@ export default function TimerTab() {
                                         // reverse the array so the active segment is at the top
                                         .slice().reverse()
                                         .map((segment, index) => {
-                                        const is_active_segment = index == 0
-                                        return (
-                                            <XStack key={segment.key} w={'100%'} h={50} ai={'center'}
-                                                    jc={'space-around'}
-                                                    backgroundColor={is_active_segment ? 'black' : 'gray'}>
-                                                <Paragraph color={'white'}>{segment.segment_type.name}</Paragraph>
-                                                <Paragraph
-                                                    color={'white'}>{durationInSecondsToTimerString(segment.initial_duration - segment.elapsed_duration)}</Paragraph>
-                                            </XStack>
-                                        )
-                                    })
+                                            const is_active_segment = index == 0
+                                            return (
+                                                <XStack key={segment.key} w={'100%'} h={50} ai={'center'}
+                                                        jc={'space-around'}
+                                                        backgroundColor={is_active_segment ? 'black' : 'gray'}>
+                                                    <Paragraph color={'white'}>{segment.segment_type.name}</Paragraph>
+                                                    <Paragraph
+                                                        color={'white'}>{durationInSecondsToTimerString(segment.initial_duration - segment.elapsed_duration)}</Paragraph>
+                                                </XStack>
+                                            )
+                                        })
                                 }
                             </YStack>
                         </ScrollView>}
-                    <Button disabled={timer_state !== null}
-                            onPress={openSelectDurationModal}>{timer_duration?.name ?? 'Select Duration'}</Button>
+                    <XStack w={'90%'} justifyContent={'center'}>
+                        <Button disabled={timer_state !== null}
+                                onPress={openSelectDurationModal}>{timer_duration?.name ?? 'Select Duration'}</Button>
+                    </XStack>
                 </YStack>
-                <Button disabled={timer_state !== null}
-                        onPress={openSelectActivityModal}>{timer_activity?.name ?? 'Select Activity'}</Button>
-                <XStack w={'100%'}>
+                <XStack py={20} bg={'#fdd'} w={'90%'} justifyContent={'center'}>
+                    <Button disabled={timer_state !== null}
+                            onPress={openSelectActivityModal}>{timer_activity?.name ?? 'Select Activity'}</Button>
+                </XStack>
+                <XStack w={'90%'} justifyContent={'center'} py={10} bg={'#ddd'}>
                     {/* if timer_state does not exist, a play button, else if timer is running, a pause button and stop button else a resume button */}
                     {timer_state ?
                         timer_state.timing_state.is_running ?
