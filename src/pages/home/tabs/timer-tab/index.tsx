@@ -1,5 +1,5 @@
 import React from 'react'
-import {AlertDialog, Button, Paragraph, ScrollView, Sheet, XStack, YStack} from "tamagui";
+import {AlertDialog, Button, Paragraph, ScrollView, Sheet, Square, View, XStack, YStack} from "tamagui";
 import {Activity, Duration, SegmentTypes, Session} from "../../../../globals/types/main";
 import {AlertProps} from "../../../../globals/types/alert";
 import {TimerTabContext, TimerTabContextProps} from "./context";
@@ -9,6 +9,7 @@ import SelectDurationModal from "./modals/SelectDurationModal";
 import {TimerStateActionTypes, timerStateReducer} from "./timer_state";
 import {useDispatch} from "react-redux";
 import {endSession, incrementSessionSegment, startSession} from "../../../../globals/redux/reducers/sessionsReducer";
+import {Canvas, Text, Circle, Group, Path, Skia} from "@shopify/react-native-skia";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
@@ -245,13 +246,49 @@ export default function TimerTab() {
     // End
 
 
+    // Region TIMER PATH
+
+    const timer_path = React.useMemo(() => {
+        const path = Skia.Path.Make()
+        path.addCircle(70, 70, 50)
+        return path
+    }, [])
+
+    // End
+
     return (
         <TimerTabContext.Provider value={timer_tab_context}>
             <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'}>
-                <YStack w={'100%'} h={'40%'}>
-                    <XStack w={'90%'} justifyContent={'center'} py={10}>
-                        <Paragraph>TIMER</Paragraph>
-                    </XStack>
+                <YStack w={'100%'} h={'40%'} alignItems={'center'}>
+                    <Square position={'relative'} size={'60%'} borderWidth={1} backgroundColor={'#fdd'}>
+                        <Canvas style={{width: '100%', height: '100%'}}>
+                            <Group>
+                                <Path
+                                    path={timer_path}
+                                    style='stroke'
+                                    strokeWidth={10}
+                                    color={'red'}
+                                    end={0.75}
+                                    strokeCap='round'
+                                />
+                                <Path
+                                    path={timer_path}
+                                    style='stroke'
+                                    strokeWidth={10}
+                                    color={'blue'}
+                                    start={0.75}
+                                    end={1}
+                                    strokeCap='round'
+                                />
+                            </Group>
+                        </Canvas>
+                        <View position={'absolute'} top={50} left={50}>
+                            <Paragraph>time</Paragraph>
+                        </View>
+                    </Square>
+                    {/*<XStack backgroundColor={'#fdd'} w={'90%'} justifyContent={'center'} py={10} borderWidth={1} h={150}>*/}
+                    {/*    <Paragraph>TIMER</Paragraph>*/}
+                    {/*</XStack>*/}
                     {timer_state &&
                         // <Paragraph>{durationInSecondsToTimerString(timer_state?.timing_state.elapsed_time)}</Paragraph>}
                         <ScrollView w={'100%'} h={100}>
