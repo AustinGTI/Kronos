@@ -1,9 +1,10 @@
 import React from 'react'
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import {AlertDialog, Button, Paragraph, ScrollView, Sheet, Square, View, XStack, YStack} from "tamagui";
 import {Activity, Duration, SegmentTypes, Session} from "../../../../globals/types/main";
 import {AlertProps} from "../../../../globals/types/alert";
 import {TimerTabContext, TimerTabContextProps} from "./context";
-import {Keyboard, TouchableWithoutFeedback} from "react-native";
+import {Dimensions, Keyboard, TouchableWithoutFeedback} from "react-native";
 import SelectActivityModal from "./modals/SelectActivityModal";
 import SelectDurationModal from "./modals/SelectDurationModal";
 import {TimerStateActionTypes, timerStateReducer} from "./timer_state";
@@ -250,47 +251,90 @@ export default function TimerTab() {
 
     const timer_path = React.useMemo(() => {
         const path = Skia.Path.Make()
-        path.addCircle(70, 70, 50)
+        path.addCircle(wp(`${85 * 0.5}%`), hp(`${50 * 0.85 * 0.5}%`), wp(`${85 * 0.5 * 0.8}%`))
+        // rotate the path by -90 degrees
+        const matrix = Skia.Matrix()
+        matrix.translate(wp(`${85 * 0.5}%`), hp(`${50 * 0.85 * 0.5}%`))
+        matrix.rotate((-90 * Math.PI) / 180)
+        matrix.translate(-wp(`${85 * 0.5}%`), -hp(`${50 * 0.85 * 0.5}%`))
+
+        path.transform(matrix)
         return path
     }, [])
 
-    // End
+    const clock = React.useMemo(() => {
+        // the session visualization, if there is no session, a gray circle
+        if (!timer_duration) {
+            return (
+                <Group>
+                    <Path
+                        path={timer_path}
+                        style='stroke'
+                        strokeWidth={30}
+                        color={'gray'}
+                        strokeCap='butt'
+                    />
+                </Group>
+            )
+        } else {
+            // for each segment, draw a segment of the circle corresponding to its start and end time
+            const total_time = timer_duration.segments.reduce((total, segment) => segment.duration + total, 0)
+
+            const intervals = timer_duration.segments.reduce((positions, segment, index) => {
+                const prev_position = index === 0 ? 0 : positions[index - 1]
+                const position = prev_position + segment.duration / total_time
+                positions.push(position)
+                return positions
+            }, [] as number[])
+
+            console.log('intervals are', intervals)
+
+            return (
+                <Group>
+                    {
+                        intervals.map((interval, index) => {
+                            return (
+                                <Path
+                                    key={index}
+                                    path={timer_path}
+                                    style='stroke'
+                                    strokeWidth={30}
+                                    color={timer_duration.segments[index].type.color}
+                                    start={(index !== 0 ? intervals[index - 1] : 0)}
+                                    end={interval}
+                                    strokeCap={'butt'}
+                                />
+                            )
+                        })
+                    }
+                </Group>
+            )
+        }
+    }, [timer_duration, timer_path])
+
+// End
 
     return (
         <TimerTabContext.Provider value={timer_tab_context}>
             <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'}>
-                <YStack w={'100%'} h={'40%'} alignItems={'center'}>
-                    <Square position={'relative'} size={'60%'} borderWidth={1} backgroundColor={'#fdd'}>
+                <XStack py={20} w={'90%'} justifyContent={'center'}>
+                    <Button disabled={timer_state !== null}
+                            onPress={openSelectActivityModal}>{timer_activity?.name ?? 'Select Activity'}</Button>
+                </XStack>
+                <XStack w={'90%'} justifyContent={'center'} py={5}>
+                    <Button disabled={timer_state !== null}
+                            onPress={openSelectDurationModal}>{timer_duration?.name ?? 'Select Duration'}</Button>
+                </XStack>
+                <YStack w={'100%'} h={hp('50%')} alignItems={'center'}>
+                    <Square position={'relative'} size={'85%'}>
                         <Canvas style={{width: '100%', height: '100%'}}>
-                            <Group>
-                                <Path
-                                    path={timer_path}
-                                    style='stroke'
-                                    strokeWidth={10}
-                                    color={'red'}
-                                    end={0.75}
-                                    strokeCap='round'
-                                />
-                                <Path
-                                    path={timer_path}
-                                    style='stroke'
-                                    strokeWidth={10}
-                                    color={'blue'}
-                                    start={0.75}
-                                    end={1}
-                                    strokeCap='round'
-                                />
-                            </Group>
+                            {clock}
                         </Canvas>
-                        <View position={'absolute'} top={50} left={50}>
+                        <View position={'absolute'} top={'50%'} left={'50%'}>
                             <Paragraph>time</Paragraph>
                         </View>
                     </Square>
-                    {/*<XStack backgroundColor={'#fdd'} w={'90%'} justifyContent={'center'} py={10} borderWidth={1} h={150}>*/}
-                    {/*    <Paragraph>TIMER</Paragraph>*/}
-                    {/*</XStack>*/}
                     {timer_state &&
-                        // <Paragraph>{durationInSecondsToTimerString(timer_state?.timing_state.elapsed_time)}</Paragraph>}
                         <ScrollView w={'100%'} h={100}>
                             <YStack w={'100%'} h={'100%'} ai={'center'} jc={'center'}>
                                 {
@@ -312,16 +356,8 @@ export default function TimerTab() {
                                 }
                             </YStack>
                         </ScrollView>}
-                    <XStack w={'90%'} justifyContent={'center'}>
-                        <Button disabled={timer_state !== null}
-                                onPress={openSelectDurationModal}>{timer_duration?.name ?? 'Select Duration'}</Button>
-                    </XStack>
                 </YStack>
-                <XStack py={20} bg={'#fdd'} w={'90%'} justifyContent={'center'}>
-                    <Button disabled={timer_state !== null}
-                            onPress={openSelectActivityModal}>{timer_activity?.name ?? 'Select Activity'}</Button>
-                </XStack>
-                <XStack w={'90%'} justifyContent={'center'} py={10} bg={'#ddd'}>
+                <XStack w={'90%'} justifyContent={'center'} py={10}>
                     {/* if timer_state does not exist, a play button, else if timer is running, a pause button and stop button else a resume button */}
                     {timer_state ?
                         timer_state.timing_state.is_running ?
