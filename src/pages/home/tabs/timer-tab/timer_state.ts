@@ -227,7 +227,6 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                                     }
                                 }
                             } else {
-                                console.log('ignoring segment',segment,' at index',index)
                                 return segment
                             }
                         })

@@ -1,6 +1,6 @@
-import React from 'react'
+import React, {useMemo} from 'react'
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
-import {AlertDialog, Button, Paragraph, ScrollView, Sheet, Square, View, XStack, YStack} from "tamagui";
+import {AlertDialog, Button, Paragraph, ScrollView, Sheet, Square, View, XStack, YStack, Circle} from "tamagui";
 import {Activity, Duration, SegmentTypes, Session} from "../../../../globals/types/main";
 import {AlertProps} from "../../../../globals/types/alert";
 import {TimerTabContext, TimerTabContextProps} from "./context";
@@ -10,7 +10,7 @@ import SelectDurationModal from "./modals/SelectDurationModal";
 import {TimerStateActionTypes, timerStateReducer} from "./timer_state";
 import {useDispatch} from "react-redux";
 import {endSession, incrementSessionSegment, startSession} from "../../../../globals/redux/reducers/sessionsReducer";
-import {Canvas, Text, Circle, Group, Path, Skia} from "@shopify/react-native-skia";
+import {Canvas, Text, Group, Path, Skia} from "@shopify/react-native-skia";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
@@ -21,6 +21,56 @@ function durationInSecondsToTimerString(duration: number) {
     const minutes = Math.floor(duration / 60)
     const seconds = duration % 60
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
+interface TimeDisplayProps {
+    duration?: number // in seconds
+}
+
+function TimeDisplay({duration}: TimeDisplayProps) {
+    const is_negative = React.useMemo(() => {
+        return duration && duration < 0
+    }, [duration])
+
+    const [hours, minutes, seconds]: [string, string, string] = React.useMemo(() => {
+        if (duration === undefined) {
+            return ['--', '--', '--']
+        }
+        const absolute_duration = Math.abs(duration)
+        const hours = Math.floor(absolute_duration / 3600).toString().padStart(2, '0')
+        const minutes = Math.floor((absolute_duration % 3600) / 60).toString().padStart(2, '0')
+        const seconds = Math.floor(absolute_duration % 60).toString().padStart(2, '0')
+        return [hours, minutes, seconds]
+    }, [duration])
+
+    const ValueDisplay = React.useCallback(({value}: { value: string }) => {
+        return (
+            <XStack width={60} alignItems={'center'} justifyContent={'center'}>
+                <Paragraph fontSize={25}>{value}</Paragraph>
+            </XStack>
+        )
+    }, [])
+
+    const Separator = React.useCallback(() => {
+        return (
+            <XStack width={30} alignItems={'center'} justifyContent={'center'}>
+                <Paragraph fontSize={25}>:</Paragraph>
+            </XStack>
+        )
+    }, [])
+
+    console.log('displaying on the time display ',hours,minutes,seconds)
+
+    return (
+        <XStack alignItems={'center'} justifyContent={'center'} pt={'5%'}>
+            {is_negative ? <Paragraph fontSize={15}>-</Paragraph> : null}
+            <ValueDisplay value={hours}/>
+            <Separator/>
+            <ValueDisplay value={minutes}/>
+            <Separator/>
+            <ValueDisplay value={seconds}/>
+        </XStack>
+    )
 }
 
 export default function TimerTab() {
@@ -314,25 +364,71 @@ export default function TimerTab() {
 
 // End
 
+
     return (
         <TimerTabContext.Provider value={timer_tab_context}>
             <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'}>
-                <XStack py={20} w={'90%'} justifyContent={'center'}>
+                <XStack py={2} w={'90%'} justifyContent={'center'} alignItems={'center'}>
+                    <Circle size={10} backgroundColor={timer_activity ? timer_activity.color : 'gray'}/>
                     <Button disabled={timer_state !== null}
-                            onPress={openSelectActivityModal}>{timer_activity?.name ?? 'Select Activity'}</Button>
+                            backgroundColor={'transparent'}
+                            onPress={openSelectActivityModal}>
+                        <Paragraph
+                            color={timer_activity ? 'black' : 'gray'}
+                            textTransform={'uppercase'} fontSize={18} textDecorationLine={'underline'}>
+                            {timer_activity?.name ?? 'Select Activity'}
+                        </Paragraph>
+                    </Button>
+                    <Circle size={10} backgroundColor={timer_activity ? timer_activity.color : 'gray'}/>
                 </XStack>
-                <XStack w={'90%'} justifyContent={'center'} py={5}>
+                <XStack w={'90%'} justifyContent={'center'} py={2}>
                     <Button disabled={timer_state !== null}
-                            onPress={openSelectDurationModal}>{timer_duration?.name ?? 'Select Duration'}</Button>
+                            backgroundColor={'transparent'}
+                            onPress={openSelectDurationModal}>
+                        <Paragraph
+                            color={timer_activity ? 'black' : 'gray'}
+                            textTransform={'uppercase'} fontSize={18} textDecorationLine={'underline'}>
+                            {timer_duration?.name ?? 'Select Duration'}
+                        </Paragraph>
+                    </Button>
                 </XStack>
                 <YStack w={'100%'} h={hp('50%')} alignItems={'center'}>
                     <Square position={'relative'} size={'85%'}>
                         <Canvas style={{width: '100%', height: '100%'}}>
                             {clock}
                         </Canvas>
-                        <View position={'absolute'} top={'50%'} left={'50%'}>
-                            <Paragraph>time</Paragraph>
-                        </View>
+                        <YStack position={'absolute'} top={0} left={0} width={'100%'} height={'100%'}
+                                alignItems={'center'} justifyContent={'space-between'}>
+                            <XStack pt={'22%'} width={'100%'} alignItems={'center'}
+                                    justifyContent={'center'}>
+                                {
+                                    active_segment &&
+                                    <React.Fragment>
+                                        <Circle size={5}
+                                                backgroundColor={active_segment?.segment_type.color ?? 'gray'}/>
+                                        <Paragraph color={'black'} px={5} fontSize={15}
+                                                   textTransform={'uppercase'}>{active_segment?.segment_type.name ?? '-'}</Paragraph>
+                                        <Circle size={5}
+                                                backgroundColor={active_segment?.segment_type.color ?? 'gray'}/>
+                                    </React.Fragment>
+                                }
+                            </XStack>
+                            <TimeDisplay
+                                duration={active_segment ? active_segment.initial_duration - active_segment.elapsed_duration : undefined}/>
+                            {/* if timer_state does not exist, a play button, else if timer is running, a pause button and stop button else a resume button */}
+                            <XStack pb={'25%'} alignItems={'center'} justifyContent={'center'}>
+                                {timer_state ?
+                                    timer_state.timing_state.is_running ?
+                                        <Button backgroundColor={'transparent'} onPress={pauseTimer}>Pause</Button> :
+                                        <React.Fragment>
+                                            <Button backgroundColor={'transparent'}
+                                                    onPress={resumeTimer}>Resume</Button>
+                                            <Button backgroundColor={'transparent'} onPress={stopTimer}>Stop</Button>
+                                        </React.Fragment> :
+                                    <Button backgroundColor={'transparent'} onPress={startTimer}>Start</Button>
+                                }
+                            </XStack>
+                        </YStack>
                     </Square>
                     {timer_state &&
                         <ScrollView w={'100%'} h={100}>
@@ -357,17 +453,7 @@ export default function TimerTab() {
                             </YStack>
                         </ScrollView>}
                 </YStack>
-                <XStack w={'90%'} justifyContent={'center'} py={10}>
-                    {/* if timer_state does not exist, a play button, else if timer is running, a pause button and stop button else a resume button */}
-                    {timer_state ?
-                        timer_state.timing_state.is_running ?
-                            <Button onPress={pauseTimer}>Pause</Button> :
-                            <React.Fragment>
-                                <Button onPress={resumeTimer}>Resume</Button>
-                                <Button onPress={stopTimer}>Stop</Button>
-                            </React.Fragment> : <Button onPress={startTimer}>Start</Button>
-                    }
-                </XStack>
+
             </YStack>
             <Sheet modal={true}
                    open={sheet_modal_is_open}
