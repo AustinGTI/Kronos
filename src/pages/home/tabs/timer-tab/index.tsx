@@ -23,6 +23,12 @@ function durationInSecondsToTimerString(duration: number) {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
+interface CircleCoords {
+    x: number,
+    y: number,
+    radius: number
+}
+
 interface TimeDisplayProps {
     duration?: number // in seconds
 }
@@ -59,7 +65,7 @@ function TimeDisplay({duration}: TimeDisplayProps) {
         )
     }, [])
 
-    console.log('displaying on the time display ',hours,minutes,seconds)
+    console.log('displaying on the time display ', hours, minutes, seconds)
 
     return (
         <XStack alignItems={'center'} justifyContent={'center'} pt={'5%'}>
@@ -299,14 +305,28 @@ export default function TimerTab() {
 
     // Region TIMER PATH
 
-    const timer_path = React.useMemo(() => {
+    const [main_clock_coords, pointer_coords] = React.useMemo(() => {
+        const main: CircleCoords = {
+            x: wp(`${85 * 0.5}%`),
+            y: hp(`${50 * 0.85 * 0.5}%`),
+            radius: wp(`${85 * 0.5 * 0.8}%`)
+        }
+        const pointer: CircleCoords = {
+            x: wp(`${85 * 0.5}%`),
+            y: hp(`${50 * 0.85 * 0.5}%`),
+            radius: wp(`${85 * 0.5 * 0.6}%`)
+        }
+        return [main, pointer]
+    }, [])
+
+    const generateTimerPath = React.useCallback(({x, y, radius}: CircleCoords) => {
         const path = Skia.Path.Make()
-        path.addCircle(wp(`${85 * 0.5}%`), hp(`${50 * 0.85 * 0.5}%`), wp(`${85 * 0.5 * 0.8}%`))
+        path.addCircle(x, y, radius)
         // rotate the path by -90 degrees
         const matrix = Skia.Matrix()
-        matrix.translate(wp(`${85 * 0.5}%`), hp(`${50 * 0.85 * 0.5}%`))
+        matrix.translate(x, y)
         matrix.rotate((-90 * Math.PI) / 180)
-        matrix.translate(-wp(`${85 * 0.5}%`), -hp(`${50 * 0.85 * 0.5}%`))
+        matrix.translate(-x, -y)
 
         path.transform(matrix)
         return path
@@ -316,15 +336,13 @@ export default function TimerTab() {
         // the session visualization, if there is no session, a gray circle
         if (!timer_duration) {
             return (
-                <Group>
-                    <Path
-                        path={timer_path}
-                        style='stroke'
-                        strokeWidth={30}
-                        color={'gray'}
-                        strokeCap='butt'
-                    />
-                </Group>
+                <Path
+                    path={generateTimerPath(main_clock_coords)}
+                    style='stroke'
+                    strokeWidth={30}
+                    color={'gray'}
+                    strokeCap='butt'
+                />
             )
         } else {
             // for each segment, draw a segment of the circle corresponding to its start and end time
@@ -340,13 +358,13 @@ export default function TimerTab() {
             console.log('intervals are', intervals)
 
             return (
-                <Group>
+                <React.Fragment>
                     {
                         intervals.map((interval, index) => {
                             return (
                                 <Path
                                     key={index}
-                                    path={timer_path}
+                                    path={generateTimerPath(main_clock_coords)}
                                     style='stroke'
                                     strokeWidth={30}
                                     color={timer_duration.segments[index].type.color}
@@ -357,10 +375,36 @@ export default function TimerTab() {
                             )
                         })
                     }
-                </Group>
+                </React.Fragment>
             )
         }
-    }, [timer_duration, timer_path])
+    }, [timer_duration, generateTimerPath, main_clock_coords])
+
+    const pointer = React.useMemo(() => {
+        let timer_location = 0;
+        if (timer_state && active_segment && timer_duration) {
+            // add up all the completed segments then the proportion of the active segment that is complete
+            const total_duration = timer_duration.segments.reduce((total, segment) => segment.duration + total, 0) * 60
+
+            let elapsed_duration = timer_state.segments_state.segments_completed.reduce((total, segment) => total + segment.initial_duration, 0)
+            elapsed_duration += Math.min(active_segment.initial_duration, active_segment.elapsed_duration)
+
+            console.log('total duration is', total_duration, 'elapsed duration is', elapsed_duration)
+
+            timer_location = elapsed_duration / total_duration
+        }
+        return (
+            <Path
+                path={generateTimerPath(pointer_coords)}
+                style='stroke'
+                strokeWidth={10}
+                color={'black'}
+                start={timer_location - 0.001}
+                end={timer_location + 0.001}
+                strokeCap='round'
+            />
+        )
+    }, [timer_state, active_segment, timer_duration, generateTimerPath, pointer_coords])
 
 // End
 
@@ -395,7 +439,10 @@ export default function TimerTab() {
                 <YStack w={'100%'} h={hp('50%')} alignItems={'center'}>
                     <Square position={'relative'} size={'85%'}>
                         <Canvas style={{width: '100%', height: '100%'}}>
-                            {clock}
+                            <Group>
+                                {clock}
+                                {pointer}
+                            </Group>
                         </Canvas>
                         <YStack position={'absolute'} top={0} left={0} width={'100%'} height={'100%'}
                                 alignItems={'center'} justifyContent={'space-between'}>
