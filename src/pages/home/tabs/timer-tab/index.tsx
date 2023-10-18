@@ -11,6 +11,7 @@ import {TimerStateActionTypes, timerStateReducer} from "./timer_state";
 import {useDispatch} from "react-redux";
 import {endSession, incrementSessionSegment, startSession} from "../../../../globals/redux/reducers/sessionsReducer";
 import {Canvas, Text, Group, Path, Skia} from "@shopify/react-native-skia";
+import {Pause, Play, Square as SquareIcon} from "@tamagui/lucide-icons";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
@@ -51,15 +52,15 @@ function TimeDisplay({duration}: TimeDisplayProps) {
 
     const ValueDisplay = React.useCallback(({value}: { value: string }) => {
         return (
-            <XStack width={60} alignItems={'center'} justifyContent={'center'}>
-                <Paragraph fontSize={25}>{value}</Paragraph>
+            <XStack width={55} alignItems={'center'} justifyContent={'center'}>
+                <Paragraph fontSize={40} lineHeight={40}>{value}</Paragraph>
             </XStack>
         )
     }, [])
 
     const Separator = React.useCallback(() => {
         return (
-            <XStack width={30} alignItems={'center'} justifyContent={'center'}>
+            <XStack width={15} alignItems={'center'} justifyContent={'center'}>
                 <Paragraph fontSize={25}>:</Paragraph>
             </XStack>
         )
@@ -308,8 +309,8 @@ export default function TimerTab() {
     const [main_clock_coords, pointer_coords] = React.useMemo(() => {
         const main: CircleCoords = {
             x: wp(`${85 * 0.5}%`),
-            y: hp(`${50 * 0.85 * 0.5}%`),
-            radius: wp(`${85 * 0.5 * 0.8}%`)
+            y: wp(`${85 * 0.5}%`),
+            radius: wp(`${85 * 0.5 * 0.9}%`)
         }
         const pointer: CircleCoords = {
             x: wp(`${85 * 0.5}%`),
@@ -336,13 +337,15 @@ export default function TimerTab() {
         // the session visualization, if there is no session, a gray circle
         if (!timer_duration) {
             return (
-                <Path
-                    path={generateTimerPath(main_clock_coords)}
-                    style='stroke'
-                    strokeWidth={30}
-                    color={'gray'}
-                    strokeCap='butt'
-                />
+                <React.Fragment>
+                    <Path
+                        path={generateTimerPath(main_clock_coords)}
+                        style='stroke'
+                        strokeWidth={30}
+                        color={'gray'}
+                        strokeCap='butt'
+                    />
+                </React.Fragment>
             )
         } else {
             // for each segment, draw a segment of the circle corresponding to its start and end time
@@ -355,7 +358,6 @@ export default function TimerTab() {
                 return positions
             }, [] as number[])
 
-            console.log('intervals are', intervals)
 
             return (
                 <React.Fragment>
@@ -395,16 +397,16 @@ export default function TimerTab() {
         }
         return (
             <Path
-                path={generateTimerPath(pointer_coords)}
+                path={generateTimerPath(main_clock_coords)}
                 style='stroke'
                 strokeWidth={10}
-                color={'black'}
-                start={timer_location - 0.001}
-                end={timer_location + 0.001}
+                color={'white'}
+                start={0}
+                end={timer_location > 0 ? timer_location : 0.0001} // if timer location is 0, set timer location to just above 0 to display a single dot at the top
                 strokeCap='round'
             />
         )
-    }, [timer_state, active_segment, timer_duration, generateTimerPath, pointer_coords])
+    }, [timer_state, active_segment, timer_duration, generateTimerPath, main_clock_coords])
 
 // End
 
@@ -436,71 +438,78 @@ export default function TimerTab() {
                         </Paragraph>
                     </Button>
                 </XStack>
-                <YStack w={'100%'} h={hp('50%')} alignItems={'center'}>
-                    <Square position={'relative'} size={'85%'}>
-                        <Canvas style={{width: '100%', height: '100%'}}>
-                            <Group>
-                                {clock}
-                                {pointer}
-                            </Group>
-                        </Canvas>
-                        <YStack position={'absolute'} top={0} left={0} width={'100%'} height={'100%'}
-                                alignItems={'center'} justifyContent={'space-between'}>
-                            <XStack pt={'22%'} width={'100%'} alignItems={'center'}
-                                    justifyContent={'center'}>
-                                {
-                                    active_segment &&
+                <Square position={'relative'} width={wp('85%')} height={wp('85%')} marginTop={15}>
+                    <Canvas style={{width: '100%', height: '100%'}}>
+                        <Group>
+                            {clock}
+                            {pointer}
+                        </Group>
+                    </Canvas>
+                    <YStack position={'absolute'} top={0} left={0} width={'100%'} height={'100%'}
+                            alignItems={'center'} justifyContent={'space-between'}>
+                        <XStack pt={'22%'} width={'100%'} alignItems={'center'}
+                                justifyContent={'center'}>
+                            {
+                                active_segment &&
+                                <React.Fragment>
+                                    <Circle size={5}
+                                            backgroundColor={active_segment?.segment_type.color ?? 'gray'}/>
+                                    <Paragraph color={'black'} px={5} fontSize={15}
+                                               textTransform={'uppercase'}>{active_segment?.segment_type.name ?? '-'}</Paragraph>
+                                    <Circle size={5}
+                                            backgroundColor={active_segment?.segment_type.color ?? 'gray'}/>
+                                </React.Fragment>
+                            }
+                        </XStack>
+                        <TimeDisplay
+                            duration={active_segment ? active_segment.initial_duration - active_segment.elapsed_duration : undefined}/>
+                        {/* if timer_state does not exist, a play button, else if timer is running, a pause button and stop button else a resume button */}
+                        <XStack pb={'20%'} alignItems={'center'} justifyContent={'center'}>
+                            {timer_state ?
+                                timer_state.timing_state.is_running ?
+                                    <Button backgroundColor={'transparent'} onPress={pauseTimer}>
+                                        <Pause size={30}/>
+                                    </Button> :
                                     <React.Fragment>
-                                        <Circle size={5}
-                                                backgroundColor={active_segment?.segment_type.color ?? 'gray'}/>
+                                        <Button backgroundColor={'transparent'}
+                                                onPress={resumeTimer}>
+                                            <Play size={30}/>
+                                        </Button>
+                                        <Button backgroundColor={'transparent'} onPress={stopTimer}>
+                                            <SquareIcon size={30}/>
+                                        </Button>
+                                    </React.Fragment> :
+                                <Button backgroundColor={'transparent'} onPress={startTimer}>
+                                    <Play size={30}/>
+                                </Button>
+                            }
+                        </XStack>
+                    </YStack>
+                </Square>
+                <YStack width={wp('85%')} height={hp('30%')} overflow={'scroll'} pt={15}>
+                    {
+                        [
+                            ...(timer_state?.segments_state.segments_completed ?? []),
+                            ...(active_segment ? [active_segment] : [])
+                        ].slice().reverse().map((segment, index) => {
+                            const is_last_segment = index === timer_state?.segments_state.segments_completed.length
+                            return (
+                                <XStack key={index} width={'100%'} py={10} alignItems={'center'}
+                                        justifyContent={'space-around'}
+                                        borderBottomWidth={is_last_segment ? 0 : 1} borderBottomColor={'black'}
+                                >
+                                    <XStack alignItems={'center'}>
+                                        <Circle size={10} backgroundColor={segment.segment_type.color}/>
                                         <Paragraph color={'black'} px={5} fontSize={15}
-                                                   textTransform={'uppercase'}>{active_segment?.segment_type.name ?? '-'}</Paragraph>
-                                        <Circle size={5}
-                                                backgroundColor={active_segment?.segment_type.color ?? 'gray'}/>
-                                    </React.Fragment>
-                                }
-                            </XStack>
-                            <TimeDisplay
-                                duration={active_segment ? active_segment.initial_duration - active_segment.elapsed_duration : undefined}/>
-                            {/* if timer_state does not exist, a play button, else if timer is running, a pause button and stop button else a resume button */}
-                            <XStack pb={'25%'} alignItems={'center'} justifyContent={'center'}>
-                                {timer_state ?
-                                    timer_state.timing_state.is_running ?
-                                        <Button backgroundColor={'transparent'} onPress={pauseTimer}>Pause</Button> :
-                                        <React.Fragment>
-                                            <Button backgroundColor={'transparent'}
-                                                    onPress={resumeTimer}>Resume</Button>
-                                            <Button backgroundColor={'transparent'} onPress={stopTimer}>Stop</Button>
-                                        </React.Fragment> :
-                                    <Button backgroundColor={'transparent'} onPress={startTimer}>Start</Button>
-                                }
-                            </XStack>
-                        </YStack>
-                    </Square>
-                    {timer_state &&
-                        <ScrollView w={'100%'} h={100}>
-                            <YStack w={'100%'} h={'100%'} ai={'center'} jc={'center'}>
-                                {
-                                    timer_state.segments_state.segments_remaining
-                                        // reverse the array so the active segment is at the top
-                                        .slice().reverse()
-                                        .map((segment, index) => {
-                                            const is_active_segment = index == 0
-                                            return (
-                                                <XStack key={segment.key} w={'100%'} h={50} ai={'center'}
-                                                        jc={'space-around'}
-                                                        backgroundColor={is_active_segment ? 'black' : 'gray'}>
-                                                    <Paragraph color={'white'}>{segment.segment_type.name}</Paragraph>
-                                                    <Paragraph
-                                                        color={'white'}>{durationInSecondsToTimerString(segment.initial_duration - segment.elapsed_duration)}</Paragraph>
-                                                </XStack>
-                                            )
-                                        })
-                                }
-                            </YStack>
-                        </ScrollView>}
+                                                   textTransform={'uppercase'}>{segment.segment_type.name}</Paragraph>
+                                    </XStack>
+                                    <Paragraph color={'black'} px={5} fontSize={15}
+                                               textTransform={'uppercase'}>{`${Math.floor(segment.elapsed_duration / 60)} MINS`}</Paragraph>
+                                </XStack>
+                            )
+                        })
+                    }
                 </YStack>
-
             </YStack>
             <Sheet modal={true}
                    open={sheet_modal_is_open}
