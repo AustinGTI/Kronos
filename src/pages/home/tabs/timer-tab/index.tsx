@@ -176,11 +176,18 @@ export default function TimerTab() {
         if (!timer_state) {
             throw new Error('Cannot increment timer if timer state is not set')
         }
+        // get the difference between the estimated time and the actual time to determine the elapsed time since the timer state update
+        const time_difference = Math.round((new Date().getTime() - timer_state.timing_state.estimated_time.getTime())/1000)
+
         updateTimerState({
-            type: TimerStateActionTypes.INCREMENT_TIMER, payload: null
+            type: TimerStateActionTypes.INCREMENT_TIMER, payload: time_difference
         })
+
+        // get the amount of times 60s is crossed to determine the number of session increments needed in storage
+        const session_increments = Math.floor((timer_state.timing_state.elapsed_time + time_difference) / 60)
+
         // at every 60 sec interval, increment the session as well
-        if (timer_state.timing_state.elapsed_time % 60 === 0) {
+        if (session_increments > 0) {
             // if the timer is running, increment with the active segment
             if (timer_state.timing_state.is_running) {
                 const segments_remaining = timer_state.segments_state.segments_remaining
@@ -188,17 +195,19 @@ export default function TimerTab() {
                     session_id: session_id!,
                     // the active segment is the last segment in the array
                     segment_type: segments_remaining[segments_remaining.length - 1].segment_type,
+                    duration: session_increments
                 }))
             } else {
                 // otherwise, increment with the PAUSE segment
                 dispatch(incrementSessionSegment({
                     session_id: session_id!,
                     segment_type: SegmentTypes.PAUSE,
+                    duration: session_increments
                 }))
             }
         }
         // if the active segment elapsed time, is higher than the initial time, then the segment is complete, set modal is open to true
-    }, [session_id, timer_state, dispatch])
+    }, [session_id, timer_state, dispatch, updateTimerState])
 
     // ? ........................
     // Region METADATA CALLBACKS

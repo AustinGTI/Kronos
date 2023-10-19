@@ -2,22 +2,30 @@ export const EMPTY_RECORD_ID = -1;
 export const UNTITLED_RECORD_ID = -2;
 
 export type SegmentType = {
+    key: number,
     name: string;
     color: string;
+    persists_on_app_close?: boolean;
 }
 
 export const SegmentTypes: { [key: string]: SegmentType } = {
     FOCUS: {
+        key: 1,
         name: 'focus',
-        color: '#db9cff'
+        color: '#db9cff',
+        persists_on_app_close: false,
     },
     BREAK: {
+        key: 2,
         name: 'break',
-        color: '#ffe169'
+        color: '#ffe169',
+        persists_on_app_close: true,
     },
     PAUSE: {
+        key: 3,
         name: 'pause',
-        color: '#999'
+        color: '#999',
+        persists_on_app_close: true,
     }
 }
 

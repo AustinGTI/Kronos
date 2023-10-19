@@ -23,6 +23,7 @@ import React from "react";
  * 5. When all segments have been completed, the timer stops counting up and the is_running flag is set to false. An alert is
  * displayed to the user to notify them that the timer has ended. The finished timer state is used to record the session and then
  * the timer is reset. The same flow happens when the user clicks the stop button but the alert is different.
+ *
  */
 
 interface TimerAlertProps {
@@ -47,7 +48,11 @@ export interface TimerState {
     timing_state: {
         is_running: boolean,
         elapsed_time: number, // the time elapsed since the timer started in seconds
-        active_time: number, // the time elapsed since the timer started in which the timer was running in secondssince the timer started in which the timer was running in secondssince the timer started in which the timer was running in secondssince the timer started in which the timer was running in seconds
+        active_time: number, // the time elapsed since the timer started in which the timer was running in seconds since the timer started in which the timer was running in secondssince the timer started in which the timer was running in secondssince the timer started in which the timer was running in seconds
+        // the estimated actual time based on the elapsed time and the exact time when the session started,
+        // is used to updated the session with accurate timings if the user leaves the app by comparing it to the actual time
+        estimated_time: Date,
+
     },
     info_state: {
         on_stop_alert_props: TimerAlertProps
@@ -100,7 +105,8 @@ export function durationToTimerState(duration: Duration): TimerState {
         timing_state: {
             is_running: false,
             elapsed_time: 0,
-            active_time: 0
+            active_time: 0,
+            estimated_time: new Date()
         },
         info_state: {
             // when the timer is stopped before the entire duration is completed, the user needs to be informed that the session
@@ -120,7 +126,7 @@ export enum TimerStateActionTypes {
     PAUSE_TIMER = 'PAUSE_TIMER',
     INCREMENT_TIMER = 'INCREMENT_TIMER',
     COMPLETE_SEGMENT = 'COMPLETE_SEGMENT',
-    STOP_TIMER = 'STOP_TIMER'
+    STOP_TIMER = 'STOP_TIMER',
 }
 
 interface StartTimerAction {
@@ -140,7 +146,7 @@ interface PauseTimerAction {
 
 interface IncrementTimerAction {
     type: TimerStateActionTypes.INCREMENT_TIMER,
-    payload: null
+    payload: number // amount of time to increment by in seconds
 }
 
 interface CompleteSegmentAction {
@@ -200,6 +206,8 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                 }
             }
         case TimerStateActionTypes.INCREMENT_TIMER:
+            const increment = (payload as number)
+            const active_segment_type = state.segments_state.segments_remaining[state.segments_state.segments_remaining.length - 1].segment_type
             // if the timer is running, elapsed time,active time and the segment time should be incremented
             // if not, only the elapsed time should be incremented
             if (state.timing_state.is_running) {
@@ -207,8 +215,9 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                     ...state,
                     timing_state: {
                         ...state.timing_state,
-                        elapsed_time: state.timing_state.elapsed_time + 1,
-                        active_time: state.timing_state.active_time + 1,
+                        elapsed_time: state.timing_state.elapsed_time + increment,
+                        active_time: state.timing_state.active_time + (active_segment_type.persists_on_app_close ? increment : 1),
+                        estimated_time: new Date(state.timing_state.estimated_time.getTime() + increment*1000)
                     },
                     segments_state: {
                         ...state.segments_state,
@@ -220,10 +229,10 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                                 // increase the elapsed duration, if the elapsed duration is more than the initial duration, set the alert modal open state to true
                                 return {
                                     ...segment,
-                                    elapsed_duration: segment.elapsed_duration + 1,
+                                    elapsed_duration: segment.elapsed_duration + (active_segment_type.persists_on_app_close ? increment : 1),
                                     on_complete_alert_props: {
                                         ...segment.on_complete_alert_props,
-                                        is_open: segment.elapsed_duration + 1 >= segment.initial_duration
+                                        is_open: segment.elapsed_duration + (active_segment_type.persists_on_app_close ? increment : 1) >= segment.initial_duration
                                     }
                                 }
                             } else {
