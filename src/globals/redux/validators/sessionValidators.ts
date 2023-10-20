@@ -15,13 +15,13 @@ export function startSessionValidation(app_state: AppState, new_session: Session
             }
         }
     }
-    // check that the duration exists if given
+    // check that the increment exists if given
     if (new_session.duration_id && !app_state.durations[new_session.duration_id]) {
         return {
             status: ValidationStatus.ERROR,
             error: {
                 field: SpecialField.GLOBAL,
-                message: 'This duration does not exist'
+                message: 'This increment does not exist'
             }
         }
     }

@@ -16,13 +16,13 @@ function genericActivityValidation(app_state:AppState,activity: Activity): Valid
         }
     }
 
-    // check that the default duration id given is valid
+    // check that the default increment id given is valid
     if (!app_state.durations[activity.default_duration_id]) {
         return {
             status: ValidationStatus.ERROR,
             error: {
                 field: 'default_duration_id',
-                message: 'This duration does not exist'
+                message: 'This increment does not exist'
             }
         }
     }

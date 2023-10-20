@@ -87,10 +87,10 @@ function InputSegmentPaneDurationPicker({duration, setDuration}: InputSegmentPan
     const [duration_hours, setDurationHours] = React.useState(Math.floor(duration / 60))
     const [duration_minutes, setDurationMinutes] = React.useState(duration % 60)
 
-    // // when the duration hours or duration minutes change, update the duration
+    // // when the increment hours or increment minutes change, update the increment
     // React.useEffect(() => {
     //     // setDuration(duration_hours * 60 + duration_minutes)
-    //     console.log('duration changed to ', duration_hours * 60 + duration_minutes, 'hours', duration_hours, 'minutes', duration_minutes)
+    //     console.log('increment changed to ', duration_hours * 60 + duration_minutes, 'hours', duration_hours, 'minutes', duration_minutes)
     // }, [duration_hours, duration_minutes, setDuration])
 
     // Region: HOURS AND MINUTE CAROUSEL ITEMS

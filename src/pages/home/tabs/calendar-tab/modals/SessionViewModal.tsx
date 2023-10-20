@@ -69,7 +69,7 @@ function SegmentsView({start_time, segments}: SegmentsViewProps) {
         <YStack w={'100%'} h={'77%'}>
             <ScrollView w={'100%'}>
                 {segments.map((segment, index) => {
-                    // if this is not the first index, add the start time to the previous segment duration
+                    // if this is not the first index, add the start time to the previous segment increment
                     if (index > 0) {
                         start_time = new Date(start_time.getTime() + segments[index - 1].duration * 60 * 1000)
                     }

@@ -11,7 +11,7 @@ const durationsSlice = createSlice({
     initialState: initial_state,
     reducers: {
         createDuration: (state, {payload}: { type: string, payload: Duration }) => {
-            // a new duration will have an id of -1, so generate a valid one
+            // a new increment will have an id of -1, so generate a valid one
             const id = Math.max(...Object.keys(state).map(key => parseInt(key))) + 1
             state[id] = {...payload, id}
         },

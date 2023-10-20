@@ -61,7 +61,7 @@ export default function SelectActivityModal({current_activity, setCurrentActivit
     const {durations, activities} = useSelector(selectTimerState)
     const setTimerActivityAndCloseModal = React.useCallback((activity: Activity) => {
         setCurrentActivity(activity)
-        // if the activity has a default duration, set it as the current duration
+        // if the activity has a default increment, set it as the current increment
         if (activity.default_duration_id !== null) {
             setCurrentDuration(durations[activity.default_duration_id])
         }

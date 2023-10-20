@@ -1,4 +1,4 @@
-import {Day, SegmentType, Session} from "../../types/main";
+import {Day, SegmentType, SegmentTypes, Session} from "../../types/main";
 import {createSlice} from "@reduxjs/toolkit";
 import {dateToDDMMYYYY, getStartOfDay} from "../../helpers/datetime_functions";
 import generateDummyDay from "../dummies/dummy_sessions";
@@ -49,7 +49,7 @@ const sessionsSlice = createSlice({
 
         // ? There will be 2 approaches to updating a session, both will be implemented, use will be decided on the frontend
 
-        // ? METHOD 1: a single function called incrementSession, that takes a session id and a segment type, and increments the duration of the last segment of that type
+        // ? METHOD 1: a single function called incrementSession, that takes a session id and a segment type, and increments the increment of the last segment of that type
         // * PROS:
         // * - flexible in that more segment types can be added in the future
         // * - could be useful if there is a strict mode, where the user needs to be in the app every minute for the session to be updated correctly
@@ -61,37 +61,37 @@ const sessionsSlice = createSlice({
         // durations are assumed to be in minutes
         incrementSessionSegment: (state, {payload}: {
             type: string,
-            payload: { session_id: number, segment_type: SegmentType, duration: number }
+            payload: { session_id: number, segment_type: SegmentType, increment: number }
         }) => {
             // the session id is the unix timestamp when the session was started
             const date_key = dateToDDMMYYYY(new Date(payload.session_id))
             const session = state[date_key]?.sessions[payload.session_id] as Session
 
-            // if the segment type does not permit persist on app close, duration can only be incremented by 1 second at a time to ensure the user is still in the app
+            // if the segment type does not permit persist on app close, increment can only be incremented by 1 second at a time to ensure the user is still in the app
 
-            // if the last segment exists and is of the same type as given in the payload, increment its duration
-            if (session.segments[session.segments.length - 1]?.type.key === payload.segment_type.key) {
-                session.segments[session.segments.length - 1].duration += payload.segment_type.persist_on_app_close ? payload.duration : 1
+            // if the last segment exists and is of the same type as given in the payload, increment its increment
+            if (session.segments.length && session.segments[session.segments.length - 1].type.key === payload.segment_type.key) {
+                session.segments[session.segments.length - 1].duration += payload.segment_type.persists_on_app_close ? payload.increment : 1
             } else {
-                // if the last segment is of a different type or the first segment, add a new segment of the given type and set its duration to 1
+                // if the last segment is of a different type or the first segment, add a new segment of the given type and set its increment to 1
                 session.segments.push({
                     key: session.segments.length + 1,
                     type: payload.segment_type,
-                    duration: payload.segment_type.persist_on_app_close ? payload.duration : 1
+                    duration: payload.segment_type.persists_on_app_close ? payload.increment : 1
                 })
             }
 
-            // if the segment type does not permit persist on app close, add a pause segment after with the remaining duration
-            if (!payload.segment_type.persist_on_app_close) {
-                // if the previous segment is pause, add the duration to it
-                if (session.segments[session.segments.length - 1]?.type.key === SegmentType.PAUSE.key) {
-                    session.segments[session.segments.length - 1].duration += payload.duration - 1
+            // if the segment type does not permit persist on app close, add a pause segment after with the remaining increment
+            if (payload.increment > 1 && !payload.segment_type.persists_on_app_close) {
+                // if the previous segment is pause, add the increment to it
+                if (session.segments.length && session.segments[session.segments.length - 1].type.key === SegmentTypes.PAUSE.key) {
+                    session.segments[session.segments.length - 1].duration += payload.increment - 1
                 } else {
                     // else add a new pause segment
                     session.segments.push({
                         key: session.segments.length + 1,
-                        type: SegmentType.PAUSE,
-                        duration: payload.duration - 1
+                        type: SegmentTypes.PAUSE,
+                        duration: payload.increment - 1
                     })
                 }
             }
@@ -119,7 +119,7 @@ const sessionsSlice = createSlice({
             const date_key = dateToDDMMYYYY(new Date(payload.session_id))
             const session = state[date_key]?.sessions[payload.session_id] as Session
 
-            // add a new segment of the given type and set its duration to 0
+            // add a new segment of the given type and set its increment to 0
             session.segments.push({
                 key: session.segments.length + 1,
                 type: payload.segment_type,
@@ -136,7 +136,7 @@ const sessionsSlice = createSlice({
             const date_key = dateToDDMMYYYY(new Date(payload.session_id))
             const session = state[date_key]?.sessions[payload.session_id] as Session
 
-            // get the duration of the most recent segment
+            // get the increment of the most recent segment
             // if there are no segments, return and log a warning
             if (session.segments.length === 0) {
                 console.warn('Trying to end a segment when there are no segments')
@@ -149,8 +149,8 @@ const sessionsSlice = createSlice({
             // add this to the start time to get the current segment start time
             const current_segment_start_time = new Date(new Date(session.start_time).getTime() + previous_segments_duration * 60 * 1000)
 
-            // subtract this from the current time to get the current segment duration, convert to minutes
-            // set the duration of the last segment to the current segment duration
+            // subtract this from the current time to get the current segment increment, convert to minutes
+            // set the increment of the last segment to the current segment increment
             session.segments[session.segments.length - 1].duration = Math.floor((new Date().getTime() - current_segment_start_time.getTime()) / 1000 / 60)
 
             // update the session in the state

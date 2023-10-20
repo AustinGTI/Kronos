@@ -123,7 +123,7 @@ export default function WeeklyStackedBarChart({
 
             const stack: Map<React.Key, number> = new Map()
 
-            // for every day of the week, add the duration of each session to the stack indexed by activity
+            // for every day of the week, add the increment of each session to the stack indexed by activity
             days_of_the_week.forEach((day) => {
                 Object.values(day.sessions).forEach((session) => {
                     const duration = session.segments.reduce((total, segment) => {

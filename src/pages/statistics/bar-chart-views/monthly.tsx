@@ -111,7 +111,7 @@ export default function MonthlyStackedBarChart({
 
             const stack: Map<React.Key, number> = new Map()
 
-            // for every day of the month, add the duration of each session to the stack indexed by activity
+            // for every day of the month, add the increment of each session to the stack indexed by activity
             days_of_month.forEach((day) => {
                 Object.values(day.sessions).forEach((session) => {
                     const duration = session.segments.reduce((total, segment) => {

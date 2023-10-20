@@ -34,8 +34,8 @@ function getRandomActivity(): Activity | undefined {
 }
 
 /**
- * Returns either the default duration of the given activity or a random duration or undefined based on the probability
- * @param {Activity} activity - The activity to potentially get the duration for
+ * Returns either the default increment of the given activity or a random increment or undefined based on the probability
+ * @param {Activity} activity - The activity to potentially get the increment for
  * @returns {Duration | undefined}
  */
 function getRandomDuration(activity: Activity): Duration | undefined {
@@ -51,7 +51,7 @@ function getRandomDuration(activity: Activity): Duration | undefined {
 }
 
 /**
- * Generates a custom duration with random segments to simulate a user creating a custom duration for a single session
+ * Generates a custom increment with random segments to simulate a user creating a custom increment for a single session
  * @returns {Duration}
  */
 function generateCustomDuration(): Duration {
@@ -88,16 +88,16 @@ function generateCustomDuration(): Duration {
 }
 
 /**
- * It is likely that a user with not follow the focus and break pattern of a duration exactly, so this function takes a duration
- * and returns a list of segments that are slightly and randomly skewed from those of the original duration
+ * It is likely that a user with not follow the focus and break pattern of a increment exactly, so this function takes a increment
+ * and returns a list of segments that are slightly and randomly skewed from those of the original increment
  * to simulate the user extending or shortening a segment
- * @param {Duration} duration - The duration to skew
+ * @param {Duration} duration - The increment to skew
  * @returns {Segment}
  */
 function skewDurationSegments(duration: Duration): Segment[] {
     const segments: Segment[] = []
-    // for each segment in the duration, skew positively 50% of the time and negatively 25% of the time and not at all 25% of the time
-    // by a positive random normal distribution with a mean of 0 and a standard deviation of 10% of the segment duration
+    // for each segment in the increment, skew positively 50% of the time and negatively 25% of the time and not at all 25% of the time
+    // by a positive random normal distribution with a mean of 0 and a standard deviation of 10% of the segment increment
 
     for (const segment of duration.segments) {
         let skew = 0
@@ -106,8 +106,8 @@ function skewDurationSegments(duration: Duration): Segment[] {
         } else if (Math.random() < 0.25) {
             skew = -Math.abs(generateRandomNormal(0, segment.duration * 0.1))
         }
-        // if the skew is negative and the segment duration is less than the absolute value of the skew, set the skew to 0
-        // this protects against the segment duration becoming negative though should be unlikely because of the standard deviation
+        // if the skew is negative and the segment increment is less than the absolute value of the skew, set the skew to 0
+        // this protects against the segment increment becoming negative though should be unlikely because of the standard deviation
         if (skew < 0 && segment.duration < Math.abs(skew)) {
             skew = 0
         }
@@ -162,7 +162,7 @@ export default function generateDummyDay(date: Date): Day {
         // get an activity or undefined based on the probability
         const activity: Activity | undefined = getRandomActivity();
 
-        // if the activity is defined, get the duration based on the probability, duration is the default activity if the probability is met else a random duration
+        // if the activity is defined, get the increment based on the probability, increment is the default activity if the probability is met else a random increment
         const duration: Duration | undefined = activity ? getRandomDuration(activity) : undefined;
 
         const session_segments: Segment[] = skewDurationSegments(duration ?? generateCustomDuration())

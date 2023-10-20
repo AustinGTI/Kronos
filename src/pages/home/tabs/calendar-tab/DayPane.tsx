@@ -2,12 +2,13 @@ import React from 'react'
 import {Activity, Day, SegmentType, Session, UNTITLED_ACTIVITY} from "../../../../globals/types/main";
 import {Paragraph, View, XStack, XStackProps, YStack} from "tamagui";
 import {ActivitiesState} from "../../../../globals/redux/reducers/activitiesReducer";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {AppState} from "../../../../globals/redux/reducers";
 import {TouchableOpacity, useWindowDimensions} from "react-native";
 import {useHeaderHeight} from "react-native-screens/native-stack";
 import {CalendarTabContext} from "./context";
 import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../../globals/helpers/datetime_functions";
+import {endSession} from "../../../../globals/redux/reducers/sessionsReducer";
 
 interface DayPaneProps {
     date: string
@@ -209,6 +210,29 @@ export default function DayPane({date}: DayPaneProps) {
     } = React.useContext(CalendarTabContext)
 
     const sessions = useSelector((state: AppState) => state.sessions)
+    const dispatch = useDispatch()
+
+    // for clean up purposes, for each session, check if it is still ongoing, if so, it is likely that the app closed before
+    // it had a chance to be properly ended. use dispatch to end the session with the end time being the sum of all the
+    // segment durations
+
+    React.useEffect(() => {
+        for (const day of Object.values(sessions)) {
+            for (const session of Object.values(day.sessions)) {
+                if (session.is_ongoing) {
+                    let duration = 0
+                    for (const segment of session.segments) {
+                        duration += segment.duration
+                    }
+                    const end_time = new Date(new Date(session.start_time).getTime() + duration * 60 * 1000)
+                    dispatch(endSession({
+                        session_id: session.id,
+                        end_time: end_time.toISOString()
+                    }))
+                }
+            }
+        }
+    }, [sessions])
 
     const day: Day = React.useMemo(() => {
         // if there are no sessions for the day, return a day object with an empty sessions object

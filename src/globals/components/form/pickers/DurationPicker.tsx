@@ -44,7 +44,7 @@ export default function DurationPicker({active_duration_id, setDuration}: Durati
         <React.Fragment>
             <XStack paddingVertical={10} alignItems={'center'} justifyContent={'space-between'}>
                 <Paragraph width={'60%'}>
-                    {selected_duration?.name ?? 'Select a duration...'}
+                    {selected_duration?.name ?? 'Select a increment...'}
                 </Paragraph>
                 <Button onPress={() => setDialogOpen(true)}>Select</Button>
             </XStack>

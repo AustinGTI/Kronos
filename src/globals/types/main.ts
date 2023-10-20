@@ -5,7 +5,7 @@ export type SegmentType = {
     key: number,
     name: string;
     color: string;
-    persists_on_app_close?: boolean;
+    persists_on_app_close: boolean;
 }
 
 export const SegmentTypes: { [key: string]: SegmentType } = {

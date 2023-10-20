@@ -125,7 +125,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
     const handleOnClickDeleteButton = React.useCallback(() => {
         setAlertProps({
             title: 'Delete Duration',
-            description: 'Are you sure you want to delete this duration?',
+            description: 'Are you sure you want to delete this increment?',
             buttons: [
                 {
                     text: 'No',
@@ -236,7 +236,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
 export default function DurationsTab() {
     const planner_app_state = useSelector(selectPlannerState)
 
-    // only one duration can be open at a time to simulate an accordion
+    // only one increment can be open at a time to simulate an accordion
     const [open_duration, setOpenDuration] = React.useState<Duration | null>(null)
 
     return (

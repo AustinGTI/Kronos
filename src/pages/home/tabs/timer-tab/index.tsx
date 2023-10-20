@@ -41,7 +41,7 @@ function TimeDisplay({duration}: TimeDisplayProps) {
 
     const [hours, minutes, seconds]: [string, string, string] = React.useMemo(() => {
         if (duration === undefined) {
-            return ['--', '--', '--']
+            return ['00', '00', '00']
         }
         const absolute_duration = Math.abs(duration)
         const hours = Math.floor(absolute_duration / 3600).toString().padStart(2, '0')
@@ -108,7 +108,7 @@ export default function TimerTab() {
 
     const startTimer = React.useCallback(() => {
         if (!timer_duration || !timer_activity) {
-            throw new Error('Cannot start timer if duration or activity is not set')
+            throw new Error('Cannot start timer if increment or activity is not set')
         }
         updateTimerState({
             type: TimerStateActionTypes.START_TIMER, payload: timer_duration
@@ -177,14 +177,16 @@ export default function TimerTab() {
             throw new Error('Cannot increment timer if timer state is not set')
         }
         // get the difference between the estimated time and the actual time to determine the elapsed time since the timer state update
-        const time_difference = Math.round((new Date().getTime() - timer_state.timing_state.estimated_time.getTime())/1000)
+        const time_difference = Math.round((new Date().getTime() - timer_state.timing_state.estimated_time.getTime()) / 1000)
+
+        console.log('The exact time difference between the current time and the previous time is', (new Date().getTime() - timer_state.timing_state.estimated_time.getTime()) / 1000, 'time difference is', time_difference)
 
         updateTimerState({
             type: TimerStateActionTypes.INCREMENT_TIMER, payload: time_difference
         })
 
         // get the amount of times 60s is crossed to determine the number of session increments needed in storage
-        const session_increments = Math.floor((timer_state.timing_state.elapsed_time + time_difference) / 60)
+        const session_increments = Math.floor(((timer_state.timing_state.elapsed_time % 60) + time_difference) / 60)
 
         // at every 60 sec interval, increment the session as well
         if (session_increments > 0) {
@@ -195,14 +197,14 @@ export default function TimerTab() {
                     session_id: session_id!,
                     // the active segment is the last segment in the array
                     segment_type: segments_remaining[segments_remaining.length - 1].segment_type,
-                    duration: session_increments
+                    increment: session_increments
                 }))
             } else {
                 // otherwise, increment with the PAUSE segment
                 dispatch(incrementSessionSegment({
                     session_id: session_id!,
                     segment_type: SegmentTypes.PAUSE,
-                    duration: session_increments
+                    increment: session_increments
                 }))
             }
         }
@@ -349,10 +351,10 @@ export default function TimerTab() {
                 <React.Fragment>
                     <Path
                         path={generateTimerPath(main_clock_coords)}
-                        style='stroke'
+                        style="stroke"
                         strokeWidth={30}
                         color={'gray'}
-                        strokeCap='butt'
+                        strokeCap="butt"
                     />
                 </React.Fragment>
             )
@@ -376,7 +378,7 @@ export default function TimerTab() {
                                 <Path
                                     key={index}
                                     path={generateTimerPath(main_clock_coords)}
-                                    style='stroke'
+                                    style="stroke"
                                     strokeWidth={30}
                                     color={timer_duration.segments[index].type.color}
                                     start={(index !== 0 ? intervals[index - 1] : 0)}
@@ -400,19 +402,19 @@ export default function TimerTab() {
             let elapsed_duration = timer_state.segments_state.segments_completed.reduce((total, segment) => total + segment.initial_duration, 0)
             elapsed_duration += Math.min(active_segment.initial_duration, active_segment.elapsed_duration)
 
-            console.log('total duration is', total_duration, 'elapsed duration is', elapsed_duration)
+            console.log('total increment is', total_duration, 'elapsed increment is', elapsed_duration)
 
             timer_location = elapsed_duration / total_duration
         }
         return (
             <Path
                 path={generateTimerPath(main_clock_coords)}
-                style='stroke'
+                style="stroke"
                 strokeWidth={10}
                 color={'white'}
                 start={0}
                 end={timer_location > 0 ? timer_location : 0.0001} // if timer location is 0, set timer location to just above 0 to display a single dot at the top
-                strokeCap='round'
+                strokeCap="round"
             />
         )
     }, [timer_state, active_segment, timer_duration, generateTimerPath, main_clock_coords])
@@ -423,31 +425,10 @@ export default function TimerTab() {
     return (
         <TimerTabContext.Provider value={timer_tab_context}>
             <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'}>
-                <XStack py={2} w={'90%'} justifyContent={'center'} alignItems={'center'}>
-                    <Circle size={10} backgroundColor={timer_activity ? timer_activity.color : 'gray'}/>
-                    <Button disabled={timer_state !== null}
-                            backgroundColor={'transparent'}
-                            onPress={openSelectActivityModal}>
-                        <Paragraph
-                            color={timer_activity ? 'black' : 'gray'}
-                            textTransform={'uppercase'} fontSize={18} textDecorationLine={'underline'}>
-                            {timer_activity?.name ?? 'Select Activity'}
-                        </Paragraph>
-                    </Button>
-                    <Circle size={10} backgroundColor={timer_activity ? timer_activity.color : 'gray'}/>
+                <XStack w={'90%'} justifyContent={'center'} alignItems={'center'} py={5}>
+                    <Paragraph fontSize={20} lineHeight={20}>POMODORO TIMER</Paragraph>
                 </XStack>
-                <XStack w={'90%'} justifyContent={'center'} py={2}>
-                    <Button disabled={timer_state !== null}
-                            backgroundColor={'transparent'}
-                            onPress={openSelectDurationModal}>
-                        <Paragraph
-                            color={timer_activity ? 'black' : 'gray'}
-                            textTransform={'uppercase'} fontSize={18} textDecorationLine={'underline'}>
-                            {timer_duration?.name ?? 'Select Duration'}
-                        </Paragraph>
-                    </Button>
-                </XStack>
-                <Square position={'relative'} width={wp('85%')} height={wp('85%')} marginTop={15}>
+                <Square position={'relative'} width={wp('85%')} height={wp('85%')} marginVertical={15}>
                     <Canvas style={{width: '100%', height: '100%'}}>
                         <Group>
                             {clock}
@@ -495,7 +476,31 @@ export default function TimerTab() {
                         </XStack>
                     </YStack>
                 </Square>
-                <YStack width={wp('85%')} height={hp('30%')} overflow={'scroll'} pt={15}>
+                <XStack py={2} w={'90%'} justifyContent={'center'} alignItems={'center'}>
+                    <Circle size={10} backgroundColor={timer_activity ? timer_activity.color : 'gray'}/>
+                    <Button disabled={timer_state !== null}
+                            backgroundColor={'transparent'}
+                            onPress={openSelectActivityModal}>
+                        <Paragraph
+                            color={timer_activity ? 'black' : 'gray'}
+                            textTransform={'uppercase'} fontSize={18} textDecorationLine={'underline'}>
+                            {timer_activity?.name ?? 'Select Activity'}
+                        </Paragraph>
+                    </Button>
+                    <Circle size={10} backgroundColor={timer_activity ? timer_activity.color : 'gray'}/>
+                </XStack>
+                <XStack w={'90%'} justifyContent={'center'} py={2}>
+                    <Button disabled={timer_state !== null}
+                            backgroundColor={'transparent'}
+                            onPress={openSelectDurationModal}>
+                        <Paragraph
+                            color={timer_activity ? 'black' : 'gray'}
+                            textTransform={'uppercase'} fontSize={18} textDecorationLine={'underline'}>
+                            {timer_duration?.name ?? 'Select Duration'}
+                        </Paragraph>
+                    </Button>
+                </XStack>
+                <YStack width={wp('85%')} height={hp(timer_state ? '20%' : '0%')} overflow={'scroll'} pt={15}>
                     {
                         [
                             ...(timer_state?.segments_state.segments_completed ?? []),

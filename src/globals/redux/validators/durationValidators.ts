@@ -46,14 +46,14 @@ function genericDurationValidation(app_state: AppState, duration: Duration): Val
 }
 
 export function createDurationValidation(app_state: AppState, new_duration: Duration): ValidationResponse {
-    // check that the duration name is unique
+    // check that the increment name is unique
     const has_duplicate = Object.values(app_state.durations).some(duration => compareStrings(duration.name, new_duration.name))
     if (has_duplicate) {
         return {
             status: ValidationStatus.ERROR,
             error: {
                 field: 'name',
-                message: 'A duration with this name already exists'
+                message: 'A increment with this name already exists'
             }
         }
     }
@@ -61,25 +61,25 @@ export function createDurationValidation(app_state: AppState, new_duration: Dura
 }
 
 export function updateDurationValidation(app_state: AppState, duration: Duration): ValidationResponse {
-    // check that the duration exists
+    // check that the increment exists
     if (!app_state.durations[duration.id]) {
         return {
             status: ValidationStatus.ERROR,
             error: {
                 field: SpecialField.GLOBAL,
-                message: 'This duration does not exist'
+                message: 'This increment does not exist'
             }
         }
     }
 
-    // check that the duration name is unique, excluding the current duration
+    // check that the increment name is unique, excluding the current increment
     const has_duplicate = Object.values(app_state.durations).some(other_duration => compareStrings(other_duration.name, duration.name) && other_duration.id !== duration.id)
     if (has_duplicate) {
         return {
             status: ValidationStatus.ERROR,
             error: {
                 field: 'name',
-                message: 'A duration with this name already exists'
+                message: 'A increment with this name already exists'
             }
         }
     }
@@ -88,13 +88,13 @@ export function updateDurationValidation(app_state: AppState, duration: Duration
 }
 
 export function deleteDurationValidation(app_state: AppState, duration_id: number): ValidationResponse {
-    // check that the duration exists
+    // check that the increment exists
     if (!app_state.durations[duration_id]) {
         return {
             status: ValidationStatus.ERROR,
             error: {
                 field: SpecialField.GLOBAL,
-                message: 'This duration does not exist'
+                message: 'This increment does not exist'
             }
         }
     }

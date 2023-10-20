@@ -4,18 +4,18 @@ import React from "react";
 /**
  * * THE FUNCTIONING OF THE TIMER
  * * .........................
- * 1. The timer is initialized with a list of segments, each with an initial duration and a segment type,
+ * 1. The timer is initialized with a list of segments, each with an initial increment and a segment type,
  * This list of segments is entered into the segments_remaining array and is inverted such that the first segment
  * in the array is at the end of the list and the last segment in the array is at the beginning of the list. The time_elapsed
  * is set to 0 and the is_running flag is set to false.
  *
  * 2. When the user clicks the start button, the is_running flag is set to true and the timer starts counting up both in the
- * segments_remaining array and the time_elapsed variable. In the remaining segments array, the elapsed duration of the
+ * segments_remaining array and the time_elapsed variable. In the remaining segments array, the elapsed increment of the
  * segment at the end of the list is incremented by 1. In the time_elapsed variable, the time is incremented by 1 each second.
  *
  * 3. When the user clicks the pause button, the is_running flag is set to false and the timer stops counting up.
  *
- * 4. When a segment ends, that is, its elapsed duration is more than or equal to its initial duration, its alert is displayed
+ * 4. When a segment ends, that is, its elapsed increment is more than or equal to its initial increment, its alert is displayed
  * while it keeps counting up. When the user clicks the ok button on the alert, the segment is removed from the segments_remaining
  * array and added to the segments_completed array. The next segment in the segments_remaining array is then started.
  * Pause cannot be clicked while an alert is being displayed.
@@ -66,7 +66,7 @@ export function durationToTimerState(duration: Duration): TimerState {
             title: '',
             description: ''
         }
-        // if the segment is the last segment, then the user needs to be informed that the entire duration has been completed
+        // if the segment is the last segment, then the user needs to be informed that the entire increment has been completed
         if (index === duration.segments.length - 1) {
             on_complete_alert_props.title = 'Pomodoro Session Completed'
             on_complete_alert_props.description = 'Congratulations, this pomodoro session has been successfully completed! Click OK to record this session.'
@@ -74,13 +74,13 @@ export function durationToTimerState(duration: Duration): TimerState {
             // if the segment is a focus segment, then the user needs to be informed that it is time for a break
             if (segment.type.name === SegmentTypes.FOCUS.name) {
                 on_complete_alert_props.title = 'Time for a break!'
-                // get the duration of the next segment (which is a break segment)
+                // get the increment of the next segment (which is a break segment)
                 const break_duration = duration.segments[index + 1].duration
                 on_complete_alert_props.description = `Take a ${break_duration} minute break to get some rest. Click OK to start the break.`
             } else if (segment.type.name === SegmentTypes.BREAK.name) {
                 // if the segment is a break segment, then the user needs to be informed that it is time to focus
                 on_complete_alert_props.title = 'Break is over!'
-                // get the duration of the next segment (which is a focus segment)
+                // get the increment of the next segment (which is a focus segment)
                 const focus_duration = duration.segments[index + 1].duration
                 on_complete_alert_props.description = `Time to focus again for ${focus_duration} minutes. Click OK to start focusing.`
             } else {
@@ -109,7 +109,7 @@ export function durationToTimerState(duration: Duration): TimerState {
             estimated_time: new Date()
         },
         info_state: {
-            // when the timer is stopped before the entire duration is completed, the user needs to be informed that the session
+            // when the timer is stopped before the entire increment is completed, the user needs to be informed that the session
             // will be recorded as incomplete
             on_stop_alert_props: {
                 is_open: false,
@@ -207,6 +207,7 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
             }
         case TimerStateActionTypes.INCREMENT_TIMER:
             const increment = (payload as number)
+            console.log('the increment on this run of increment timer is',increment)
             const active_segment_type = state.segments_state.segments_remaining[state.segments_state.segments_remaining.length - 1].segment_type
             // if the timer is running, elapsed time,active time and the segment time should be incremented
             // if not, only the elapsed time should be incremented
@@ -221,12 +222,12 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                     },
                     segments_state: {
                         ...state.segments_state,
-                        // increment the elapsed duration of the segment at the end of the list
+                        // increment the elapsed increment of the segment at the end of the list
                         segments_remaining: state.segments_state.segments_remaining.map((segment, index) => {
                             state = state as TimerState // ! without this line for some reason, the compiler will complain that state might be null though it has been casted to TimerState
                             if (index === state.segments_state.segments_remaining.length - 1) {
                                 console.log('incrementing segment', segment, 'at index', index)
-                                // increase the elapsed duration, if the elapsed duration is more than the initial duration, set the alert modal open state to true
+                                // increase the elapsed increment, if the elapsed increment is more than the initial increment, set the alert modal open state to true
                                 return {
                                     ...segment,
                                     elapsed_duration: segment.elapsed_duration + (active_segment_type.persists_on_app_close ? increment : 1),
@@ -246,7 +247,8 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                     ...state,
                     timing_state: {
                         ...state.timing_state,
-                        elapsed_time: state.timing_state.elapsed_time + 1,
+                        elapsed_time: state.timing_state.elapsed_time + increment,
+                        estimated_time: new Date(state.timing_state.estimated_time.getTime() + increment*1000)
                     }
                 }
             }
