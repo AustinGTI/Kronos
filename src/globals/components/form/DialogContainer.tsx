@@ -5,14 +5,15 @@ import {X} from "@tamagui/lucide-icons";
 interface DialogContainerProps extends YStackProps {
     children: React.ReactNode
     onClose?: () => void
+    with_close_button?: boolean
 }
 
-export default function DialogContainer({children, onClose, ...stack_props}: DialogContainerProps) {
+export default function DialogContainer({children, onClose,with_close_button, ...stack_props}: DialogContainerProps) {
     return (
         <YStack position={'relative'} borderColor={'#bbb'} borderRadius={7} borderWidth={1} padding={10} paddingTop={20}
                 overflow={'hidden'}
                 backgroundColor={'#eee'} {...stack_props}>
-            {onClose && (
+            {onClose && with_close_button && (
                 <Button position={'absolute'}
                         borderRadius={0} borderBottomRightRadius={7}
                         top={0} left={0} backgroundColor={'#fff'} h={20} w={20} padding={0} margin={0} onPress={onClose}>

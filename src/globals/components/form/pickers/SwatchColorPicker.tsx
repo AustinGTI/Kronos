@@ -2,11 +2,16 @@ import React from 'react'
 import {Button, Stack, View, XStack} from "tamagui";
 import ColorPicker, {Swatches} from "reanimated-color-picker";
 import DialogContainer from "../DialogContainer";
+import {ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
 
 interface SwatchColorPickerProps {
     active_color: string
 
     setColor(color: string): void
+
+    onPickerOpenOrClose?(state: boolean): void
+
+    picker_open?: boolean
 }
 
 const SWATCH_COLORS = [
@@ -33,13 +38,37 @@ const SWATCH_COLORS = [
     '#607D8B',
 ];
 
-export default function SwatchColorPicker({active_color, setColor}: SwatchColorPickerProps) {
+export default function SwatchColorPicker({
+                                              active_color,
+                                              setColor,
+                                              picker_open,
+                                              onPickerOpenOrClose
+                                          }: SwatchColorPickerProps) {
     const [dialog_open, setDialogOpen] = React.useState<boolean>(false)
+
+    // if picker open has been set to either true or false, then set the dialog open state to that value
+    React.useEffect(() => {
+        if (picker_open !== undefined) {
+            setDialogOpen(picker_open)
+        }
+    }, [picker_open])
+
+    // if the dialog open state changes, then call the onPickerOpenOrClose callback
+    React.useEffect(() => {
+        if (onPickerOpenOrClose) {
+            onPickerOpenOrClose(dialog_open)
+        }
+    }, [dialog_open])
+
     return (
         <React.Fragment>
-            <XStack w={'100%'} paddingVertical={10} alignItems={'center'} justifyContent={'space-between'}>
-                <View w={'60%'} h={50} borderRadius={5} borderWidth={1} borderColor={'#bbb'} backgroundColor={active_color}/>
-                <Button onPress={() => setDialogOpen(true)}>Select</Button>
+            <XStack w={'100%'} paddingVertical={10} alignItems={'center'} justifyContent={'space-between'}
+                    onPress={() => setDialogOpen(!dialog_open)} paddingRight={10}>
+                <View w={'60%'} h={50} borderRadius={5} borderWidth={1} borderColor={'#bbb'}
+                      backgroundColor={active_color}/>
+                {
+                    dialog_open ? <ChevronUp size={20} color={'#555'}/> : <ChevronDown size={20} color={'#555'}/>
+                }
             </XStack>
             {dialog_open && (
                 <DialogContainer onClose={() => setDialogOpen(false)}>

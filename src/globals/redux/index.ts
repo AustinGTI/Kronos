@@ -7,7 +7,7 @@ import {FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE} from "redux-persist/e
 const persistConfig = {
     key: 'root',
     storage: AsyncStorage,
-    whitelist: ['activities', 'durations', 'sessions']
+    whitelist: ['activities', 'durations', 'sessions', 'settings']
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
