@@ -1,5 +1,5 @@
 import {AppState} from "../../reducers";
 
-export default function selectSessionState(state: AppState) {
+export default function selectSessionsState(state: AppState) {
     return state.sessions;
 }

@@ -28,7 +28,7 @@ function ActivityFormFields() {
                                 active_duration_id={values['default_duration_id'] ?? undefined}/>
             </InputContainer>
             <InputContainer field_key={'color'} label={'Color'} error={touched['color'] ? errors['color'] : undefined}>
-                <SwatchColorPicker active_color={values['color']} setColor={(color) => setValues({...values, color})}/>
+                <SwatchColorPicker active_color={values['color']} setColor={(color) => setValues({...values, color})} close_on_select/>
             </InputContainer>
         </YStack>
     )

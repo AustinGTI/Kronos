@@ -3,8 +3,6 @@ import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import CalendarTab from "./tabs/calendar-tab";
 import TimerTab from "./tabs/timer-tab";
 import PlannerTab from "./tabs/planner-tab";
-import {useDispatch} from "react-redux";
-import {clearSessions, generateDummySessions} from "../../globals/redux/reducers/sessionsReducer";
 import {Calendar, Clipboard, Timer} from "@tamagui/lucide-icons";
 
 const Tab = createBottomTabNavigator()

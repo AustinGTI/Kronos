@@ -2,18 +2,17 @@ import React, {useMemo} from 'react'
 import {Button, Circle, Paragraph, Separator, XStack, YStack} from "tamagui";
 import {useDispatch, useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
-import {Activity, Session} from "../../../../../globals/types/main";
+import {Activity} from "../../../../../globals/types/main";
 // import {ArrowDown, Delete, Edit, Play} from "@tamagui/lucide-icons";
 import {FlatList} from "react-native";
-import {ChevronDown, ChevronUp, Delete, Edit, Play, Trash} from "@tamagui/lucide-icons";
-import usePlannerTabContext, {PlannerTabContext} from "../context";
+import {ChevronDown, ChevronUp, Edit, Trash} from "@tamagui/lucide-icons";
+import usePlannerTabContext from "../context";
 import {
     deleteActivityValidation,
     updateActivityValidation
 } from "../../../../../globals/redux/validators/activityValidators";
 import {ValidationStatus} from "../../../../../globals/redux/types";
 import {deleteActivity, updateActivity} from "../../../../../globals/redux/reducers/activitiesReducer";
-import {SessionsState} from "../../../../../globals/redux/reducers/sessionsReducer";
 import selectPlannerState from "../../../../../globals/redux/selectors/plannerTabSelector";
 
 interface ActivityPaneProps {
@@ -31,7 +30,7 @@ interface ActivityStatProps {
 export function ActivityStat({value, label}: ActivityStatProps) {
     return (
         <YStack alignItems={'center'} flexGrow={1}>
-            <Paragraph fontSize={32} color={'black'} lineHeight={40}>{value}</Paragraph>
+            <Paragraph fontSize={32} color={'$color'} lineHeight={40}>{value}</Paragraph>
             <Paragraph fontSize={8} textTransform={'uppercase'} color={'#aaa'} lineHeight={10}>{label}</Paragraph>
         </YStack>
     );
@@ -137,20 +136,17 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
         return open_activity?.id === activity.id
     }, [open_activity?.id, activity.id])
 
-    const [sessions, hours, minutes] = useMemo(() => {
-        // convert the activity stats data into a more readable format
-        const hours = Math.floor(activity.stats_data.total_time / 60)
-        const minutes = activity.stats_data.total_time % 60
-        return [activity.stats_data.total_sessions, hours, minutes]
+    const [sessions,  minutes] = useMemo(() => {
+        return [activity.stats_data.total_sessions,  activity.stats_data.total_time]
     }, [activity.stats_data.total_time, activity.stats_data.total_sessions]);
 
     return (
-        <YStack width={'95%'} borderRadius={10} margin={'2.5%'} backgroundColor={'white'}>
+        <YStack width={'95%'} borderRadius={10} margin={'2.5%'} backgroundColor={'$background'}>
             <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'} onPress={handleOnClickPane}
                     padding={20}>
                 <Circle size={20} backgroundColor={activity.color}/>
-                <Paragraph>{activity.name}</Paragraph>
-                {is_open ? <ChevronUp size={'2$'} color={'#777'}/> : <ChevronDown size={'2$'} color={'#777'}/>}
+                <Paragraph color={'$color'}>{activity.name}</Paragraph>
+                {is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}
             </XStack>
             {
                 is_open && (
@@ -164,11 +160,11 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
                                 <ActivityStat label={'minutes'} value={minutes}/>
                             </XStack>
                             <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={10}>
-                                <Button onPress={handleOnClickEditButton} padding={0} margin={0} height={20}>
+                                <Button onPress={handleOnClickEditButton} padding={0} margin={0} height={20} backgroundColor={'transparent'}>
                                     <Edit size={20} color={'#777'}/>
                                 </Button>
-                                <Play size={20} color={'#777'}/>
-                                <Button onPress={handleOnClickDeleteButton} padding={0} margin={0} height={20}>
+                                {/*<Play size={20} color={'#777'}/>*/}
+                                <Button onPress={handleOnClickDeleteButton} padding={0} margin={0} height={20} backgroundColor={'transparent'}>
                                     <Trash size={20} color={'#777'}/>
                                 </Button>
                             </XStack>

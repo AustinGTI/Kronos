@@ -4,6 +4,7 @@ import {AppState} from "../../../redux/reducers";
 import {Duration} from "../../../types/main";
 import {Adapt, Button, Dialog, DialogOverlay, Paragraph, ScrollView, Sheet, XStack, YStack} from "tamagui";
 import DialogContainer from "../DialogContainer";
+import {ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
 
 interface DurationPickerPaneProps {
     duration: Duration,
@@ -19,9 +20,9 @@ interface DurationPickerProps {
 function DurationPickerPane({duration, onClick, is_active}: DurationPickerPaneProps) {
     return (
         <XStack justifyContent={'space-between'} alignItems={'center'}
-                marginVertical={5} paddingHorizontal={10}
-                borderRadius={5} borderWidth={is_active ? 2 : 0} borderColor={'black'}>
-            <Paragraph>{duration.name}</Paragraph>
+                marginVertical={5} padding={10} backgroundColor={'$background'}
+                borderRadius={10} borderColor={'$color'} width={'95%'}>
+            <Paragraph color={'$color'} textDecorationLine={is_active ? 'underline' : 'none'}>{duration.name}</Paragraph>
             <Button onPress={onClick}>Select</Button>
         </XStack>
     )
@@ -42,15 +43,18 @@ export default function DurationPicker({active_duration_id, setDuration}: Durati
 
     return (
         <React.Fragment>
-            <XStack paddingVertical={10} alignItems={'center'} justifyContent={'space-between'}>
+            <XStack paddingVertical={20} alignItems={'center'} justifyContent={'space-between'} onPress={() => setDialogOpen(!dialog_open)}>
                 <Paragraph width={'60%'}>
                     {selected_duration?.name ?? 'Select a increment...'}
                 </Paragraph>
-                <Button onPress={() => setDialogOpen(true)}>Select</Button>
+                {/*<Button onPress={() => setDialogOpen(true)}>Select</Button>*/}
+                {
+                    dialog_open ? <ChevronUp size={20} color={'#555'}/> : <ChevronDown size={20} color={'#555'}/>
+                }
             </XStack>
             {dialog_open &&
-                <DialogContainer onClose={() => setDialogOpen(false)}>
-                    <YStack width={'100%'}>
+                <DialogContainer onClose={() => setDialogOpen(false)} maxHeight={200}>
+                    <YStack width={'100%'} alignItems={'center'} borderWidth={1} paddingVertical={5}>
                         {Object.values(durations).map((duration) => (
                             <DurationPickerPane
                                 key={duration.id}

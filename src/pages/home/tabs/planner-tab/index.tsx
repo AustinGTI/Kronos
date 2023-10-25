@@ -141,11 +141,11 @@ export default function PlannerTab() {
 
     return (
         <PlannerTabContext.Provider value={planner_tab_context}>
-            <YStack fullscreen={true} jc={'center'} ai={'center'} backgroundColor={'white'}>
+            <YStack fullscreen={true} jc={'center'} ai={'center'} backgroundColor={'$background'}>
                 <XStack w={'100%'} justifyContent={'space-between'} padding={15}>
-                    <XGroup>
+                    <XGroup backgroundColor={'$foreground'}>
                         {PLANNER_SUB_TABS.map((sub_tab) => (
-                            <XGroup.Item key={sub_tab.key}>
+                            <XGroup.Item key={sub_tab.key} color={'$color'}>
                                 <Button onPress={() => setActiveSubTab(sub_tab)}>{sub_tab.name}</Button>
                             </XGroup.Item>
                         ))}
@@ -153,7 +153,7 @@ export default function PlannerTab() {
                     <Button onPress={onClickAddButton} icon={<Plus size={'4$'}/>}/>
                 </XStack>
 
-                <YStack ai={'center'} jc={'center'} flex={1} backgroundColor={'#f7f7f7'} w={'95%'} margin={10}
+                <YStack ai={'center'} jc={'center'} flex={1} backgroundColor={'$foreground'} w={'95%'} margin={10}
                         borderRadius={10}>
                     {active_sub_tab.component}
                 </YStack>
@@ -180,7 +180,7 @@ export default function PlannerTab() {
                 }
                 <Sheet.Frame height={400} backgroundColor={'transparent'}>
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                        <Sheet.ScrollView w={'100%'} h={'100%'} backgroundColor={'white'}>
+                        <Sheet.ScrollView w={'100%'} h={'100%'} backgroundColor={'$background'}>
                             {form_props ? active_sub_tab.key === 'activities' ? (
                                 <ActivityForm
                                     title={form_props?.title}

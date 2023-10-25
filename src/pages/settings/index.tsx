@@ -8,6 +8,7 @@ import {AppTheme, setBreakColor, setFocusColor, setTheme} from "../../globals/re
 import DataSetting from "./panes/DataSetting";
 import SwatchColorPicker from "../../globals/components/form/pickers/SwatchColorPicker";
 import {string} from "yup";
+import selectSettingsPageState from "../../globals/redux/selectors/settingsPageSelector";
 
 interface PaneWrapperProps {
     label: string
@@ -27,7 +28,7 @@ function PaneWrapper({label, children}: PaneWrapperProps) {
 }
 
 export default function SettingsPage() {
-    const {theme, focus_color, break_color} = useSelector((state: AppState) => state.settings)
+    const {theme, focus_color, break_color} = useSelector(selectSettingsPageState)
     const dispatch = useDispatch()
 
     /**

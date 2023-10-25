@@ -22,10 +22,20 @@ const activitiesSlice = createSlice({
             state[payload.id] = payload
         },
 
-        incrementActivityStats: (state, {payload}: { type: string, payload: { activity_id: number, session_duration: number } }) => {
+        // incrementActivityStats: (state, {payload}: { type: string, payload: { activity_id: number, session_duration: number } }) => {
+        //     const activity = state[payload.activity_id] as Activity
+        //     activity.stats_data.total_time += payload.session_duration
+        //     activity.stats_data.total_sessions += 1
+        // },
+
+        incrementActivitySessions: (state, {payload}: { type: string, payload: { activity_id: number } }) => {
             const activity = state[payload.activity_id] as Activity
-            activity.stats_data.total_time += payload.session_duration
             activity.stats_data.total_sessions += 1
+        },
+
+        incrementActivityTime: (state, {payload}: { type: string, payload: { activity_id: number, increment: number } }) => {
+            const activity = state[payload.activity_id] as Activity
+            activity.stats_data.total_time += payload.increment
         },
 
         deleteActivity: (state, {payload}: { type: string, payload: number }) => {

@@ -1,17 +1,20 @@
-import React, {useMemo} from 'react'
-import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
-import {AlertDialog, Button, Paragraph, ScrollView, Sheet, Square, View, XStack, YStack, Circle} from "tamagui";
+import React from 'react'
+import {heightPercentageToDP as hp, widthPercentageToDP as wp} from 'react-native-responsive-screen';
+import {AlertDialog, Button, Circle, Paragraph, Sheet, Square, XStack, YStack} from "tamagui";
 import {Activity, Duration, SegmentTypes, Session} from "../../../../globals/types/main";
 import {AlertProps} from "../../../../globals/types/alert";
 import {TimerTabContext, TimerTabContextProps} from "./context";
-import {Dimensions, Keyboard, TouchableWithoutFeedback} from "react-native";
+import {Keyboard, TouchableWithoutFeedback} from "react-native";
 import SelectActivityModal from "./modals/SelectActivityModal";
 import SelectDurationModal from "./modals/SelectDurationModal";
 import {TimerStateActionTypes, timerStateReducer} from "./timer_state";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {endSession, incrementSessionSegment, startSession} from "../../../../globals/redux/reducers/sessionsReducer";
-import {Canvas, Text, Group, Path, Skia} from "@shopify/react-native-skia";
+import {Canvas, Group, Path, Skia} from "@shopify/react-native-skia";
 import {Pause, Play, Square as SquareIcon} from "@tamagui/lucide-icons";
+import {incrementActivityStatsValidation} from "../../../../globals/redux/validators/activityValidators";
+import timerTabSelector from "../../../../globals/redux/selectors/timerTabSelector";
+import {ValidationStatus} from "../../../../globals/redux/types";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
@@ -84,6 +87,8 @@ export default function TimerTab() {
     // Region STATES
     // ? ........................
 
+    const app_state = useSelector(timerTabSelector)
+
     const dispatch = useDispatch()
     const timer_interval_ref = React.useRef<number | null>(null)
 
@@ -125,6 +130,10 @@ export default function TimerTab() {
         }
         setSessionId(session.id)
         dispatch(startSession(session))
+        // increment the activity stats
+        if (incrementActivityStatsValidation(app_state, timer_activity!.id).status === ValidationStatus.SUCCESS) {
+            dispatch(incrementActivitySessions({activity_id: timer_activity!.id}))
+        }
     }, [timer_duration, timer_activity, dispatch])
 
     const pauseTimer = React.useCallback(() => {
@@ -199,6 +208,10 @@ export default function TimerTab() {
                     segment_type: segments_remaining[segments_remaining.length - 1].segment_type,
                     increment: session_increments
                 }))
+                // the activity also records the session stats (number of sessions, duration)
+                if (incrementActivityStatsValidation(app_state, timer_activity!.id).status === ValidationStatus.SUCCESS) {
+                    dispatch(incrementActivityTime({activity_id: timer_activity!.id, increment: session_increments}))
+                }
             } else {
                 // otherwise, increment with the PAUSE segment
                 dispatch(incrementSessionSegment({

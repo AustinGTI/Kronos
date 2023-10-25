@@ -12,6 +12,8 @@ interface SwatchColorPickerProps {
     onPickerOpenOrClose?(state: boolean): void
 
     picker_open?: boolean
+
+    close_on_select?: boolean
 }
 
 const SWATCH_COLORS = [
@@ -42,7 +44,8 @@ export default function SwatchColorPicker({
                                               active_color,
                                               setColor,
                                               picker_open,
-                                              onPickerOpenOrClose
+                                              onPickerOpenOrClose,
+                                              close_on_select,
                                           }: SwatchColorPickerProps) {
     const [dialog_open, setDialogOpen] = React.useState<boolean>(false)
 
@@ -72,7 +75,12 @@ export default function SwatchColorPicker({
             </XStack>
             {dialog_open && (
                 <DialogContainer onClose={() => setDialogOpen(false)}>
-                    <ColorPicker value={active_color} onChange={(colors) => setColor(colors.hex)}>
+                    <ColorPicker value={active_color} onChange={(colors) => {
+                        if (close_on_select) {
+                            setDialogOpen(false)
+                        }
+                        setColor(colors.hex)
+                    }}>
                         <Swatches
                             style={{marginVertical: 5}}
                             swatchStyle={{borderRadius: 5, width: 30, height: 30}}

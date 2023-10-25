@@ -1,8 +1,8 @@
 import {createSelector} from "@reduxjs/toolkit";
 import selectActivityState from "./base_selectors/activitiesSelector";
-import selectSessionState from "./base_selectors/sessionsSelector";
+import selectSessionsState from "./base_selectors/sessionsSelector";
 
-const selectStatisticsState = createSelector(selectActivityState, selectSessionState, (activities, sessions) => {
+const selectStatisticsState = createSelector(selectActivityState, selectSessionsState, (activities, sessions) => {
     return {
         activities, sessions
     };
