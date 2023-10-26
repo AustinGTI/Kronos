@@ -145,7 +145,7 @@ export default function PlannerTab() {
                 <XStack w={'100%'} justifyContent={'space-between'} padding={15}>
                     <XGroup backgroundColor={'$foreground'}>
                         {PLANNER_SUB_TABS.map((sub_tab) => (
-                            <XGroup.Item key={sub_tab.key} color={'$color'}>
+                            <XGroup.Item key={sub_tab.key}>
                                 <Button onPress={() => setActiveSubTab(sub_tab)}>{sub_tab.name}</Button>
                             </XGroup.Item>
                         ))}
@@ -178,7 +178,7 @@ export default function PlannerTab() {
                     // ! This is a fix that sets the background color of the frame to transparent so the glitch can't be seen
                     // ! then creates a View in the sheet with max dimensions and bg white
                 }
-                <Sheet.Frame height={400} backgroundColor={'transparent'}>
+                <Sheet.Frame height={400} backgroundColor={'transparent'} borderTopWidth={2} borderColor={'$border'}>
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                         <Sheet.ScrollView w={'100%'} h={'100%'} backgroundColor={'$background'}>
                             {form_props ? active_sub_tab.key === 'activities' ? (

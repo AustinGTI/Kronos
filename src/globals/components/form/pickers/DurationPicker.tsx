@@ -5,6 +5,8 @@ import {Duration} from "../../../types/main";
 import {Adapt, Button, Dialog, DialogOverlay, Paragraph, ScrollView, Sheet, XStack, YStack} from "tamagui";
 import DialogContainer from "../DialogContainer";
 import {ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
+import plannerTabSelector from "../../../redux/selectors/plannerTabSelector";
+import {AccordionContext} from "../../wrappers/Accordion";
 
 interface DurationPickerPaneProps {
     duration: Duration,
@@ -13,8 +15,10 @@ interface DurationPickerPaneProps {
 }
 
 interface DurationPickerProps {
-    active_duration_id?: number
     setDuration: (duration: Duration) => void
+    active_duration_id?: number
+    accordion_id?: string
+    close_on_select?: boolean
 }
 
 function DurationPickerPane({duration, onClick, is_active}: DurationPickerPaneProps) {
@@ -22,14 +26,22 @@ function DurationPickerPane({duration, onClick, is_active}: DurationPickerPanePr
         <XStack justifyContent={'space-between'} alignItems={'center'}
                 marginVertical={5} padding={10} backgroundColor={'$background'}
                 borderRadius={10} borderColor={'$color'} width={'95%'}>
-            <Paragraph color={'$color'} textDecorationLine={is_active ? 'underline' : 'none'}>{duration.name}</Paragraph>
+            <Paragraph color={'$color'}
+                       textDecorationLine={is_active ? 'underline' : 'none'}>{duration.name}</Paragraph>
             <Button onPress={onClick}>Select</Button>
         </XStack>
     )
 }
 
-export default function DurationPicker({active_duration_id, setDuration}: DurationPickerProps) {
-    const durations = useSelector((state: AppState) => state.durations)
+export default function DurationPicker({
+                                           active_duration_id,
+                                           setDuration,
+                                           accordion_id,
+                                           close_on_select
+                                       }: DurationPickerProps) {
+    const {addDialog, removeDialog, dialogIsOpen} = React.useContext(AccordionContext)
+
+    const {durations} = useSelector(plannerTabSelector)
     const [dialog_open, setDialogOpen] = React.useState(false)
 
     const selected_duration = React.useMemo(() => (
@@ -38,12 +50,33 @@ export default function DurationPicker({active_duration_id, setDuration}: Durati
 
     const handleClickDuration = React.useCallback((duration: Duration) => {
         setDuration(duration)
-        setDialogOpen(false)
-    }, [setDuration])
+        if (close_on_select) {
+            setDialogOpen(false)
+        }
+    }, [setDuration, setDialogOpen, close_on_select])
+
+    // when the dialog_open state changes, add or remove dialog from context if accordion id is set
+    React.useEffect(() => {
+        if (accordion_id) {
+            if (dialog_open) {
+                addDialog(accordion_id)
+            } else {
+                removeDialog(accordion_id)
+            }
+        }
+    }, [accordion_id, dialog_open])
+
+    // check if dialog is open according to the context, if not then set the dialog open state to false
+    React.useEffect(() => {
+        if (accordion_id && !dialogIsOpen(accordion_id)) {
+            setDialogOpen(false)
+        }
+    }, [accordion_id, dialogIsOpen])
 
     return (
         <React.Fragment>
-            <XStack paddingVertical={20} alignItems={'center'} justifyContent={'space-between'} onPress={() => setDialogOpen(!dialog_open)}>
+            <XStack paddingVertical={20} alignItems={'center'} justifyContent={'space-between'}
+                    onPress={() => setDialogOpen(!dialog_open)}>
                 <Paragraph width={'60%'}>
                     {selected_duration?.name ?? 'Select a increment...'}
                 </Paragraph>

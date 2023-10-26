@@ -2,9 +2,7 @@ import {createSlice} from "@reduxjs/toolkit";
 import {Activity} from "../../types/main";
 import DEFAULT_ACTIVITIES_STATE from "../defaults/default_activities";
 
-export type ActivitiesState = {[id:number]: Activity}
-
-
+export type ActivitiesState = { [id: number]: Activity }
 
 
 const initial_state: ActivitiesState = DEFAULT_ACTIVITIES_STATE
@@ -33,7 +31,10 @@ const activitiesSlice = createSlice({
             activity.stats_data.total_sessions += 1
         },
 
-        incrementActivityTime: (state, {payload}: { type: string, payload: { activity_id: number, increment: number } }) => {
+        incrementActivityTime: (state, {payload}: {
+            type: string,
+            payload: { activity_id: number, increment: number }
+        }) => {
             const activity = state[payload.activity_id] as Activity
             activity.stats_data.total_time += payload.increment
         },
@@ -55,5 +56,11 @@ const activitiesSlice = createSlice({
 })
 
 
-export const {createActivity, updateActivity, deleteActivity} = activitiesSlice.actions
+export const {
+    createActivity,
+    updateActivity,
+    deleteActivity,
+    incrementActivitySessions,
+    incrementActivityTime
+} = activitiesSlice.actions
 export default activitiesSlice.reducer

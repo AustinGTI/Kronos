@@ -15,6 +15,7 @@ import {Pause, Play, Square as SquareIcon} from "@tamagui/lucide-icons";
 import {incrementActivityStatsValidation} from "../../../../globals/redux/validators/activityValidators";
 import timerTabSelector from "../../../../globals/redux/selectors/timerTabSelector";
 import {ValidationStatus} from "../../../../globals/redux/types";
+import {incrementActivitySessions, incrementActivityTime} from "../../../../globals/redux/reducers/activitiesReducer";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',

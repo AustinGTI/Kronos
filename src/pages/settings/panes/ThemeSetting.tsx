@@ -73,6 +73,7 @@ export default function ThemeSetting({active_theme, setTheme}: ThemeSettingProps
                 items={Object.keys(AppTheme).map((key) => AppTheme[key as keyof typeof AppTheme])}
                 selected_item={active_theme}
                 onSelectItem={setTheme}
+                accordion_id={'theme_picker'}
                 SelectedItemRenderer={SelectedThemeRenderer}
                 DropdownItemRenderer={ItemThemeRenderer}
             />

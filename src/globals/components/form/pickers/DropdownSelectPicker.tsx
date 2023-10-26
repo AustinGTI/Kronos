@@ -1,6 +1,7 @@
 import React from 'react'
 import {Paragraph, ScrollView, XStack, YStack} from "tamagui";
 import {ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
+import {AccordionContext} from "../../wrappers/Accordion";
 
 interface SelectPickerProps<Item> {
     items: Item[]
@@ -8,6 +9,7 @@ interface SelectPickerProps<Item> {
     onSelectItem: (item: Item) => void
     placeholder?: string
     max_dropdown_height?: number
+    accordion_id?: string
     DropdownItemRenderer?: React.ComponentType<{ item: Item }>
     SelectedItemRenderer?: React.ComponentType<{ item: Item }>
 }
@@ -18,10 +20,32 @@ export default function DropdownSelectPicker<Item>({
                                                        onSelectItem,
                                                        placeholder = 'Select...',
                                                        max_dropdown_height = 100,
+                                                       accordion_id,
                                                        DropdownItemRenderer,
                                                        SelectedItemRenderer
                                                    }: SelectPickerProps<Item>) {
+    const {addDialog, removeDialog, dialogIsOpen} = React.useContext(AccordionContext)
+
     const [dropdown_open, setDropdownOpen] = React.useState<boolean>(false)
+
+    // if the dropdown_open state changes and accordion id has been set, add or remove the dialog from the context
+    React.useEffect(() => {
+        if (accordion_id) {
+            if (dropdown_open) {
+                addDialog(accordion_id)
+            } else {
+                removeDialog(accordion_id)
+            }
+        }
+    }, [accordion_id,dropdown_open]);
+
+    // check if the dialog is still open and close it if not according to the dialogIsOpen function from the context
+    React.useEffect(() => {
+        if (accordion_id && !dialogIsOpen(accordion_id)) {
+            setDropdownOpen(false)
+        }
+    }, [accordion_id, dialogIsOpen])
+
     return (
         <YStack w={'100%'}>
             <XStack w={'100%'} onPress={() => setDropdownOpen(!dropdown_open)} paddingVertical={10}
@@ -48,8 +72,8 @@ export default function DropdownSelectPicker<Item>({
                     <YStack w={'100%'} alignItems={'center'}>
                         {items.map((item, index) => {
                             return (
-                                <React.Fragment>
-                                    <XStack key={index} w={'100%'} paddingVertical={10} paddingHorizontal={10}
+                                <React.Fragment key={index}>
+                                    <XStack w={'100%'} paddingVertical={10} paddingHorizontal={10}
                                             onPress={() => {
                                                 onSelectItem(item)
                                                 setDropdownOpen(false)

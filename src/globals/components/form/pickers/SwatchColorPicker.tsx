@@ -3,16 +3,14 @@ import {Button, Stack, View, XStack} from "tamagui";
 import ColorPicker, {Swatches} from "reanimated-color-picker";
 import DialogContainer from "../DialogContainer";
 import {ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
+import {AccordionContext} from "../../wrappers/Accordion";
 
 interface SwatchColorPickerProps {
     active_color: string
 
     setColor(color: string): void
 
-    onPickerOpenOrClose?(state: boolean): void
-
-    picker_open?: boolean
-
+    accordion_id?: string
     close_on_select?: boolean
 }
 
@@ -43,25 +41,31 @@ const SWATCH_COLORS = [
 export default function SwatchColorPicker({
                                               active_color,
                                               setColor,
-                                              picker_open,
-                                              onPickerOpenOrClose,
+                                              accordion_id,
                                               close_on_select,
                                           }: SwatchColorPickerProps) {
+    const {addDialog, removeDialog, dialogIsOpen} = React.useContext(AccordionContext)
+
     const [dialog_open, setDialogOpen] = React.useState<boolean>(false)
 
-    // if picker open has been set to either true or false, then set the dialog open state to that value
+    // if the dialog_open state changes and accordion id has been set, add or remove the dialog from the context
     React.useEffect(() => {
-        if (picker_open !== undefined) {
-            setDialogOpen(picker_open)
+        if (accordion_id) {
+            if (dialog_open) {
+                addDialog(accordion_id)
+            } else {
+                removeDialog(accordion_id)
+            }
         }
-    }, [picker_open])
+    }, [dialog_open, accordion_id]);
 
-    // if the dialog open state changes, then call the onPickerOpenOrClose callback
+    // check if the dialog is still open and close it if not according to the dialogIsOpen function from the context
     React.useEffect(() => {
-        if (onPickerOpenOrClose) {
-            onPickerOpenOrClose(dialog_open)
+        if (accordion_id && !dialogIsOpen(accordion_id)) {
+            setDialogOpen(false)
         }
-    }, [dialog_open])
+    }, [accordion_id, dialogIsOpen])
+
 
     return (
         <React.Fragment>

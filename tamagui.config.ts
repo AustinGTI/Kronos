@@ -43,14 +43,16 @@ const config = createTamagui({
             ...themes.dark,
             background: '#000',
             foreground: '#111',
-            gray: '#555',
+            border: '#fff',
+            error: '#ff0000',
             color: '#fff',
         },
         light: {
             ...themes.light,
             background: '#fff',
             foreground: '#eee',
-            gray: '#aaa',
+            border: '#aaa',
+            error: '#ff0000',
             color: '#000',
         }
     },

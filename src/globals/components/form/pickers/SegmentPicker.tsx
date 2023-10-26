@@ -196,7 +196,7 @@ export default function SegmentPicker({active_segments: segments, setSegments,se
             <XStack w={'100%'} justifyContent={'space-between'}>
                 <Button onPress={onClickAddButton} icon={<Plus size={'4$'}/>}/>
                 <YStack alignItems={'center'} height={'100%'}>
-                    <Paragraph fontSize={30} lineHeight={30} color={'black'}>{(segments ?? []).reduce((total, segment) => {
+                    <Paragraph fontSize={30} lineHeight={30} color={'$color'}>{(segments ?? []).reduce((total, segment) => {
                         return total + segment.duration
                     }, 0)}</Paragraph>
                     <Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>MINUTES</Paragraph>

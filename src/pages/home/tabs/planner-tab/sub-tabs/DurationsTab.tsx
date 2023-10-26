@@ -13,8 +13,6 @@ import {
     updateDurationValidation
 } from "../../../../../globals/redux/validators/durationValidators";
 import {ValidationStatus} from "../../../../../globals/redux/types";
-import {deleteActivityValidation} from "../../../../../globals/redux/validators/activityValidators";
-import {deleteActivity} from "../../../../../globals/redux/reducers/activitiesReducer";
 import selectPlannerState from "../../../../../globals/redux/selectors/plannerTabSelector";
 
 interface DurationPaneProps {
@@ -193,16 +191,16 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
 
 
     return (
-        <YStack width={'95%'} borderRadius={10} margin={'2.5%'} backgroundColor={'white'}>
+        <YStack width={'95%'} borderRadius={10} margin={'2.5%'} backgroundColor={'$background'}>
             <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'}
                     onPress={handleOnClickPane}
                     padding={20}>
                 <YStack alignItems={'center'}>
-                    <Paragraph fontSize={24} color={'black'} lineHeight={28}>{total_duration}</Paragraph>
+                    <Paragraph fontSize={24} color={'$color'} lineHeight={28}>{total_duration}</Paragraph>
                     <Paragraph fontSize={8} color={'#aaa'} lineHeight={10}>MINS</Paragraph>
                 </YStack>
                 <Paragraph>{duration.name}</Paragraph>
-                {is_open ? <ChevronUp size={'2$'} color={'#777'}/> : <ChevronDown size={'2$'} color={'#777'}/>}
+                {is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}
             </XStack>
             {
                 is_open && (
@@ -217,11 +215,11 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
                                 ))}
                             </YStack>
                             <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={10}>
-                                <Button onPress={handleOnClickEditButton} padding={0} margin={0} height={20}>
+                                <Button onPress={handleOnClickEditButton} padding={0} margin={0} height={20} backgroundColor={'transparent'}>
                                     <Edit size={20} color={'#777'}/>
                                 </Button>
-                                <Play size={20} color={'#777'}/>
-                                <Button onPress={handleOnClickDeleteButton} padding={0} margin={0} height={20}>
+                                {/*<Play size={20} color={'#777'}/>*/}
+                                <Button onPress={handleOnClickDeleteButton} padding={0} margin={0} height={20} backgroundColor={'transparent'}>
                                     <Trash size={20} color={'#777'}/>
                                 </Button>
                             </XStack>

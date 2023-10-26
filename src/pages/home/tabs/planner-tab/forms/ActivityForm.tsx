@@ -9,6 +9,7 @@ import {generateFormikOnSubmit} from "../../../../../globals/helpers/form_functi
 import {FormProps} from "../../../../../globals/types/form";
 import SwatchColorPicker from "../../../../../globals/components/form/pickers/SwatchColorPicker";
 import SubmitButton from "../../../../../globals/components/form/SubmitButton";
+import Accordion from "../../../../../globals/components/wrappers/Accordion";
 
 function ActivityFormFields() {
     const {
@@ -19,17 +20,22 @@ function ActivityFormFields() {
 
     return (
         <YStack alignItems={'center'} paddingHorizontal={10}>
-            <InputContainer field_key={'name'} label={'Name'} error={touched['name'] ? errors['name'] : undefined}>
-                <Input onChangeText={handleChange('name')} value={values['name']} onBlur={handleBlur('name')}/>
-            </InputContainer>
-            <InputContainer field_key={'default_duration_id'} label={'Default Duration'}
-                            error={touched['default_duration_id'] ? errors['default_duration_id'] : undefined}>
-                <DurationPicker setDuration={(duration) => setValues({...values, default_duration_id: duration.id})}
-                                active_duration_id={values['default_duration_id'] ?? undefined}/>
-            </InputContainer>
-            <InputContainer field_key={'color'} label={'Color'} error={touched['color'] ? errors['color'] : undefined}>
-                <SwatchColorPicker active_color={values['color']} setColor={(color) => setValues({...values, color})} close_on_select/>
-            </InputContainer>
+            <Accordion>
+                <InputContainer field_key={'name'} label={'Name'} error={touched['name'] ? errors['name'] : undefined}>
+                    <Input onChangeText={handleChange('name')} value={values['name']} onBlur={handleBlur('name')}/>
+                </InputContainer>
+                <InputContainer field_key={'default_duration_id'} label={'Default Duration'}
+                                error={touched['default_duration_id'] ? errors['default_duration_id'] : undefined}>
+                    <DurationPicker setDuration={(duration) => setValues({...values, default_duration_id: duration.id})}
+                                    accordion_id={'duration_picker'}
+                                    active_duration_id={values['default_duration_id'] ?? undefined}/>
+                </InputContainer>
+                <InputContainer field_key={'color'} label={'Color'}
+                                error={touched['color'] ? errors['color'] : undefined}>
+                    <SwatchColorPicker active_color={values['color']} accordion_id={'color_picker'}
+                                       setColor={(color) => setValues({...values, color})} close_on_select/>
+                </InputContainer>
+            </Accordion>
         </YStack>
     )
 }

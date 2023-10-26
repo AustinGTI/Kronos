@@ -4,10 +4,12 @@ import CalendarTab from "./tabs/calendar-tab";
 import TimerTab from "./tabs/timer-tab";
 import PlannerTab from "./tabs/planner-tab";
 import {Calendar, Clipboard, Timer} from "@tamagui/lucide-icons";
+import {useTheme} from "tamagui";
 
 const Tab = createBottomTabNavigator()
 
 export default function HomePage() {
+    const {background,color,borderColor} = useTheme()
     // const dispatch = useDispatch()
     // dispatch(clearSessions())
     // // generate dummy sessions from 1st August 2023 to today
@@ -16,7 +18,7 @@ export default function HomePage() {
     return (
         <Tab.Navigator screenOptions={{
             headerShown: false,
-            tabBarLabel: () => null,
+            tabBarLabel: () => null
         }}>
             <Tab.Screen name={'Calendar'} component={CalendarTab} options={{
                 tabBarIcon: ({focused}) => (

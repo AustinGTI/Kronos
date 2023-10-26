@@ -10,7 +10,7 @@ interface DialogContainerProps extends YStackProps {
 
 export default function DialogContainer({children, onClose, with_close_button, ...stack_props}: DialogContainerProps) {
     return (
-        <YStack position={'relative'} borderColor={'$color'} borderRadius={7} borderWidth={1}
+        <YStack position={'relative'} borderColor={'$border'} borderRadius={7} borderWidth={1}
                     overflow={'hidden'}
                     backgroundColor={'$foreground'} {...stack_props}>
             {onClose && with_close_button && (

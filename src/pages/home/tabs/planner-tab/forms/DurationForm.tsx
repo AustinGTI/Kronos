@@ -10,6 +10,7 @@ import {generateFormikOnSubmit, getFirstError} from "../../../../../globals/help
 import SegmentPicker from "../../../../../globals/components/form/pickers/SegmentPicker";
 import SubmitButton from "../../../../../globals/components/form/SubmitButton";
 import SegmentsBarView from "../../../../../globals/components/duration/SegmentsBarView";
+import FormError from "../../../../../globals/components/form/text/FormError";
 
 function DurationFormFields() {
     const {errors, values, touched, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
@@ -61,7 +62,7 @@ export default function DurationForm({title, initial_values, onSubmit, submit_te
                         {title}
                     </Heading>
                 </XStack>
-                {global_error && <Paragraph>{global_error}</Paragraph>}
+                <FormError error={global_error}/>
                 <DurationFormFields/>
                 <SubmitButton<Duration> text={submit_text}/>
             </React.Fragment>

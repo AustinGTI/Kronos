@@ -9,6 +9,7 @@ import DataSetting from "./panes/DataSetting";
 import SwatchColorPicker from "../../globals/components/form/pickers/SwatchColorPicker";
 import {string} from "yup";
 import selectSettingsPageState from "../../globals/redux/selectors/settingsPageSelector";
+import Accordion from "../../globals/components/wrappers/Accordion";
 
 interface PaneWrapperProps {
     label: string
@@ -31,40 +32,24 @@ export default function SettingsPage() {
     const {theme, focus_color, break_color} = useSelector(selectSettingsPageState)
     const dispatch = useDispatch()
 
-    /**
-     * this state makes it possible to enforce a rule that only one dialog can be open at a time, this conserves space in the page
-     * and makes it look less cluttered
-     */
-    const [open_dialog, setOpenDialog] = React.useState<string | null>(null)
-
     return (
         <YStack w={'100%'} h={'100%'} backgroundColor={'$background'}>
-            <PaneWrapper label={'Theme'}>
-                <ThemeSetting active_theme={theme} setTheme={(theme: AppTheme) => dispatch(setTheme(theme))}/>
-            </PaneWrapper>
-            <PaneWrapper label={'Focus Color'}>
-                <SwatchColorPicker active_color={focus_color}
-                                   setColor={(color: string) => dispatch(setFocusColor(color))}
-                                   picker_open={open_dialog === 'focus'}
-                                   onPickerOpenOrClose={(open: boolean) => {
-                                       if (open) {
-                                           setOpenDialog('focus')
-                                       }
-                                   }}/>
-            </PaneWrapper>
-            <PaneWrapper label={'Break Color'}>
-                <SwatchColorPicker active_color={break_color}
-                                   picker_open={open_dialog === 'break'}
-                                   onPickerOpenOrClose={(open: boolean) => {
-                                       if (open) {
-                                           setOpenDialog('break')
-                                       }
-                                   }}
-                                   setColor={(color: string) => dispatch(setBreakColor(color))}/>
-            </PaneWrapper>
-            <PaneWrapper label={'Data'}>
-                <DataSetting/>
-            </PaneWrapper>
+            <Accordion>
+                <PaneWrapper label={'Theme'}>
+                    <ThemeSetting active_theme={theme} setTheme={(theme: AppTheme) => dispatch(setTheme(theme))}/>
+                </PaneWrapper>
+                <PaneWrapper label={'Focus Color'}>
+                    <SwatchColorPicker active_color={focus_color} accordion_id={'focus_color_picker'}
+                                       setColor={(color: string) => dispatch(setFocusColor(color))}/>
+                </PaneWrapper>
+                <PaneWrapper label={'Break Color'}>
+                    <SwatchColorPicker active_color={break_color} accordion_id={'break_color_picker'}
+                                       setColor={(color: string) => dispatch(setBreakColor(color))}/>
+                </PaneWrapper>
+                <PaneWrapper label={'Data'}>
+                    <DataSetting/>
+                </PaneWrapper>
+            </Accordion>
         </YStack>
     )
 }
