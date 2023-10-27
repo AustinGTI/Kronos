@@ -2,7 +2,7 @@ import React from 'react'
 import {CUSTOM_DURATION, Duration, Segment} from "../../../../../globals/types/main";
 import {useSelector} from "react-redux";
 import selectDurationState from "../../../../../globals/redux/selectors/base_selectors/durationsSelector";
-import {Button, Circle, Heading, Paragraph, Separator, XStack, YStack} from "tamagui";
+import {Button, Circle, Heading, Paragraph, ScrollView, Separator, XStack, YStack} from "tamagui";
 import SegmentsBarView from "../../../../../globals/components/duration/SegmentsBarView";
 import {ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
 import SegmentPicker from "../../../../../globals/components/form/pickers/SegmentPicker";
@@ -35,12 +35,13 @@ function SelectCustomDurationPane({duration, is_selected, setToTimerDuration}: S
             setError('Please add at least one segment')
             return
         }
+        // todo: add more segments validation
         setError(null)
         setToTimerDuration({
             ...CUSTOM_DURATION,
             segments: custom_segments
         })
-    }, [custom_segments, setToTimerDuration])
+    }, [custom_segments, setToTimerDuration, setError])
 
     // when an error is set, remove it after 3 seconds
     React.useEffect(() => {
@@ -55,17 +56,19 @@ function SelectCustomDurationPane({duration, is_selected, setToTimerDuration}: S
     return (
         <React.Fragment>
             <YStack
-                w={'95%'}
-                h={90} backgroundColor={'#f3f3f3'}
-                borderRadius={5} borderWidth={2} borderColor={is_selected ? 'black' : '#f3f3f3'}
+                w={'92%'}
+                h={90} backgroundColor={'$background'}
+                borderRadius={10}
+                // borderWidth={2} borderColor={is_selected ? 'black' : '#f3f3f3'}
                 marginVertical={5}
                 paddingHorizontal={15} paddingVertical={7}>
                 <XStack w={'100%'} h={'100%'}>
                     <YStack w={'80%'} h={'100%'} flexShrink={0}>
                         <XStack w={'100%'} alignItems={'center'} justifyContent={'flex-start'} paddingTop={5}
                                 paddingBottom={1}>
-                            <Circle size={5} backgroundColor={'black'} marginRight={10}/>
-                            <Paragraph textTransform={'uppercase'}>{CUSTOM_DURATION.name}</Paragraph>
+                            <Circle backgroundColor={'$color'} size={5} marginRight={10}/>
+                            <Paragraph textTransform={'uppercase'}
+                                       textDecorationLine={is_selected ? 'underline' : 'none'}>{CUSTOM_DURATION.name}</Paragraph>
                         </XStack>
                         <XStack alignItems={'center'} flexGrow={1}>
                             <SegmentsBarView segments={custom_segments} h={15} borderRadius={5}/>
@@ -85,8 +88,8 @@ function SelectCustomDurationPane({duration, is_selected, setToTimerDuration}: S
                 <Button backgroundColor={'transparent'}
                         onPress={() => setSegmentPickerOpen(!segment_picker_open)}>
                     {!segment_picker_open ?
-                        <ChevronDown size={20} color={'black'}/> :
-                        <ChevronUp size={20} color={'black'}/>
+                        <ChevronDown size={20}/> :
+                        <ChevronUp size={20}/>
                     }
                 </Button>
             </XStack>
@@ -110,17 +113,19 @@ function SelectExistingDurationPane({duration, is_selected, setToTimerDuration}:
     return (
         <YStack
             onPress={() => setToTimerDuration(duration)}
-            w={'95%'}
-            h={90} backgroundColor={'#f3f3f3'}
-            borderRadius={5} borderWidth={2} borderColor={is_selected ? 'black' : '#f3f3f3'}
+            w={'92%'}
+            h={90} backgroundColor={'$background'}
+            borderRadius={10}
+            // borderWidth={2} borderColor={is_selected ? 'black' : '#f3f3f3'}
             marginVertical={5}
             paddingHorizontal={15} paddingVertical={7}>
             <XStack w={'100%'} h={'100%'}>
                 <YStack w={'80%'} h={'100%'} flexShrink={0}>
                     <XStack w={'100%'} alignItems={'center'} justifyContent={'flex-start'} paddingTop={5}
                             paddingBottom={1}>
-                        <Circle size={5} backgroundColor={'black'} marginRight={10}/>
-                        <Paragraph textTransform={'uppercase'}>{duration.name}</Paragraph>
+                        <Circle size={5} backgroundColor={'$color'} marginRight={10}/>
+                        <Paragraph textTransform={'uppercase'}
+                                   textDecorationLine={is_selected ? 'underline' : 'none'}>{duration.name}</Paragraph>
                     </XStack>
                     <XStack alignItems={'center'} flexGrow={1}>
                         <SegmentsBarView segments={duration.segments} h={15} borderRadius={5}/>
@@ -140,7 +145,11 @@ function SelectExistingDurationPane({duration, is_selected, setToTimerDuration}:
 
 }
 
-export default function SelectDurationModal({current_duration, setCurrentDuration, closeSheetModal}: SelectDurationModalProps) {
+export default function SelectDurationModal({
+                                                current_duration,
+                                                setCurrentDuration,
+                                                closeSheetModal
+                                            }: SelectDurationModalProps) {
     const durations = useSelector(selectDurationState)
 
     const setTimerDurationAndCloseModal = React.useCallback((duration: Duration) => {
@@ -149,7 +158,7 @@ export default function SelectDurationModal({current_duration, setCurrentDuratio
     }, [setCurrentDuration, closeSheetModal])
 
     return (
-        <YStack w={'100%'}>
+        <YStack w={'100%'} alignItems={'center'}>
             <XStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
                 <Heading
                     fontSize={20}
@@ -158,23 +167,26 @@ export default function SelectDurationModal({current_duration, setCurrentDuratio
                     Select Duration
                 </Heading>
             </XStack>
-            <YStack w={'100%'} paddingVertical={10} alignItems={'center'}>
-                <SelectCustomDurationPane is_selected={
-                    current_duration?.id === CUSTOM_DURATION.id
-                } setToTimerDuration={
-                    setTimerDurationAndCloseModal
-                }/>
-                <Separator width={'90%'} marginVertical={10}/>
-                {
-                    Object.values(durations).map((duration) => {
-                        return (
-                            <SelectExistingDurationPane key={duration.id} duration={duration}
-                                                        is_selected={current_duration?.id === duration.id}
-                                                        setToTimerDuration={setTimerDurationAndCloseModal}/>
-                        )
-                    })
-                }
-            </YStack>
+            <ScrollView w={'95%'} paddingVertical={10} backgroundColor={'$foreground'}
+                        borderRadius={10} height={'90%'}>
+                <YStack w={'100%'} alignItems={'center'} paddingBottom={20}>
+                    <SelectCustomDurationPane is_selected={
+                        current_duration?.id === CUSTOM_DURATION.id
+                    } setToTimerDuration={
+                        setTimerDurationAndCloseModal
+                    }/>
+                    <Separator width={'90%'} marginVertical={10}/>
+                    {
+                        Object.values(durations).map((duration) => {
+                            return (
+                                <SelectExistingDurationPane key={duration.id} duration={duration}
+                                                            is_selected={current_duration?.id === duration.id}
+                                                            setToTimerDuration={setTimerDurationAndCloseModal}/>
+                            )
+                        })
+                    }
+                </YStack>
+            </ScrollView>
         </YStack>
     )
 }

@@ -1,6 +1,6 @@
 import React from 'react'
 import {heightPercentageToDP as hp, widthPercentageToDP as wp} from 'react-native-responsive-screen';
-import {AlertDialog, Button, Circle, Paragraph, Sheet, Square, XStack, YStack} from "tamagui";
+import {AlertDialog, Button, Circle, Heading, Paragraph, Sheet, Square, View, XStack, YStack} from "tamagui";
 import {Activity, Duration, SegmentTypes, Session} from "../../../../globals/types/main";
 import {AlertProps} from "../../../../globals/types/alert";
 import {TimerTabContext, TimerTabContextProps} from "./context";
@@ -440,7 +440,12 @@ export default function TimerTab() {
         <TimerTabContext.Provider value={timer_tab_context}>
             <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'}>
                 <XStack w={'90%'} justifyContent={'center'} alignItems={'center'} py={5}>
-                    <Paragraph fontSize={20} lineHeight={20}>POMODORO TIMER</Paragraph>
+                    <Heading
+                        fontSize={25}
+                        textTransform={'uppercase'}
+                        textDecorationLine={'underline'}>
+                        Pomodoro Timer
+                    </Heading>
                 </XStack>
                 <Square position={'relative'} width={wp('85%')} height={wp('85%')} marginVertical={15}>
                     <Canvas style={{width: '100%', height: '100%'}}>
@@ -458,7 +463,7 @@ export default function TimerTab() {
                                 <React.Fragment>
                                     <Circle size={5}
                                             backgroundColor={active_segment?.segment_type.color ?? 'gray'}/>
-                                    <Paragraph color={'black'} px={5} fontSize={15}
+                                    <Paragraph color={'$color'} px={5} fontSize={15}
                                                textTransform={'uppercase'}>{active_segment?.segment_type.name ?? '-'}</Paragraph>
                                     <Circle size={5}
                                             backgroundColor={active_segment?.segment_type.color ?? 'gray'}/>
@@ -496,7 +501,7 @@ export default function TimerTab() {
                             backgroundColor={'transparent'}
                             onPress={openSelectActivityModal}>
                         <Paragraph
-                            color={timer_activity ? 'black' : 'gray'}
+                            color={timer_activity ? '$color' : 'gray'}
                             textTransform={'uppercase'} fontSize={18} textDecorationLine={'underline'}>
                             {timer_activity?.name ?? 'Select Activity'}
                         </Paragraph>
@@ -508,7 +513,7 @@ export default function TimerTab() {
                             backgroundColor={'transparent'}
                             onPress={openSelectDurationModal}>
                         <Paragraph
-                            color={timer_activity ? 'black' : 'gray'}
+                            color={timer_activity ? '$color' : 'gray'}
                             textTransform={'uppercase'} fontSize={18} textDecorationLine={'underline'}>
                             {timer_duration?.name ?? 'Select Duration'}
                         </Paragraph>
@@ -524,14 +529,14 @@ export default function TimerTab() {
                             return (
                                 <XStack key={index} width={'100%'} py={10} alignItems={'center'}
                                         justifyContent={'space-around'}
-                                        borderBottomWidth={is_last_segment ? 0 : 1} borderBottomColor={'black'}
+                                        borderBottomWidth={is_last_segment ? 0 : 1} borderBottomColor={'$color'}
                                 >
                                     <XStack alignItems={'center'}>
                                         <Circle size={10} backgroundColor={segment.segment_type.color}/>
-                                        <Paragraph color={'black'} px={5} fontSize={15}
+                                        <Paragraph color={'$color'} px={5} fontSize={15}
                                                    textTransform={'uppercase'}>{segment.segment_type.name}</Paragraph>
                                     </XStack>
-                                    <Paragraph color={'black'} px={5} fontSize={15}
+                                    <Paragraph color={'$color'} px={5} fontSize={15}
                                                textTransform={'uppercase'}>{`${Math.floor(segment.elapsed_duration / 60)} MINS`}</Paragraph>
                                 </XStack>
                             )
@@ -559,9 +564,9 @@ export default function TimerTab() {
                     // ! This is a fix that sets the background color of the frame to transparent so the glitch can't be seen
                     // ! then creates a View in the sheet with max dimensions and bg white
                 }
-                <Sheet.Frame height={400} backgroundColor={'transparent'}>
+                <Sheet.Frame height={400} backgroundColor={'transparent'} borderTopWidth={2} borderColor={'$border'}>
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                        <Sheet.ScrollView w={'100%'} h={'100%'} backgroundColor={'white'}>
+                        <View w={'100%'} h={'100%'} backgroundColor={'$background'}>
                             {
                                 active_sheet_modal === TIMER_TAB_SHEET_MODAL.SELECT_ACTIVITY ?
                                     <SelectActivityModal current_activity={timer_activity}
@@ -574,7 +579,7 @@ export default function TimerTab() {
                                                              closeSheetModal={() => setSheetModalIsOpen(false)}/>
                                         : null
                             }
-                        </Sheet.ScrollView>
+                        </View>
                     </TouchableWithoutFeedback>
                 </Sheet.Frame>
             </Sheet>

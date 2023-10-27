@@ -1,5 +1,6 @@
 import React from 'react'
 import {Label, Paragraph, YStack, YStackProps} from "tamagui";
+import FormError from "./text/FormError";
 
 interface InputContainerProps extends YStackProps {
     field_key: string
@@ -13,7 +14,7 @@ export default function InputContainer({children, error, field_key, label, ...st
         <YStack width={'90%'} paddingVertical={10} {...stack_props}>
             <Paragraph textTransform={'uppercase'}>{label}</Paragraph>
             {children}
-            {error && <Paragraph color={'red'}>{error}</Paragraph>}
+            <FormError error={error}/>
         </YStack>
     );
 }

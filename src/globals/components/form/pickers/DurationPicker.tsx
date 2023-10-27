@@ -87,7 +87,7 @@ export default function DurationPicker({
             </XStack>
             {dialog_open &&
                 <DialogContainer onClose={() => setDialogOpen(false)} maxHeight={200}>
-                    <YStack width={'100%'} alignItems={'center'} borderWidth={1} paddingVertical={5}>
+                    <YStack width={'100%'} alignItems={'center'} paddingVertical={5}>
                         {Object.values(durations).map((duration) => (
                             <DurationPickerPane
                                 key={duration.id}

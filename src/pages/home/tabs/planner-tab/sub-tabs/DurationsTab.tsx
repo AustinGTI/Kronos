@@ -199,7 +199,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
                     <Paragraph fontSize={24} color={'$color'} lineHeight={28}>{total_duration}</Paragraph>
                     <Paragraph fontSize={8} color={'#aaa'} lineHeight={10}>MINS</Paragraph>
                 </YStack>
-                <Paragraph>{duration.name}</Paragraph>
+                <Paragraph textTransform={'uppercase'}>{duration.name}</Paragraph>
                 {is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}
             </XStack>
             {
@@ -214,13 +214,17 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
                                                          max_segment_duration={max_segment_duration}/>
                                 ))}
                             </YStack>
-                            <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={10}>
-                                <Button onPress={handleOnClickEditButton} padding={0} margin={0} height={20} backgroundColor={'transparent'}>
-                                    <Edit size={20} color={'#777'}/>
+                            <XStack justifyContent={'space-around'} width={'100%'} paddingTop={10}>
+                                <Button
+                                    onPress={handleOnClickEditButton} flexGrow={1} paddingVertical={5} margin={0}
+                                    backgroundColor={'transparent'} borderTopRightRadius={0} borderBottomRightRadius={0}>
+                                    <Edit size={20} color={'$color'}/>
                                 </Button>
-                                {/*<Play size={20} color={'#777'}/>*/}
-                                <Button onPress={handleOnClickDeleteButton} padding={0} margin={0} height={20} backgroundColor={'transparent'}>
-                                    <Trash size={20} color={'#777'}/>
+                                {/*<Play size={20} color={'$color'}/>*/}
+                                <Button
+                                    onPress={handleOnClickDeleteButton} flexGrow={1} paddingVertical={5} margin={0}
+                                    backgroundColor={'transparent'} borderTopLeftRadius={0} borderBottomLeftRadius={0}>
+                                    <Trash size={20} color={'$color'}/>
                                 </Button>
                             </XStack>
                         </YStack>
@@ -242,7 +246,8 @@ export default function DurationsTab() {
             style={{width: '100%', marginVertical: 10}}
             data={Object.values(planner_app_state.durations)}
             renderItem={({item}) => (
-                <DurationPane app_state={planner_app_state} duration={item} open_duration={open_duration} setOpenDuration={setOpenDuration}/>
+                <DurationPane app_state={planner_app_state} duration={item} open_duration={open_duration}
+                              setOpenDuration={setOpenDuration}/>
             )}/>
     )
 }

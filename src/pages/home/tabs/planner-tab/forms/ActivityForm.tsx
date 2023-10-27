@@ -33,7 +33,7 @@ function ActivityFormFields() {
                 <InputContainer field_key={'color'} label={'Color'}
                                 error={touched['color'] ? errors['color'] : undefined}>
                     <SwatchColorPicker active_color={values['color']} accordion_id={'color_picker'}
-                                       setColor={(color) => setValues({...values, color})} close_on_select/>
+                                       setColor={(color) => setValues({...values, color})} close_on_select={false}/>
                 </InputContainer>
             </Accordion>
         </YStack>

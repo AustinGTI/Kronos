@@ -15,24 +15,28 @@ export default function HomePage() {
     // // generate dummy sessions from 1st August 2023 to today
     // const start_date = new Date(2021, 7, 1)
     // dispatch(generateDummySessions({start_date}))
+    console.log('theme props at the moment are ',background,color,borderColor)
     return (
         <Tab.Navigator screenOptions={{
             headerShown: false,
-            tabBarLabel: () => null
+            tabBarLabel: () => null,
+            tabBarStyle: {
+                backgroundColor: background?.val,
+            }
         }}>
             <Tab.Screen name={'Calendar'} component={CalendarTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <Calendar size={25} color={focused ? '#333' : '#aaa'}/>
+                    <Calendar size={25} color={focused ? color?.val : '#777'}/>
                 )
             }}/>
             <Tab.Screen name={'Timer'} component={TimerTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <Timer size={25} color={focused ? '#333' : '#aaa'}/>
+                    <Timer size={25} color={focused ? color?.val : '#777'}/>
                 )
             }}/>
             <Tab.Screen name={'Planner'} component={PlannerTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <Clipboard size={25} color={focused ? '#333' : '#aaa'}/>
+                    <Clipboard size={25} color={focused ? color?.val : '#777'}/>
                 )
             }}/>
         </Tab.Navigator>

@@ -144,10 +144,10 @@ function InputSegmentPane({segment, segments, setSegments}: InputSegmentPaneProp
     const onClickDeleteButton = React.useCallback(() => {
         setSegments(segments.filter((prev_segment) => prev_segment.key !== segment.key))
         console.log(segments)
-    }, [setSegments, segment.key])
+    }, [setSegments, segment.key, segments])
     return (
         <XStack w={'100%'} h={60} alignItems={'center'} borderColor={'#aaa'} borderWidth={1} borderRadius={10}
-                marginVertical={5}>
+                marginVertical={5} backgroundColor={'$background'}>
             <XStack h={'100%'} padding={4} w={'25%'} alignItems={'center'}>
                 <View w={15} h={30} backgroundColor={segment.type.color} marginHorizontal={10} borderRadius={7}/>
                 <Paragraph textTransform={'uppercase'} fontSize={14}>{segment.type.name}</Paragraph>
@@ -183,7 +183,7 @@ export default function SegmentPicker({active_segments: segments, setSegments,se
             new_segment_duration = 25
         }
         const new_segment: Segment = {
-            key: segments.length + 1,
+            key: Math.random(),
             type: new_segment_type,
             duration: new_segment_duration
         }
@@ -219,7 +219,7 @@ export default function SegmentPicker({active_segments: segments, setSegments,se
                         </Paragraph>
                     </YStack>
                 ) : (
-                    <YStack w={'100%'}>
+                    <YStack w={'100%'} paddingTop={5}>
                         {segments.map((segment) => (
                             <InputSegmentPane key={segment.key} segment={segment} segments={segments}
                                               setSegments={setSegments}/>

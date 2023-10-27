@@ -145,7 +145,7 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
             <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'} onPress={handleOnClickPane}
                     padding={20}>
                 <Circle size={20} backgroundColor={activity.color}/>
-                <Paragraph color={'$color'}>{activity.name}</Paragraph>
+                <Paragraph color={'$color'} textTransform={'uppercase'}>{activity.name}</Paragraph>
                 {is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}
             </XStack>
             {
@@ -159,13 +159,17 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
                                 {/*<ActivityStat label={'hours'} value={hours}/>*/}
                                 <ActivityStat label={'minutes'} value={minutes}/>
                             </XStack>
-                            <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={10}>
-                                <Button onPress={handleOnClickEditButton} padding={0} margin={0} height={20} backgroundColor={'transparent'}>
-                                    <Edit size={20} color={'#777'}/>
+                            <XStack justifyContent={'space-around'} width={'100%'} paddingTop={10}>
+                                <Button
+                                    onPress={handleOnClickEditButton} flexGrow={1} paddingVertical={5} margin={0}
+                                    backgroundColor={'transparent'} borderTopRightRadius={0} borderBottomRightRadius={0}>
+                                    <Edit size={20} color={'$color'}/>
                                 </Button>
-                                {/*<Play size={20} color={'#777'}/>*/}
-                                <Button onPress={handleOnClickDeleteButton} padding={0} margin={0} height={20} backgroundColor={'transparent'}>
-                                    <Trash size={20} color={'#777'}/>
+                                {/*<Play size={20} color={'$color'}/>*/}
+                                <Button
+                                    onPress={handleOnClickDeleteButton} flexGrow={1} paddingVertical={5} margin={0}
+                                    backgroundColor={'transparent'} borderTopLeftRadius={0} borderBottomLeftRadius={0}>
+                                    <Trash size={20} color={'$color'}/>
                                 </Button>
                             </XStack>
                         </YStack>
