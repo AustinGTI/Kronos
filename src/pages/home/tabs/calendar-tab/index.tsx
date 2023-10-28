@@ -1,5 +1,6 @@
 import React from 'react'
 import {AlertDialog, Button, Paragraph, Sheet, XStack, YStack} from "tamagui";
+import {heightPercentageToDP as hp, widthPercentageToDP as wp} from 'react-native-responsive-screen';
 import {useSelector} from "react-redux";
 import {FlatList, Keyboard, ListRenderItemInfo, TouchableWithoutFeedback} from "react-native";
 import {AppState} from "../../../../globals/redux/reducers";
@@ -19,7 +20,7 @@ const INITIAL_NO_OF_DATES = 7
 const EXTENSION_NO_OF_DATES = 7
 
 export default function CalendarTab() {
-    const [flatlist_dimensions, setFlatlistDimensions] = React.useState<Dimensions>({width: 0, height: 0})
+    const [flatlist_dimensions, setFlatlistDimensions] = React.useState<Dimensions>({width: wp('100%'), height: hp('100%')})
 
     // generate a series of date strings (dd/mm/yyyy) from the first date in sessions to today
     const [dates, setDates] = React.useState<string[]>(() => {
@@ -175,8 +176,8 @@ export default function CalendarTab() {
                         // ! This is a fix that sets the background color of the frame to transparent so the glitch can't be seen
                         // ! then creates a View in the sheet with max dimensions and bg white
                     }
-                    <Sheet.Frame height={400} backgroundColor={"transparent"}>
-                        <Sheet.Frame w={"100%"} h={"100%"} backgroundColor={"white"}>
+                    <Sheet.Frame height={400} backgroundColor={"transparent"} borderTopWidth={2} borderColor={'$border'}>
+                        <Sheet.Frame w={"100%"} h={"100%"} backgroundColor={"$background"}>
                             <SessionViewModal session={session_in_modal}/>
                         </Sheet.Frame>
                     </Sheet.Frame>

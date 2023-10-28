@@ -1,5 +1,5 @@
 import React from 'react'
-import {Paragraph, XStack, YStack} from "tamagui";
+import {Paragraph, Square, XStack, YStack} from "tamagui";
 import {AppState} from "../../../globals/redux/reducers";
 import {useDispatch, useSelector} from "react-redux";
 import {AppTheme, setTheme} from "../../../globals/redux/reducers/settingsReducer";
@@ -24,23 +24,11 @@ function ThemeSquare({theme, size, border_radius}: ThemeSquareProps) {
                 return '#222'
             case AppTheme.LIGHT:
                 return '#fff'
-            case AppTheme.SYSTEM:
-                return undefined
         }
     }, [theme]);
 
     return (
-        <Canvas style={{width: size, height: size}}>
-            <RoundedRect
-                x={0} y={0} width={size} height={size} r={border_radius}
-                color={color} strokeWidth={1}>
-                {
-                    theme === AppTheme.SYSTEM && (
-                        <LinearGradient start={vec(0, 0)} end={vec(size / 2, size / 2)} colors={['#222', '#fff']}/>
-                    )
-                }
-            </RoundedRect>
-        </Canvas>
+        <Square width={size} height={size} backgroundColor={color} borderRadius={border_radius} borderColor={'$border'} borderWidth={1}/>
     )
 }
 
@@ -48,7 +36,7 @@ function SelectedThemeRenderer({item}: { item: AppTheme }) {
     return (
         <XStack flexGrow={1} paddingVertical={5} alignItems={'center'}>
             <ThemeSquare theme={item}/>
-            <Paragraph marginLeft={10} fontSize={15} color={'#444'} textTransform={'uppercase'}>{item}</Paragraph>
+            <Paragraph marginLeft={10} fontSize={15} color={'$color'} textTransform={'uppercase'}>{item}</Paragraph>
         </XStack>
     )
 }
@@ -56,7 +44,7 @@ function SelectedThemeRenderer({item}: { item: AppTheme }) {
 function ItemThemeRenderer({item}: { item: AppTheme }) {
     return (
         <XStack flexGrow={1} alignItems={'center'} paddingVertical={2}>
-            <Paragraph marginLeft={10} fontSize={15} color={'#444'} textTransform={'uppercase'}>{item}</Paragraph>
+            <Paragraph marginLeft={10} fontSize={15} color={'$color'} textTransform={'uppercase'}>{item}</Paragraph>
         </XStack>
     )
 }

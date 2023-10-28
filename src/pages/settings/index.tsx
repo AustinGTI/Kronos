@@ -20,7 +20,7 @@ function PaneWrapper({label, children}: PaneWrapperProps) {
     return (
         <YStack w={'100%'} paddingHorizontal={20} paddingVertical={5}>
             <XStack w={'100%'} paddingVertical={10} borderBottomWidth={1} borderBottomColor={'#aaa'}>
-                <Paragraph fontSize={15} fontWeight={'600'} color={'#555'}
+                <Paragraph fontSize={15} fontWeight={'600'} color={'$color'}
                            textTransform={'uppercase'}>{label}</Paragraph>
             </XStack>
             {children}

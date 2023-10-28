@@ -1,5 +1,17 @@
 import React, {useMemo} from 'react'
-import {Button, Grid, Paragraph, Select, Separator, Stack, ToggleGroup, XGroup, XStack, YStack} from "tamagui";
+import {
+    Button,
+    ButtonProps,
+    Grid,
+    Paragraph,
+    Select,
+    Separator,
+    Stack,
+    ToggleGroup,
+    XGroup,
+    XStack,
+    YStack
+} from "tamagui";
 import {StackedBarChart} from "react-native-svg-charts"
 import {dateToDDMMYYYY} from "../../globals/helpers/datetime_functions";
 import DailyStackedBarChart from "./bar-chart-views/daily";
@@ -14,7 +26,7 @@ interface StatsCardProps {
     value: number
 }
 
-interface ToggleItemProps {
+interface ToggleItemProps extends ButtonProps {
     value: string
     active_value: string
     setValue: (value: string) => void
@@ -67,7 +79,8 @@ const testChartData = [
 
 function StatsCard({label, value}: StatsCardProps) {
     return (
-        <YStack alignItems={'center'} justifyContent={'center'} w={'45%'} borderRadius={10} backgroundColor={'white'}
+        <YStack alignItems={'center'} justifyContent={'center'} w={'45%'} borderRadius={10}
+                backgroundColor={'$foreground'}
                 padding={10} margin={5} h={'90%'}>
             <Paragraph color={'#999'} fontSize={11} textTransform={'uppercase'}>{label}</Paragraph>
             <Paragraph fontSize={36} lineHeight={36} paddingVertical={10}>{value}</Paragraph>
@@ -75,15 +88,13 @@ function StatsCard({label, value}: StatsCardProps) {
     )
 }
 
-function ToggleItem({value, active_value, setValue}: ToggleItemProps) {
+function ToggleItem({value, active_value, setValue, ...props}: ToggleItemProps) {
     return (
-        <XGroup.Item>
-            <Button onPress={() => setValue(value)}
-                    backgroundColor={value === active_value ? '#ddd' : 'transparent'}
-                    justifyContent={'center'}>
-                <Paragraph fontSize={12} lineHeight={12} color={'#999'}>{value}</Paragraph>
-            </Button>
-        </XGroup.Item>
+        <Button onPress={() => setValue(value)}
+                backgroundColor={value === active_value ? '#ddd' : 'transparent'}
+                justifyContent={'center'} {...props}>
+            <Paragraph fontSize={12} lineHeight={12} color={'#999'}>{value}</Paragraph>
+        </Button>
     )
 }
 
@@ -122,7 +133,7 @@ export default function StatisticsPage() {
     }, [activities])
 
     return (
-        <YStack w={'100%'} alignItems={'center'}>
+        <YStack w={'100%'} h={'100%'} alignItems={'center'} backgroundColor={'$background'}>
             <YStack paddingVertical={5} alignItems={'center'} w={'100%'} h={'35%'}>
                 <XStack w={'100%'} justifyContent={'center'} alignItems={'center'} h={'50%'}>
                     <StatsCard label={'Hours Focused'} value={hours_focused}/>
@@ -134,16 +145,19 @@ export default function StatisticsPage() {
                 </XStack>
             </YStack>
             <YStack w={'93%'} padding={10} marginBottom={10} alignItems={'center'} borderRadius={10}
-                    backgroundColor={'white'} h={'63%'}>
+                    backgroundColor={'$foreground'} h={'63%'}>
                 <XStack w={'100%'} paddingVertical={5} h={'13%'}>
-                    <XGroup>
+                    <XStack>
                         <ToggleItem value={BarChart.DAILY} active_value={bar_chart}
+                                    borderTopRightRadius={0} borderBottomRightRadius={0}
                                     setValue={(value: string) => setBarChart(value as BarChart)}/>
                         <ToggleItem value={BarChart.WEEKLY} active_value={bar_chart}
+                                    borderRadius={0}
                                     setValue={(value: string) => setBarChart(value as BarChart)}/>
                         <ToggleItem value={BarChart.MONTHLY} active_value={bar_chart}
+                                    borderTopLeftRadius={0} borderBottomLeftRadius={0}
                                     setValue={(value: string) => setBarChart(value as BarChart)}/>
-                    </XGroup>
+                    </XStack>
                 </XStack>
                 <YStack w={'100%'} paddingVertical={10} h={'87%'}>
                     {bar_chart === BarChart.DAILY && (

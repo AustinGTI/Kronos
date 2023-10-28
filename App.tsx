@@ -1,9 +1,14 @@
 import React from "react";
-import {AppState, useColorScheme} from 'react-native';
-import {TamaguiProvider, Theme} from "tamagui";
+import {heightPercentageToDP as hp, widthPercentageToDP as wp} from 'react-native-responsive-screen';
+import {Paragraph, ScrollView, TamaguiProvider, Theme, useTheme, YStack} from "tamagui";
 import config from "./tamagui.config";
 import {useFonts} from "expo-font";
-import {createDrawerNavigator} from "@react-navigation/drawer";
+import {
+    createDrawerNavigator,
+    DrawerContentComponentProps,
+    DrawerContentScrollView,
+    DrawerItemList
+} from "@react-navigation/drawer";
 import HomePage from "./src/pages/home";
 import {NavigationContainer} from "@react-navigation/native";
 import {Provider, useSelector} from "react-redux";
@@ -12,56 +17,98 @@ import {PersistGate} from "redux-persist/integration/react";
 import StatisticsPage from "./src/pages/statistics";
 import SettingsPage from "./src/pages/settings";
 import {AppTheme} from "./src/globals/redux/reducers/settingsReducer";
+import {AppState} from "./src/globals/redux/reducers"
 
 
 const Drawer = createDrawerNavigator()
 
-function AppScreens() {
-    const color_scheme = useColorScheme()
+function CustomDrawerContent(props: DrawerContentComponentProps) {
+    return (
+        <DrawerContentScrollView {...props}>
+            <ScrollView height={hp('20%')} backgroundColor={'green'}>
+                <Paragraph>Hello</Paragraph>
+            </ScrollView>
+            <DrawerItemList {...props} />
+            <YStack height={hp('50%')} backgroundColor={'pink'}>
+                <Paragraph>Goodbye</Paragraph>
+                <Paragraph>Goodbye</Paragraph>
+                <Paragraph>Goodbye</Paragraph>
+                <Paragraph>Goodbye</Paragraph>
+                <Paragraph>Goodbye</Paragraph>
+            </YStack>
+        </DrawerContentScrollView>
+    );
+}
+
+function ThemeWrapper({children}: { children: React.ReactNode }) {
     // get the theme from redux
     const theme: AppTheme = useSelector((state: AppState) => state.settings.theme)
-    // if the theme is system, get the system theme
+
     const active_theme: 'dark' | 'light' = React.useMemo(() => {
         switch (theme) {
             case AppTheme.DARK:
                 return 'dark'
             case AppTheme.LIGHT:
                 return 'light'
-            case AppTheme.SYSTEM:
-                return color_scheme === 'dark' ? 'dark' : 'light'
         }
-    }, [theme, color_scheme]);
+    }, [theme]);
 
     return (
         <Theme name={active_theme}>
-            <NavigationContainer>
-                <Drawer.Navigator initialRouteName={'Home'}>
-                    <Drawer.Screen name={'Home'} component={HomePage}/>
-                    <Drawer.Screen name={'Statistics'} component={StatisticsPage}/>
-                    <Drawer.Screen name={'Settings'} component={SettingsPage}/>
-                </Drawer.Navigator>
-            </NavigationContainer>
+            {children}
         </Theme>
     )
 }
 
-export default function App() {
-    const color_scheme = useColorScheme()
 
+function AppScreens() {
+    const {
+        foreground: {val: foreground},
+        background: {val: background},
+        color: {val: color},
+        borderColor: {val: borderColor}
+    } = useTheme()
+
+    return (
+        <NavigationContainer>
+            <Drawer.Navigator
+                screenOptions={{
+                    drawerStyle: {
+                        backgroundColor: background,
+                        width: '50%',
+                    },
+                    drawerItemStyle: {
+                        backgroundColor: foreground
+                    },
+                    drawerInactiveTintColor: color,
+                    drawerActiveTintColor: 'red',
+                    drawerType: "slide"
+                }}
+                drawerContent={CustomDrawerContent}
+                initialRouteName={'Home'}>
+                <Drawer.Screen name={'Home'} component={HomePage}/>
+                <Drawer.Screen name={'Statistics'} component={StatisticsPage}/>
+                <Drawer.Screen name={'Settings'} component={SettingsPage}/>
+            </Drawer.Navigator>
+        </NavigationContainer>
+    )
+}
+
+export default function App() {
     const [fonts_loaded, error] = useFonts({
         'Inter': require('@tamagui/font-inter/otf/Inter-Medium.otf'),
         'InterBold': require('@tamagui/font-inter/otf/Inter-Bold.otf'),
     })
 
-    if (!fonts_loaded) {
-        return null // todo: add a splash screen or loader
-    }
+    if (!fonts_loaded) return null
 
     return (
         <Provider store={store}>
             <PersistGate persistor={persistor}>
                 <TamaguiProvider config={config}>
-                    <AppScreens/>
+                    <ThemeWrapper>
+                        <AppScreens/>
+                    </ThemeWrapper>
                 </TamaguiProvider>
             </PersistGate>
         </Provider>

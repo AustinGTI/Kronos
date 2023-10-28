@@ -4,7 +4,7 @@ import chroma from "chroma-js";
 export enum AppTheme {
     DARK = 'dark',
     LIGHT = 'light',
-    SYSTEM = 'system'
+    // SYSTEM = 'system'
 }
 
 export type SettingsState = {

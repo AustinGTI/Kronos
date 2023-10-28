@@ -67,7 +67,7 @@ export default function DropdownSelectPicker<Item>({
             {dropdown_open && (
                 <ScrollView
                     w={'100%'} maxHeight={max_dropdown_height}
-                    backgroundColor={'#fff'} borderBottomWidth={1} borderTopWidth={1}
+                    backgroundColor={'$background'} borderBottomWidth={1} borderTopWidth={1}
                     overflow={'scroll'} borderColor={'#bbb'}>
                     <YStack w={'100%'} alignItems={'center'}>
                         {items.map((item, index) => {
