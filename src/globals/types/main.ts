@@ -8,6 +8,8 @@ export type SegmentType = {
     persists_on_app_close: boolean;
 }
 
+export const SECONDARY_COLOR = '#db9cff';
+
 export const SegmentTypes: { [key: string]: SegmentType } = {
     FOCUS: {
         key: 1,

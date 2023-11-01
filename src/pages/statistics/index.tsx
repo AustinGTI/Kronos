@@ -20,6 +20,7 @@ import MonthlyStackedBarChart from "./bar-chart-views/monthly";
 import {useSelector} from "react-redux";
 import selectPlannerState from "../../globals/redux/selectors/plannerTabSelector";
 import selectStatisticsState from "../../globals/redux/selectors/statisticsPageSelector";
+import {SECONDARY_COLOR} from "../../globals/types/main";
 
 interface StatsCardProps {
     label: string
@@ -90,10 +91,14 @@ function StatsCard({label, value}: StatsCardProps) {
 
 function ToggleItem({value, active_value, setValue, ...props}: ToggleItemProps) {
     return (
-        <Button onPress={() => setValue(value)}
-                backgroundColor={value === active_value ? '#ddd' : 'transparent'}
+        <Button
+            backgroundColor={'$foreground'}
+            onPress={() => setValue(value)}
                 justifyContent={'center'} {...props}>
-            <Paragraph fontSize={12} lineHeight={12} color={'#999'}>{value}</Paragraph>
+            <Paragraph
+                color={value === active_value ? SECONDARY_COLOR : '$color'}>
+                {value}
+            </Paragraph>
         </Button>
     )
 }
@@ -146,7 +151,7 @@ export default function StatisticsPage() {
             </YStack>
             <YStack w={'93%'} padding={10} marginBottom={10} alignItems={'center'} borderRadius={10}
                     backgroundColor={'$foreground'} h={'63%'}>
-                <XStack w={'100%'} paddingVertical={5} h={'13%'}>
+                <XStack w={'100%'} paddingVertical={5} h={'13%'} justifyContent={'center'}>
                     <XStack>
                         <ToggleItem value={BarChart.DAILY} active_value={bar_chart}
                                     borderTopRightRadius={0} borderBottomRightRadius={0}

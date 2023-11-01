@@ -1,6 +1,6 @@
 import React from "react";
 import {heightPercentageToDP as hp, widthPercentageToDP as wp} from 'react-native-responsive-screen';
-import {Paragraph, ScrollView, TamaguiProvider, Theme, useTheme, YStack} from "tamagui";
+import {Paragraph, ScrollView, TamaguiProvider, Theme, useTheme, View, XStack, YStack} from "tamagui";
 import config from "./tamagui.config";
 import {useFonts} from "expo-font";
 import {
@@ -18,6 +18,7 @@ import StatisticsPage from "./src/pages/statistics";
 import SettingsPage from "./src/pages/settings";
 import {AppTheme} from "./src/globals/redux/reducers/settingsReducer";
 import {AppState} from "./src/globals/redux/reducers"
+import {SECONDARY_COLOR} from "./src/globals/types/main";
 
 
 const Drawer = createDrawerNavigator()
@@ -25,16 +26,14 @@ const Drawer = createDrawerNavigator()
 function CustomDrawerContent(props: DrawerContentComponentProps) {
     return (
         <DrawerContentScrollView {...props}>
-            <ScrollView height={hp('20%')} backgroundColor={'green'}>
-                <Paragraph>Hello</Paragraph>
-            </ScrollView>
-            <DrawerItemList {...props} />
-            <YStack height={hp('50%')} backgroundColor={'pink'}>
-                <Paragraph>Goodbye</Paragraph>
-                <Paragraph>Goodbye</Paragraph>
-                <Paragraph>Goodbye</Paragraph>
-                <Paragraph>Goodbye</Paragraph>
-                <Paragraph>Goodbye</Paragraph>
+            <YStack height={hp('98%')}>
+                <XStack alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
+                    <Paragraph fontSize={30} lineHeight={30}>KRONOS</Paragraph>
+                </XStack>
+                <DrawerItemList {...props} />
+                <YStack flexGrow={1} alignItems={'center'} justifyContent={'flex-end'}>
+                    <Paragraph>By Aught. 2023.</Paragraph>
+                </YStack>
             </YStack>
         </DrawerContentScrollView>
     );
@@ -77,11 +76,11 @@ function AppScreens() {
                         backgroundColor: background,
                         width: '50%',
                     },
-                    drawerItemStyle: {
-                        backgroundColor: foreground
-                    },
+                    // drawerItemStyle: {
+                    //     backgroundColor: foreground
+                    // },
                     drawerInactiveTintColor: color,
-                    drawerActiveTintColor: 'red',
+                    drawerActiveTintColor: SECONDARY_COLOR,
                     drawerType: "slide"
                 }}
                 drawerContent={CustomDrawerContent}

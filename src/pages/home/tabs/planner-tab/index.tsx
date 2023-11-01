@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react'
-import {AlertDialog, Button, Sheet, XGroup, XStack, YStack} from "tamagui";
+import {AlertDialog, Button, Paragraph, Sheet, XGroup, XStack, YStack} from "tamagui";
 import ActivitiesTab from "./sub-tabs/ActivitiesTab";
 import DurationsTab from "./sub-tabs/DurationsTab";
 import {
@@ -9,7 +9,7 @@ import {
 } from "./context";
 import {Plus} from "@tamagui/lucide-icons";
 import ActivityForm from "./forms/ActivityForm";
-import {Activity, Duration, Session} from "../../../../globals/types/main";
+import {Activity, Duration, SECONDARY_COLOR, Session} from "../../../../globals/types/main";
 import DurationForm from "./forms/DurationForm";
 import {DEFAULT_FORM_PROPS, FormProps} from "../../../../globals/types/form";
 import {useDispatch, useSelector} from "react-redux";
@@ -36,12 +36,12 @@ interface SubTab {
 const PLANNER_SUB_TABS: SubTab[] = [
     {
         key: 'activities',
-        name: 'Activities',
+        name: 'ACTIVITIES',
         component: <ActivitiesTab/>
     },
     {
         key: 'durations',
-        name: 'Durations',
+        name: 'DURATIONS',
         component: <DurationsTab/>
     },
 ]
@@ -136,7 +136,7 @@ export default function PlannerTab() {
         alert_data: {
             alert_props, setAlertProps,
         }
-    }), [form_props, form_is_open, alert_is_open, alert_props]);
+    }), [form_props, form_is_open, alert_is_open, alert_props, setFormProps, setFormIsOpen, setAlertIsOpen, setAlertProps]);
 
 
     return (
@@ -146,7 +146,13 @@ export default function PlannerTab() {
                     <XGroup backgroundColor={'$foreground'}>
                         {PLANNER_SUB_TABS.map((sub_tab) => (
                             <XGroup.Item key={sub_tab.key}>
-                                <Button onPress={() => setActiveSubTab(sub_tab)}>{sub_tab.name}</Button>
+                                <Button
+                                    onPress={() => setActiveSubTab(sub_tab)}>
+                                    <Paragraph
+                                        color={sub_tab.key === active_sub_tab.key ? SECONDARY_COLOR : '$color'}>
+                                        {sub_tab.name}
+                                    </Paragraph>
+                                </Button>
                             </XGroup.Item>
                         ))}
                     </XGroup>

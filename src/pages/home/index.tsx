@@ -5,6 +5,7 @@ import TimerTab from "./tabs/timer-tab";
 import PlannerTab from "./tabs/planner-tab";
 import {Calendar, Clipboard, Timer} from "@tamagui/lucide-icons";
 import {useTheme} from "tamagui";
+import {SECONDARY_COLOR} from "../../globals/types/main";
 
 const Tab = createBottomTabNavigator()
 
@@ -26,17 +27,17 @@ export default function HomePage() {
         }}>
             <Tab.Screen name={'Calendar'} component={CalendarTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <Calendar size={25} color={focused ? color?.val : '#777'}/>
+                    <Calendar size={25} color={focused ? SECONDARY_COLOR : color?.val}/>
                 )
             }}/>
             <Tab.Screen name={'Timer'} component={TimerTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <Timer size={25} color={focused ? color?.val : '#777'}/>
+                    <Timer size={25} color={focused ? SECONDARY_COLOR : color?.val}/>
                 )
             }}/>
             <Tab.Screen name={'Planner'} component={PlannerTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <Clipboard size={25} color={focused ? color?.val : '#777'}/>
+                    <Clipboard size={25} color={focused ? SECONDARY_COLOR : color?.val}/>
                 )
             }}/>
         </Tab.Navigator>
