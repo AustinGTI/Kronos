@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo} from 'react'
-import {Button, Circle, Paragraph, Separator, Sheet, Square, Stack, XStack, YStack} from "tamagui";
+import {Button, Circle, getTokens, Paragraph, Separator, Sheet, Square, Stack, XStack, YStack} from "tamagui";
 import {Duration, Segment, SegmentType} from "../../../../../globals/types/main";
 import {ChevronDown, ChevronUp, Delete, Edit, Play, Trash} from "@tamagui/lucide-icons";
 import {ActivityStat} from "./ActivitiesTab";
@@ -191,7 +191,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
 
 
     return (
-        <YStack width={'95%'} borderRadius={10} margin={'2.5%'} backgroundColor={'$background'}>
+        <YStack width={'100%'} borderRadius={10} marginVertical={'2.5%'} backgroundColor={'$background'}>
             <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'}
                     onPress={handleOnClickPane}
                     padding={20}>
@@ -199,7 +199,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
                     <Paragraph fontSize={24} color={'$color'} lineHeight={28}>{total_duration}</Paragraph>
                     <Paragraph fontSize={8} color={'#aaa'} lineHeight={10}>MINS</Paragraph>
                 </YStack>
-                <Paragraph textTransform={'uppercase'}>{duration.name}</Paragraph>
+                <Paragraph textTransform={'uppercase'} fontSize={'$3'}>{duration.name}</Paragraph>
                 {is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}
             </XStack>
             {
@@ -243,7 +243,7 @@ export default function DurationsTab() {
 
     return (
         <FlatList
-            style={{width: '100%', marginVertical: 10}}
+            style={{width: '100%', marginVertical: 10,paddingHorizontal: '5%'}}
             data={Object.values(planner_app_state.durations)}
             renderItem={({item}) => (
                 <DurationPane app_state={planner_app_state} duration={item} open_duration={open_duration}

@@ -141,11 +141,11 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
     }, [activity.stats_data.total_time, activity.stats_data.total_sessions]);
 
     return (
-        <YStack width={'95%'} borderRadius={10} margin={'2.5%'} backgroundColor={'$background'}>
+        <YStack width={'100%'} borderRadius={10} marginVertical={'2.5%'} backgroundColor={'$background'}>
             <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'} onPress={handleOnClickPane}
                     padding={20}>
                 <Circle size={20} backgroundColor={activity.color}/>
-                <Paragraph color={'$color'} textTransform={'uppercase'}>{activity.name}</Paragraph>
+                <Paragraph color={'$color'} textTransform={'uppercase'} fontSize={14}>{activity.name}</Paragraph>
                 {is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}
             </XStack>
             {
@@ -187,7 +187,7 @@ export default function ActivitiesTab() {
     const [open_activity, setOpenActivity] = React.useState<Activity | null>(null)
     return (
         <FlatList
-            style={{width: '100%', marginVertical: 10}}
+            style={{width: '100%', marginVertical: 10,paddingHorizontal: '5%'}}
             data={Object.values(planner_app_state.activities)}
             renderItem={({item}) => (
                 <ActivityPane app_state={planner_app_state} activity={item} open_activity={open_activity}

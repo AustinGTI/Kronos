@@ -160,7 +160,7 @@ export default function PlannerTab() {
                 </XStack>
 
                 <YStack ai={'center'} jc={'center'} flex={1} backgroundColor={'$foreground'} w={'95%'} margin={10}
-                        borderRadius={10}>
+                        borderRadius={20}>
                     {active_sub_tab.component}
                 </YStack>
             </YStack>

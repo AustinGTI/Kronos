@@ -20,7 +20,7 @@ const INITIAL_NO_OF_DATES = 7
 const EXTENSION_NO_OF_DATES = 7
 
 export default function CalendarTab() {
-    const [flatlist_dimensions, setFlatlistDimensions] = React.useState<Dimensions>({width: wp('100%'), height: hp('100%')})
+    const [flatlist_dimensions, setFlatlistDimensions] = React.useState<Dimensions>({width: wp('90%'), height: hp('90%')})
 
     // generate a series of date strings (dd/mm/yyyy) from the first date in sessions to today
     const [dates, setDates] = React.useState<string[]>(() => {
@@ -114,7 +114,7 @@ export default function CalendarTab() {
             <YStack height={'100%'} ai={'center'} backgroundColor={'$background'}>
                 <FlatList
                     ref={flatlist_ref}
-                    style={{width: '100%', flexGrow: 1}}
+                    style={{width: '100%', height: '100%'}}
                     data={dates}
                     inverted={true}
                     onLayout={(event) => {
@@ -136,13 +136,13 @@ export default function CalendarTab() {
                     decelerationRate={'fast'}
                     disableIntervalMomentum={true}
                     keyExtractor={(item) => item}
-                    getItemLayout={(data, index) => {
-                        return {
-                            length: flatlist_dimensions.height,
-                            offset: flatlist_dimensions.height * index,
-                            index
-                        }
-                    }}
+                    // getItemLayout={(data, index) => {
+                    //     return {
+                    //         length: flatlist_dimensions.height,
+                    //         offset: flatlist_dimensions.height * index,
+                    //         index
+                    //     }
+                    // }}
                     initialNumToRender={3}
                     windowSize={2}
                     removeClippedSubviews={true}

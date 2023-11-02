@@ -15,7 +15,7 @@ export const SegmentTypes: { [key: string]: SegmentType } = {
         key: 1,
         name: 'focus',
         color: '#db9cff',
-        persists_on_app_close: false,
+        persists_on_app_close: true,
     },
     BREAK: {
         key: 2,

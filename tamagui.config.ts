@@ -42,7 +42,7 @@ const config = createTamagui({
         dark: {
             ...themes.dark,
             background: '#000',
-            foreground: '#111',
+            foreground: '#120024',
             border: '#fff',
             error: '#ff0000',
             color: '#fff',
@@ -50,13 +50,20 @@ const config = createTamagui({
         light: {
             ...themes.light,
             background: '#fff',
-            foreground: '#eee',
+            foreground: '#efdeff',
             border: '#aaa',
             error: '#ff0000',
             color: '#000',
         }
     },
-    tokens,
+    tokens: {
+        ...tokens,
+        text: {
+            small: 12,
+            normal: 14,
+            heading: 17
+        }
+    },
     media: createMedia({
         xs: {maxWidth: 660},
         sm: {maxWidth: 800},
