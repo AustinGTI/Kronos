@@ -1,6 +1,6 @@
 import React from 'react'
 import {YStack} from "tamagui";
-import SwatchColorPicker from "../../../globals/components/form/pickers/SwatchColorPicker";
+import SwatchColorPicker from "../../../../../globals/components/form/pickers/SwatchColorPicker";
 
 interface ColorSettingProps {
     active_color: string

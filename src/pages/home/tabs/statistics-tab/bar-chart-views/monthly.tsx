@@ -1,20 +1,18 @@
 import React from 'react'
-import {Button, Paragraph, View, XStack, YStack} from "tamagui";
-import {useSelector} from "react-redux";
-import {AppState} from "../../../globals/redux/reducers";
 import {FlatList} from "react-native";
-import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../globals/helpers/datetime_functions";
+import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../../../globals/helpers/datetime_functions";
 import StackedBarChart, {
     StackedBarChartDataPoint,
     StackedBarChartKey
-} from "../../../globals/components/charts/StackedBarChart";
-import {Day, UNTITLED_ACTIVITY} from "../../../globals/types/main";
+} from "../../../../../globals/components/charts/StackedBarChart";
+import {Day, UNTITLED_ACTIVITY} from "../../../../../globals/types/main";
+import {Button, Paragraph, View, XStack, YStack} from "tamagui";
 import {ChevronLeft, ChevronRight} from "@tamagui/lucide-icons";
-import {ActivitiesState} from "../../../globals/redux/reducers/activitiesReducer";
-import {SessionsState} from "../../../globals/redux/reducers/sessionsReducer";
+import {ActivitiesState} from "../../../../../globals/redux/reducers/activitiesReducer";
+import {SessionsState} from "../../../../../globals/redux/reducers/sessionsReducer";
 
 
-interface WeeklyStackedBarChartProps {
+interface MonthlyStackedBarChartProps {
     activities: ActivitiesState
     sessions: SessionsState
     active_lead_date_string: string
@@ -23,30 +21,25 @@ interface WeeklyStackedBarChartProps {
 }
 
 
-export default function WeeklyStackedBarChart({
-                                                  activities, sessions,
-                                                  active_lead_date_string,
-                                                  setActiveLeadDateString,
-                                                  columns = 5
-                                              }: WeeklyStackedBarChartProps) {
+export default function MonthlyStackedBarChart({
+                                                   activities, sessions,
+                                                   active_lead_date_string,
+                                                   setActiveLeadDateString,
+                                                   columns = 5
+                                               }: MonthlyStackedBarChartProps) {
     const getIntervalDateFromDateString = React.useCallback((date_string: string) => {
-        // get the last day of the week within which the lead date string falls (Sun)
+        // get the first day of the month of the active lead date
         const date = DDMMYYYYToDate(date_string)
-        if (date.getDay() !== 0) {
-            date.setDate(date.getDate() - date.getDay() + 7)
-        }
+        date.setDate(1)
         return dateToDDMMYYYY(date)
     }, [])
 
     const getPreviousLeadDateString = React.useCallback((lead_date_string: string) => {
-        // get the last day of the week within which the lead date string falls (Sun)
-        const last_date = DDMMYYYYToDate(lead_date_string)
-        if (last_date.getDay() !== 0) {
-            last_date.setDate(last_date.getDate() - last_date.getDay() + 7)
-        }
-        // move date to sunday of that week
-        last_date.setDate(last_date.getDate() - last_date.getDay() - 7 * columns)
-        return dateToDDMMYYYY(last_date)
+        const date = DDMMYYYYToDate(lead_date_string)
+        date.setMonth(date.getMonth() - columns)
+        // move date to the first of that month
+        date.setDate(1)
+        return dateToDDMMYYYY(date)
     }, [columns])
 
     const flatlist_ref = React.useRef<FlatList<string>>(null)
@@ -68,43 +61,39 @@ export default function WeeklyStackedBarChart({
     })
 
     const title_string = React.useMemo(() => {
-        // get the first and last date in the interval
+        // the leading date is within the first month
         const last_date = DDMMYYYYToDate(active_date)
         const first_date = new Date(last_date)
-        // since these are weeks, the columns are multiplied by 7
-        first_date.setDate(first_date.getDate() - columns * 7 + 1)
-        // convert first date to the monday of that week and last date to the sunday of that week
-        first_date.setDate(first_date.getDate() - first_date.getDay() + 1)
-        last_date.setDate(last_date.getDate() - last_date.getDay() + 7)
-        // the title string will be in the format '12 Aug 2021 - 16 Aug 2021'
+        // move back by the number of columns to the first of the month of the first month
+        first_date.setMonth(first_date.getMonth() - columns + 1)
+        first_date.setDate(1)
+        // the title string will be in the format 'Aug 2021 - Aug 2021'
         return `${first_date.toLocaleDateString('en-GB', {
-            day: 'numeric',
             month: 'short',
             year: 'numeric'
         })} - ${last_date.toLocaleDateString('en-GB', {
-            day: 'numeric',
             month: 'short',
             year: 'numeric'
         })}`
     }, [active_date, columns])
 
-
     const getDataFromLeadDateString = React.useCallback((lead_date_string: string) => {
         const data: StackedBarChartDataPoint[] = []
         const keys: { [key: string]: StackedBarChartKey } = {}
-        // get the last day of the week within which the lead date string falls (Sun)
+        // get the last day of the month within which the lead date string is
         const last_date = DDMMYYYYToDate(lead_date_string)
-        if (last_date.getDay() !== 0) {
-            last_date.setDate(last_date.getDate() - last_date.getDay() + 7)
-        }
-        // from current date to previous date, get the session
+        last_date.setMonth(last_date.getMonth() + 1)
+        last_date.setDate(0)
+        // from the current date, move back up to the previous month while adding the sessions to the data
         let curr_lead_date_string = dateToDDMMYYYY(last_date)
         for (let i = 0; i < columns; i++) {
-            // get all the days of the current week
-            const days_of_the_week: Day[] = []
-            for (let j = 0; j < 7; j++) {
+            const this_month = DDMMYYYYToDate(curr_lead_date_string).getMonth()
+            // get all the days of the current month
+            const days_of_month: Day[] = []
+            // while curr_lead_date_string is within the current month, add the sessions to the data
+            while (DDMMYYYYToDate(curr_lead_date_string).getMonth() === this_month) {
                 // if there are no sessions for the day, return a day object with an empty sessions object
-                days_of_the_week.push(!sessions[curr_lead_date_string] ? {
+                days_of_month.push(!sessions[curr_lead_date_string] ? {
                     date: DDMMYYYYToDate(curr_lead_date_string).toISOString(),
                     sessions: {}
                 } : sessions[curr_lead_date_string])
@@ -115,16 +104,15 @@ export default function WeeklyStackedBarChart({
 
             const first_date = DDMMYYYYToDate(curr_lead_date_string)
             first_date.setDate(first_date.getDate() + 1)
-            // the label is the date in the format 17/09 as in the first day of the week
+            // the label is the month in the format Aug
             const label = first_date.toLocaleDateString('en-GB', {
-                day: 'numeric',
                 month: 'short'
             })
 
             const stack: Map<React.Key, number> = new Map()
 
-            // for every day of the week, add the increment of each session to the stack indexed by activity
-            days_of_the_week.forEach((day) => {
+            // for every day of the month, add the increment of each session to the stack indexed by activity
+            days_of_month.forEach((day) => {
                 Object.values(day.sessions).forEach((session) => {
                     const duration = session.segments.reduce((total, segment) => {
                         return total + segment.duration
@@ -152,6 +140,7 @@ export default function WeeklyStackedBarChart({
         }
     }, [columns, sessions, activities])
 
+
     const updateDataOnEndReached = React.useCallback(() => {
         setData((data) => {
             const new_data = [...data]
@@ -159,10 +148,10 @@ export default function WeeklyStackedBarChart({
             for (let i = 0; i < 3; i++) {
                 new_data.push(getPreviousLeadDateString(new_data[new_data.length - 1]))
             }
-            console.log('the new weekly data is', new_data)
             return new_data
         })
     }, [getPreviousLeadDateString, setData])
+
 
     // on mount and flatlist ref available, scroll to the active lead date
     // React.useEffect(() => {
@@ -175,12 +164,12 @@ export default function WeeklyStackedBarChart({
     //             break
     //         }
     //         const date = DDMMYYYYToDate(closest_lead_date)
-    //         date.setDate(date.getDate() + 7)
+    //         date.setMonth(date.getMonth() + 1)
     //         closest_lead_date = dateToDDMMYYYY(date)
     //     }
-    //     console.log('the data is', data)
+    //     console.log('the data is',data)
     //     console.log('the active lead date on mount is', active_lead_date_string)
-    //     console.log('the closest lead date is', closest_lead_date)
+    //     console.log('the closest lead date is',closest_lead_date)
     //     console.log('on mount, scrolling to index', index)
     //     flatlist_ref.current?.scrollToIndex({index})
     // }, [flatlist_ref])
@@ -192,6 +181,9 @@ export default function WeeklyStackedBarChart({
                 <Button
                     backgroundColor={'transparent'}
                     onPress={() => {
+                        console.log('the dates are', data)
+                        console.log('the active lead date string is', active_date, ' and converted to a leaddatestring is ', getIntervalDateFromDateString(active_date))
+                        console.log('the previous index is', data.findIndex((date) => date === getIntervalDateFromDateString(active_date)) + 1)
                         flatlist_ref.current?.scrollToIndex({
                             index: data.findIndex((date) => date === getIntervalDateFromDateString(active_date)) + 1,
                             animated: true
@@ -222,7 +214,7 @@ export default function WeeklyStackedBarChart({
                     style={{width: '100%', height: '80%'}}
                     inverted={true}
                     initialNumToRender={3}
-                    windowSize={2}
+                    windowSize={3}
                     removeClippedSubviews={true}
                     snapToInterval={flatlist_dimensions.width}
                     decelerationRate={'fast'}
@@ -250,7 +242,6 @@ export default function WeeklyStackedBarChart({
                     }}
                     onScroll={(event) => {
                         const index = Math.round(event.nativeEvent.contentOffset.x / flatlist_dimensions.width)
-                        console.log('the index of the weekly bar is', index)
                         // set the active lead date string if it is not the same as the current one
                         if (data[index] !== active_date) {
                             setActiveDate(data[index])

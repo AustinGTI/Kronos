@@ -2,16 +2,16 @@ import React from 'react'
 import {Button, Paragraph, View, XStack, YStack} from "tamagui";
 import {FlatList} from "react-native";
 import {useSelector} from "react-redux";
-import {AppState} from "../../../globals/redux/reducers";
-import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../globals/helpers/datetime_functions";
+import {AppState} from "../../../../../globals/redux/reducers";
+import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../../../globals/helpers/datetime_functions";
 import StackedBarChart, {
     StackedBarChartDataPoint,
     StackedBarChartKey
-} from "../../../globals/components/charts/StackedBarChart";
-import {Day, UNTITLED_ACTIVITY} from "../../../globals/types/main";
+} from "../../../../../globals/components/charts/StackedBarChart";
+import {Day, UNTITLED_ACTIVITY} from "../../../../../globals/types/main";
 import {ChevronLast, ChevronLeft, ChevronRight} from "@tamagui/lucide-icons";
-import {ActivitiesState} from "../../../globals/redux/reducers/activitiesReducer";
-import {SessionsState} from "../../../globals/redux/reducers/sessionsReducer";
+import {ActivitiesState} from "../../../../../globals/redux/reducers/activitiesReducer";
+import {SessionsState} from "../../../../../globals/redux/reducers/sessionsReducer";
 
 interface DailyStackedBarChartProps {
     activities: ActivitiesState

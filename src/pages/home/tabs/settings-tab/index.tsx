@@ -3,13 +3,13 @@ import {Paragraph, XStack, YStack} from "tamagui";
 import ThemeSetting from "./panes/ThemeSetting";
 import ColorSetting from "./panes/ColorSetting";
 import {useDispatch, useSelector} from "react-redux";
-import {AppState} from "../../globals/redux/reducers";
-import {AppTheme, setBreakColor, setFocusColor, setTheme} from "../../globals/redux/reducers/settingsReducer";
+import {AppState} from "../../../../globals/redux/reducers";
+import {AppTheme, setBreakColor, setFocusColor, setTheme} from "../../../../globals/redux/reducers/settingsReducer";
 import DataSetting from "./panes/DataSetting";
-import SwatchColorPicker from "../../globals/components/form/pickers/SwatchColorPicker";
+import SwatchColorPicker from "../../../../globals/components/form/pickers/SwatchColorPicker";
 import {string} from "yup";
-import selectSettingsPageState from "../../globals/redux/selectors/settingsPageSelector";
-import Accordion from "../../globals/components/wrappers/Accordion";
+import selectSettingsPageState from "../../../../globals/redux/selectors/settingsPageSelector";
+import Accordion from "../../../../globals/components/wrappers/Accordion";
 
 interface PaneWrapperProps {
     label: string
@@ -28,7 +28,7 @@ function PaneWrapper({label, children}: PaneWrapperProps) {
     )
 }
 
-export default function SettingsPage() {
+export default function SettingsTab() {
     const {theme, focus_color, break_color} = useSelector(selectSettingsPageState)
     const dispatch = useDispatch()
 

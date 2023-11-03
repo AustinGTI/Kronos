@@ -1,9 +1,9 @@
 import React from 'react'
 import {Paragraph, Square, XStack, YStack} from "tamagui";
-import {AppState} from "../../../globals/redux/reducers";
+import {AppState} from "../../../../../globals/redux/reducers";
 import {useDispatch, useSelector} from "react-redux";
-import {AppTheme, setTheme} from "../../../globals/redux/reducers/settingsReducer";
-import DropdownSelectPicker from "../../../globals/components/form/pickers/DropdownSelectPicker";
+import {AppTheme, setTheme} from "../../../../../globals/redux/reducers/settingsReducer";
+import DropdownSelectPicker from "../../../../../globals/components/form/pickers/DropdownSelectPicker";
 import {Canvas, LinearGradient, RoundedRect, vec} from "@shopify/react-native-skia";
 import {string} from "yup";
 
