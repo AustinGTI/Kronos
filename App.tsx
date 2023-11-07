@@ -115,6 +115,8 @@ export default function App() {
     const [fonts_loaded, error] = useFonts({
         'Inter': require('@tamagui/font-inter/otf/Inter-Medium.otf'),
         'InterBold': require('@tamagui/font-inter/otf/Inter-Bold.otf'),
+        'Akshar': require('./assets/fonts/Akshar/static/Akshar-Regular.ttf'),
+        'Alatsi': require('./assets/fonts/Alatsi/Alatsi-Regular.ttf'),
     })
 
     if (!fonts_loaded) return null

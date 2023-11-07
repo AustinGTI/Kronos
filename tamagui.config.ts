@@ -3,7 +3,7 @@ import {createInterFont} from "@tamagui/font-inter";
 import {createMedia} from '@tamagui/react-native-media-driver'
 import {shorthands} from '@tamagui/shorthands'
 import {themes, tokens} from '@tamagui/themes'
-import {createTamagui} from 'tamagui'
+import {createFont, createTamagui} from 'tamagui'
 
 const animations = createAnimations({
     bouncy: {
@@ -26,6 +26,31 @@ const animations = createAnimations({
 })
 const headingFont = createInterFont()
 
+const alatsiFont = createFont({
+    family: 'Alatsi',
+    size: {
+        1: 11,
+        2: 14,
+        3: 32,
+        4: 48,
+        true: 14,
+    },
+    lineHeight: {
+        // 1 will be 22
+        2: 22,
+    },
+    weight: {
+        1: '300',
+        // 2 will be 300
+        3: '600',
+    },
+    letterSpacing: {
+        1: 0,
+        2: -1,
+        // 3 will be -1
+    },
+})
+
 const bodyFont = createInterFont()
 const config = createTamagui({
     animations,
@@ -34,26 +59,26 @@ const config = createTamagui({
     themeClassNameOnRoot: false,
     shorthands,
     fonts: {
-        heading: headingFont,
-        body: bodyFont,
+        heading: alatsiFont,
+        body: alatsiFont,
     },
     themes: {
         ...themes,
         dark: {
             ...themes.dark,
-            background: '#000',
-            foreground: '#120024',
+            background: '#1c002a',
+            foreground: '#000',
             border: '#fff',
             error: '#ff0000',
-            color: '#fff',
+            color: '#e9bcff',
         },
         light: {
             ...themes.light,
-            background: '#fff',
-            foreground: '#efdeff',
+            background: '#f0d2ff',
+            foreground: '#fff',
             border: '#aaa',
             error: '#ff0000',
-            color: '#000',
+            color: '#3d005b',
         }
     },
     tokens: {
