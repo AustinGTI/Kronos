@@ -37,7 +37,11 @@ const alatsiFont = createFont({
     },
     lineHeight: {
         // 1 will be 22
-        2: 22,
+        1: 22,
+        2: 24,
+        3: 42,
+        4: 56,
+        true: 24,
     },
     weight: {
         1: '300',
@@ -46,12 +50,18 @@ const alatsiFont = createFont({
     },
     letterSpacing: {
         1: 0,
-        2: -1,
-        // 3 will be -1
+        2: 0,
+        3: 0,
+        4: 0,
     },
 })
 
 const bodyFont = createInterFont()
+
+const common_theme  = {
+    backgroundPress: 'transparent'
+}
+
 const config = createTamagui({
     animations,
     defaultTheme: 'dark',
@@ -66,19 +76,25 @@ const config = createTamagui({
         ...themes,
         dark: {
             ...themes.dark,
+            ...common_theme,
             background: '#1c002a',
             foreground: '#000',
             border: '#fff',
             error: '#ff0000',
             color: '#e9bcff',
+            active_color: '#a900fe',
+            shadowColor: '#7b00b8',
         },
         light: {
             ...themes.light,
+            ...common_theme,
             background: '#f0d2ff',
             foreground: '#fff',
             border: '#aaa',
             error: '#ff0000',
             color: '#3d005b',
+            active_color: '#a900fe',
+            shadowColor: '#6b00a1'
         }
     },
     tokens: {
@@ -87,7 +103,7 @@ const config = createTamagui({
             small: 12,
             normal: 14,
             heading: 17
-        }
+        },
     },
     media: createMedia({
         xs: {maxWidth: 660},

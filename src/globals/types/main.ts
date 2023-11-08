@@ -110,7 +110,7 @@ export type Session = {
     )
 
 export interface Day {
-    date: string; // an ISO string of the start of the day
+    date_as_iso: string; // an ISO string of the start of the day
     sessions: { [id: number]: Session }
 }
 

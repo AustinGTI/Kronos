@@ -14,6 +14,8 @@ import {
 import {ValidationStatus} from "../../../../../globals/redux/types";
 import {deleteActivity, updateActivity} from "../../../../../globals/redux/reducers/activitiesReducer";
 import selectPlannerState from "../../../../../globals/redux/selectors/plannerTabSelector";
+import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
+import KronosButton from "../../../../../globals/components/wrappers/KronosButton";
 
 interface ActivityPaneProps {
     app_state: AppState
@@ -136,47 +138,57 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
         return open_activity?.id === activity.id
     }, [open_activity?.id, activity.id])
 
-    const [sessions,  minutes] = useMemo(() => {
-        return [activity.stats_data.total_sessions,  activity.stats_data.total_time]
+    const [sessions, minutes] = useMemo(() => {
+        return [activity.stats_data.total_sessions, activity.stats_data.total_time]
     }, [activity.stats_data.total_time, activity.stats_data.total_sessions]);
 
     return (
-        <YStack width={'100%'} borderRadius={10} marginVertical={'2.5%'} backgroundColor={'$background'}>
-            <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'} onPress={handleOnClickPane}
-                    padding={20}>
-                <Circle size={20} backgroundColor={activity.color}/>
-                <Paragraph color={'$color'} textTransform={'uppercase'} fontSize={14}>{activity.name}</Paragraph>
-                {is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}
-            </XStack>
-            {
-                is_open && (
-                    <React.Fragment>
-                        <Separator width={'90%'} marginHorizontal={'5%'}/>
-                        <YStack width={'100%'} backgroundColor={'transparent'} padding={10}>
-                            <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={15}>
-                                <ActivityStat label={'sessions'} value={sessions}/>
-                                {/*<Separator vertical borderColor={'#ccc'}/>*/}
-                                {/*<ActivityStat label={'hours'} value={hours}/>*/}
-                                <ActivityStat label={'minutes'} value={minutes}/>
-                            </XStack>
-                            <XStack justifyContent={'space-around'} width={'100%'} paddingTop={10}>
-                                <Button
-                                    onPress={handleOnClickEditButton} flexGrow={1} paddingVertical={5} margin={0}
-                                    backgroundColor={'transparent'} borderTopRightRadius={0} borderBottomRightRadius={0}>
-                                    <Edit size={20} color={'$color'}/>
-                                </Button>
-                                {/*<Play size={20} color={'$color'}/>*/}
-                                <Button
-                                    onPress={handleOnClickDeleteButton} flexGrow={1} paddingVertical={5} margin={0}
-                                    backgroundColor={'transparent'} borderTopLeftRadius={0} borderBottomLeftRadius={0}>
-                                    <Trash size={20} color={'$color'}/>
-                                </Button>
-                            </XStack>
-                        </YStack>
-                    </React.Fragment>
-                )
-            }
-        </YStack>
+        <KronosContainer width={'100%'} padding={0}>
+            <YStack width={'100%'}>
+                <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'}
+                        onPress={handleOnClickPane}
+                        padding={15}>
+                    <Circle size={20} backgroundColor={activity.color}/>
+                    <Paragraph color={'$color'} textTransform={'uppercase'} fontSize={14}>{activity.name}</Paragraph>
+                    {/*{is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}*/}
+                    <XStack w={'20%'} justifyContent={'space-between'}>
+                        <KronosButton
+                            onPress={handleOnClickEditButton} icon={Edit}/>
+                        <KronosButton
+                            onPress={handleOnClickDeleteButton} icon={Trash}/>
+                    </XStack>
+                </XStack>
+                {
+                    is_open && (
+                        <React.Fragment>
+                            <Separator width={'90%'} marginHorizontal={'5%'}/>
+                            <YStack width={'100%'} backgroundColor={'transparent'} padding={10}>
+                                <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={15}>
+                                    <ActivityStat label={'sessions'} value={sessions}/>
+                                    {/*<Separator vertical borderColor={'#ccc'}/>*/}
+                                    {/*<ActivityStat label={'hours'} value={hours}/>*/}
+                                    <ActivityStat label={'minutes'} value={minutes}/>
+                                </XStack>
+                                <XStack justifyContent={'space-around'} width={'100%'} paddingTop={10}>
+                                    <Button
+                                        onPress={handleOnClickEditButton} flexGrow={1} paddingVertical={5} margin={0}
+                                        backgroundColor={'transparent'} borderTopRightRadius={0}
+                                        borderBottomRightRadius={0}>
+                                        <Edit size={20} color={'$color'}/>
+                                    </Button>
+                                    {/*<Play size={20} color={'$color'}/>*/}
+                                    <Button
+                                        onPress={handleOnClickDeleteButton} flexGrow={1} paddingVertical={5} margin={0}
+                                        backgroundColor={'transparent'} borderTopLeftRadius={0} borderBottomLeftRadius={0}>
+                                        <Trash size={20} color={'$color'}/>
+                                    </Button>
+                                </XStack>
+                            </YStack>
+                        </React.Fragment>
+                    )
+                }
+            </YStack>
+        </KronosContainer>
     )
 }
 
@@ -187,7 +199,7 @@ export default function ActivitiesTab() {
     const [open_activity, setOpenActivity] = React.useState<Activity | null>(null)
     return (
         <FlatList
-            style={{width: '100%', marginVertical: 10,paddingHorizontal: '5%'}}
+            style={{width: '100%'}}
             data={Object.values(planner_app_state.activities)}
             renderItem={({item}) => (
                 <ActivityPane app_state={planner_app_state} activity={item} open_activity={open_activity}

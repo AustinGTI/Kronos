@@ -8,15 +8,17 @@ import {useTheme} from "tamagui";
 import {SECONDARY_COLOR} from "../../globals/types/main";
 import StatisticsTab from "./tabs/statistics-tab";
 import SettingsTab from "./tabs/settings-tab";
+import {clearSessions, generateDummySessions} from "../../globals/redux/reducers/sessionsReducer";
+import {useDispatch} from "react-redux";
 
 const Tab = createBottomTabNavigator()
 
 export default function HomePage() {
-    const {background,color,borderColor} = useTheme()
+    const {background,foreground,color,borderColor} = useTheme()
     // const dispatch = useDispatch()
     // dispatch(clearSessions())
-    // // generate dummy sessions from 1st August 2023 to today
-    // const start_date = new Date(2021, 7, 1)
+    // // generate dummy sessions from 1st September 2023 to today
+    // const start_date = new Date(2021, 8, 1)
     // dispatch(generateDummySessions({start_date}))
     console.log('theme props at the moment are ',background,color,borderColor)
     return (
@@ -26,7 +28,7 @@ export default function HomePage() {
             headerShown: false,
             tabBarLabel: () => null,
             tabBarStyle: {
-                backgroundColor: background?.val,
+                backgroundColor: foreground?.val,
             }
         }}>
             <Tab.Screen name={'Statistics'} component={StatisticsTab} options={{

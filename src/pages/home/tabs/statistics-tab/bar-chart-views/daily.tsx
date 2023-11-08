@@ -38,7 +38,7 @@ export default function DailyStackedBarChart({
 
     const [data, setData] = React.useState<string[]>(() => {
         const initial_data: string[] = [dateToDDMMYYYY(new Date())]
-        // increase data while the last date is more than active lead date or length of data is less than 3
+        // increase data while the last date_as_iso is more than active lead date_as_iso or length of data is less than 3
         while (initial_data.length < 3) {
             initial_data.push(getPreviousLeadDateString(initial_data[initial_data.length - 1]))
         }
@@ -53,7 +53,7 @@ export default function DailyStackedBarChart({
     })
 
     const title_string = React.useMemo(() => {
-        // get the first and last date in the interval
+        // get the first and last date_as_iso in the interval
         const last_date = DDMMYYYYToDate(active_date)
         const first_date = new Date(last_date)
         first_date.setDate(first_date.getDate() - columns + 1)
@@ -73,16 +73,16 @@ export default function DailyStackedBarChart({
     const getDataFromLeadDateString = React.useCallback((lead_date_string: string) => {
         const data: StackedBarChartDataPoint[] = []
         const keys: { [key: string]: StackedBarChartKey } = {}
-        // from current date to previous date, get the session
+        // from current date_as_iso to previous date_as_iso, get the session
         let curr_lead_date_string = lead_date_string
         for (let i = 0; i < columns; i++) {
             // if there are no sessions for the day, return a day object with an empty sessions object
             const day: Day = !sessions[curr_lead_date_string] ? {
-                date: DDMMYYYYToDate(curr_lead_date_string).toISOString(),
+                date_as_iso: DDMMYYYYToDate(curr_lead_date_string).toISOString(),
                 sessions: {}
             } : sessions[curr_lead_date_string];
 
-            // the label is the date in the format 17 Sept
+            // the label is the date_as_iso in the format 17 Sept
             const label = DDMMYYYYToDate(curr_lead_date_string).toLocaleDateString('en-GB', {
                 day: 'numeric',
                 month: 'short'
@@ -130,23 +130,23 @@ export default function DailyStackedBarChart({
     }, [getPreviousLeadDateString, setData])
 
 
-    // on mount and flatlist ref available, scroll to the active lead date
+    // on mount and flatlist ref available, scroll to the active lead date_as_iso
     // React.useEffect(() => {
     //     let closest_lead_date = active_lead_date_string
     //     let index = -1
-    //     // move 1 month at a time until the closest lead date is reached
+    //     // move 1 month at a time until the closest lead date_as_iso is reached
     //     while (true) {
-    //         if (data.findIndex((date) => date === closest_lead_date) !== -1) {
-    //             index = data.findIndex((date) => date === closest_lead_date)
+    //         if (data.findIndex((date_as_iso) => date_as_iso === closest_lead_date) !== -1) {
+    //             index = data.findIndex((date_as_iso) => date_as_iso === closest_lead_date)
     //             break
     //         }
-    //         const date = DDMMYYYYToDate(closest_lead_date)
-    //         date.setDate(date.getDate() + 1)
-    //         closest_lead_date = dateToDDMMYYYY(date)
+    //         const date_as_iso = DDMMYYYYToDate(closest_lead_date)
+    //         date_as_iso.setDate(date_as_iso.getDate() + 1)
+    //         closest_lead_date = dateToDDMMYYYY(date_as_iso)
     //     }
     //     console.log('the data is', data)
-    //     console.log('the active lead date on mount is', active_lead_date_string)
-    //     console.log('the closest lead date is', closest_lead_date)
+    //     console.log('the active lead date_as_iso on mount is', active_lead_date_string)
+    //     console.log('the closest lead date_as_iso is', closest_lead_date)
     //     console.log('on mount, scrolling to index', index)
     //     flatlist_ref.current?.scrollToIndex({index})
     // }, [flatlist_ref])
@@ -215,11 +215,11 @@ export default function DailyStackedBarChart({
                     }}
                     onScroll={(event) => {
                         const index = Math.round(event.nativeEvent.contentOffset.x / flatlist_dimensions.width)
-                        // set the active lead date string if it is not the same as the current one
+                        // set the active lead date_as_iso string if it is not the same as the current one
                         if (data[index] !== active_date) {
                             setActiveDate(data[index])
                         }
-                        // if the lead date is within 2 interval of the end, update the data
+                        // if the lead date_as_iso is within 2 interval of the end, update the data
                         if (index >= data.length - 2) {
                             updateDataOnEndReached()
                         }

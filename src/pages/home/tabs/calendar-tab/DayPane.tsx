@@ -8,16 +8,13 @@ import {TouchableOpacity, useWindowDimensions} from "react-native";
 import {useHeaderHeight} from "react-native-screens/native-stack";
 import {CalendarTabContext} from "./context";
 import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../../globals/helpers/datetime_functions";
-import {endSession} from "../../../../globals/redux/reducers/sessionsReducer";
+import {endSession, SessionsState} from "../../../../globals/redux/reducers/sessionsReducer";
+import calendarTabSelector from "../../../../globals/redux/selectors/calendarTabSelector";
 
 interface DayPaneProps {
-    date: string
+    day: Day
 }
 
-interface SideBarProps {
-    date: Date
-    sessions: Session[]
-}
 
 interface TimelineProps {
     sessions: {
@@ -43,58 +40,6 @@ interface TimelineSession {
 }
 
 
-function SideBar({date, sessions}: SideBarProps) {
-    const {
-        date_picker_data: {setDatePickerVisibility}
-    } = React.useContext(CalendarTabContext)
-
-    const [day_of_week, day_date, month, year] = React.useMemo(() => {
-        return [
-            date.toLocaleString('default', {weekday: 'short'}).split(',')[0],
-            date.getDate(),
-            date.toLocaleString('default', {month: 'short'}),
-            date.getFullYear()
-        ]
-    }, [date])
-
-    const [no_of_sessions, total_session_duration_in_hours] = React.useMemo(() => {
-        const no_of_sessions = sessions.length
-        const total_session_duration_in_hours = sessions.reduce((total, session) => {
-            let duration = 0
-            for (const segment of session.segments) {
-                duration += segment.duration
-            }
-            return total + duration
-        }, 0)
-        return [no_of_sessions, Math.round(total_session_duration_in_hours / 60)]
-    }, [sessions])
-
-
-    return (
-        <YStack w={'20%'} h={'100%'}>
-            <YStack
-                onPress={() => setDatePickerVisibility(true)}
-                w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
-                <Paragraph fontSize={22} marginVertical={2} textTransform={'uppercase'}>{day_of_week}</Paragraph>
-                <Paragraph fontSize={36} lineHeight={40} marginVertical={2}
-                           textTransform={'uppercase'}>{day_date.toString().padStart(2, '0')}</Paragraph>
-                <Paragraph fontSize={22} marginVertical={2} textTransform={'uppercase'}>{month}</Paragraph>
-                <Paragraph fontSize={19} marginVertical={2} textTransform={'uppercase'}>{year}</Paragraph>
-            </YStack>
-            <YStack w={'100%'} flexGrow={1} alignItems={'center'} justifyContent={'flex-end'} paddingVertical={5}>
-                <YStack alignItems={'center'} justifyContent={'center'} paddingVertical={5}>
-                    <Paragraph color={'#555'} textTransform={'uppercase'} fontSize={12}>Sessions</Paragraph>
-                    <Paragraph fontSize={36} lineHeight={40}>{no_of_sessions.toString().padStart(2, '0')}</Paragraph>
-                </YStack>
-                <YStack alignItems={'center'} justifyContent={'center'} paddingVertical={5}>
-                    <Paragraph color={'#555'} textTransform={'uppercase'} fontSize={12}>Hours</Paragraph>
-                    <Paragraph fontSize={36}
-                               lineHeight={40}>{total_session_duration_in_hours.toString().padStart(2, '0')}</Paragraph>
-                </YStack>
-            </YStack>
-        </YStack>
-    )
-}
 
 function TimelineMarker({hour, ...stack_props}: TimelineMarkerProps) {
     // convert the hour to a 12 hour formatted string
@@ -113,8 +58,8 @@ function TimelineMarker({hour, ...stack_props}: TimelineMarkerProps) {
     return (
         // the timeline marker is a vertical line with a label to the left
         <XStack alignItems={'center'} {...stack_props}>
-            <Paragraph fontSize={10} lineHeight={10} color={'#aaa'} paddingRight={5}>{hour_string}</Paragraph>
-            <View flexGrow={1} h={1} backgroundColor={'#aaa'}/>
+            <Paragraph fontSize={10} lineHeight={10} color={'$color'} paddingRight={5}>{hour_string}</Paragraph>
+            <View flexGrow={1} h={1} borderTopColor={'$color'} borderTopWidth={1}/>
         </XStack>
     )
 }
@@ -160,7 +105,7 @@ function Timeline({sessions}: TimelineProps) {
     }, [sessions, setSessionInModal, setModalVisibility])
 
     return (
-        <YStack position={'relative'} flexGrow={1} h={'100%'} alignItems={'center'}>
+        <YStack position={'relative'} flexGrow={1} h={'100%'} alignItems={'center'} backgroundColor={'$foreground'}>
             {
                 timeline_sessions.map((timeline_session, index) => {
                         return (
@@ -189,7 +134,7 @@ function Timeline({sessions}: TimelineProps) {
             {
                 // add timeline markers for every 2nd hour from 0 to 23
                 [...Array(24).keys()].filter(hour => hour % 2).map((hour) => {
-                    const top = hour / 24 * calendar_height - 5
+                    const top = (hour / 24 * calendar_height - 5)
                     return (
                         <TimelineMarker
                             key={hour} hour={hour}
@@ -203,65 +148,43 @@ function Timeline({sessions}: TimelineProps) {
 }
 
 
-export default function DayPane({date}: DayPaneProps) {
+export default function DayPane({day}: DayPaneProps) {
     const {
         dimensions_data: {calendar_height},
         date_data: {active_date}
     } = React.useContext(CalendarTabContext)
 
-    const sessions = useSelector((state: AppState) => state.sessions)
-    const dispatch = useDispatch()
+    // const day: Day = React.useMemo(() => {
+    //     // if there are no sessions for the day, return a day object with an empty sessions object
+    //     if (!sessions[date_as_iso]) {
+    //         return {
+    //             date_as_iso: DDMMYYYYToDate(date_as_iso).toISOString(),
+    //             sessions: {}
+    //         }
+    //     } else {
+    //         return sessions[date_as_iso]
+    //     }
+    // }, [sessions, date_as_iso])
 
-    // for clean up purposes, for each session, check if it is still ongoing, if so, it is likely that the app closed before
-    // it had a chance to be properly ended. use dispatch to end the session with the end time being the sum of all the
-    // segment durations
-
-    React.useEffect(() => {
-        for (const day of Object.values(sessions)) {
-            for (const session of Object.values(day.sessions)) {
-                if (session.is_ongoing) {
-                    let duration = 0
-                    for (const segment of session.segments) {
-                        duration += segment.duration
-                    }
-                    const end_time = new Date(new Date(session.start_time).getTime() + duration * 60 * 1000)
-                    dispatch(endSession({
-                        session_id: session.id,
-                        end_time: end_time.toISOString()
-                    }))
-                }
-            }
-        }
-    }, [sessions])
-
-    const day: Day = React.useMemo(() => {
-        // if there are no sessions for the day, return a day object with an empty sessions object
-        if (!sessions[date]) {
-            return {
-                date: DDMMYYYYToDate(date).toISOString(),
-                sessions: {}
-            }
-        } else {
-            return sessions[date]
-        }
-    }, [sessions, date])
-
-    // the pane is rendered only if it is one day before or after the active date
+    // the pane is rendered only if it is one day before or after the active date_as_iso
     const render_page = React.useMemo(() => {
         const yesterday = dateToDDMMYYYY(new Date(active_date.getTime() - 24 * 60 * 60 * 1000))
         const today = dateToDDMMYYYY(active_date)
         const tomorrow = dateToDDMMYYYY(new Date(active_date.getTime() + 24 * 60 * 60 * 1000))
 
+        const date = dateToDDMMYYYY(new Date(day.date_as_iso))
+
+        console.log('current date is',date,'and the date iso is',day.date_as_iso,'and the date is ',new Date(day.date_as_iso),'and the ddmmyyyy is',dateToDDMMYYYY(new Date(day.date_as_iso)),'and the day is',day)
 
         return date === yesterday || date === today || date === tomorrow
-    }, [date, active_date])
+    }, [active_date, day.date_as_iso])
 
     return (
         <XStack w={'100%'} h={calendar_height}>
             {render_page ? <React.Fragment>
-                <SideBar date={new Date(day.date)} sessions={Object.values(day.sessions)}/>
+                {/*<SideBar date_as_iso={new Date(day.date_as_iso)} sessions={Object.values(day.sessions)}/>*/}
                 <Timeline sessions={day.sessions}/>
-            </React.Fragment> : <Paragraph>Blank {dateToDDMMYYYY(new Date(day.date))}</Paragraph>}
+            </React.Fragment> : <Paragraph>Blank {dateToDDMMYYYY(new Date(day.date_as_iso))}</Paragraph>}
         </XStack>
     )
 }

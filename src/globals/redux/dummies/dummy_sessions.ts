@@ -121,22 +121,22 @@ function skewDurationSegments(duration: Duration): Segment[] {
 }
 
 /**
- * this function takes a start date, list of session_segments and existing sessions and checks if there is an overlap with the existing sessions
+ * this function takes a start date_as_iso, list of session_segments and existing sessions and checks if there is an overlap with the existing sessions
  * if there is an overlap, it returns true, else false
- * @param {Date} start_date - The start date of the new session
+ * @param {Date} start_date - The start date_as_iso of the new session
  * @param {Segment[]} session_segments - The segments of the new session
  * @param {Session[]} existing_sessions - The existing sessions to check for overlap
  * @returns {boolean}
  */
 function checkForSessionOverlap(start_date: Date, session_segments: Segment[], existing_sessions: Session[]): boolean {
-    // get the end date of the new session
+    // get the end date_as_iso of the new session
     const end_date = new Date(start_date)
     for (const segment of session_segments) {
         end_date.setMinutes(end_date.getMinutes() + segment.duration)
     }
     // check if the new session overlaps with any existing sessions
     for (const existing_session of existing_sessions) {
-        // get the end date of the existing session
+        // get the end date_as_iso of the existing session
         const existing_start_date = new Date(existing_session.start_time)
         const existing_end_date = new Date(existing_session.start_time)
         for (const segment of existing_session.segments) {
@@ -152,8 +152,8 @@ function checkForSessionOverlap(start_date: Date, session_segments: Segment[], e
 
 
 /**
- * Generates dummy sessions for the given date
- * @param {Date} date - The date to generate sessions for
+ * Generates dummy sessions for the given date_as_iso
+ * @param {Date} date - The date_as_iso to generate sessions for
  */
 export default function generateDummyDay(date: Date): Day {
     // generate a random number of sessions for the day and loop through them
@@ -193,7 +193,7 @@ export default function generateDummyDay(date: Date): Day {
     }
 
     return {
-        date: date.toISOString(),
+        date_as_iso: date.toISOString(),
         sessions: sessions.reduce((obj, session) => {
             obj[session.id] = session
             return obj

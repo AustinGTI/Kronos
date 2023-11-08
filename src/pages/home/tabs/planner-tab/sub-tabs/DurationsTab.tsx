@@ -14,6 +14,8 @@ import {
 } from "../../../../../globals/redux/validators/durationValidators";
 import {ValidationStatus} from "../../../../../globals/redux/types";
 import selectPlannerState from "../../../../../globals/redux/selectors/plannerTabSelector";
+import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
+import KronosButton from "../../../../../globals/components/wrappers/KronosButton";
 
 interface DurationPaneProps {
     app_state: AppState,
@@ -191,47 +193,56 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
 
 
     return (
-        <YStack width={'100%'} borderRadius={10} marginVertical={'2.5%'} backgroundColor={'$background'}>
-            <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'}
-                    onPress={handleOnClickPane}
-                    padding={20}>
-                <YStack alignItems={'center'}>
-                    <Paragraph fontSize={24} color={'$color'} lineHeight={28}>{total_duration}</Paragraph>
-                    <Paragraph fontSize={8} color={'#aaa'} lineHeight={10}>MINS</Paragraph>
-                </YStack>
-                <Paragraph textTransform={'uppercase'} fontSize={'$3'}>{duration.name}</Paragraph>
-                {is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}
-            </XStack>
-            {
-                is_open && (
-                    <React.Fragment>
-                        <Separator width={'90%'} marginHorizontal={'5%'}/>
-                        <YStack width={'100%'} backgroundColor={'transparent'} padding={10}>
-                            <YStack width={'100%'} backgroundColor={'transparent'} paddingHorizontal={20}>
-                                <DurationSegmentTimeline duration={duration}/>
-                                {duration.segments.map((segment, idx) => (
-                                    <DurationSegmentPane key={idx} segment={segment}
-                                                         max_segment_duration={max_segment_duration}/>
-                                ))}
+        <KronosContainer width={'100%'} padding={0}>
+            <YStack width={'100%'}>
+                <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'}
+                        onPress={handleOnClickPane}
+                        padding={15}>
+                    <YStack alignItems={'center'}>
+                        <Paragraph fontSize={24} color={'$color'} lineHeight={28}>{total_duration}</Paragraph>
+                        <Paragraph fontSize={14} color={'$color'} lineHeight={16}>MINS</Paragraph>
+                    </YStack>
+                    <Paragraph textTransform={'uppercase'}>{duration.name}</Paragraph>
+                    {/*{is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}*/}
+                    <XStack w={'20%'} justifyContent={'space-between'}>
+                        <KronosButton
+                            onPress={handleOnClickEditButton} icon={Edit}/>
+                        <KronosButton
+                            onPress={handleOnClickDeleteButton} icon={Trash}/>
+                    </XStack>
+                </XStack>
+                {
+                    is_open && (
+                        <React.Fragment>
+                            <Separator width={'90%'} marginHorizontal={'5%'}/>
+                            <YStack width={'100%'} backgroundColor={'transparent'} padding={10}>
+                                <YStack width={'100%'} backgroundColor={'transparent'} paddingHorizontal={20}>
+                                    <DurationSegmentTimeline duration={duration}/>
+                                    {duration.segments.map((segment, idx) => (
+                                        <DurationSegmentPane key={idx} segment={segment}
+                                                             max_segment_duration={max_segment_duration}/>
+                                    ))}
+                                </YStack>
+                                <XStack justifyContent={'space-around'} width={'100%'} paddingTop={10}>
+                                    <Button
+                                        onPress={handleOnClickEditButton} flexGrow={1} paddingVertical={5} margin={0}
+                                        backgroundColor={'transparent'} borderTopRightRadius={0}
+                                        borderBottomRightRadius={0}>
+                                        <Edit size={20} color={'$color'}/>
+                                    </Button>
+                                    {/*<Play size={20} color={'$color'}/>*/}
+                                    <Button
+                                        onPress={handleOnClickDeleteButton} flexGrow={1} paddingVertical={5} margin={0}
+                                        backgroundColor={'transparent'} borderTopLeftRadius={0} borderBottomLeftRadius={0}>
+                                        <Trash size={20} color={'$color'}/>
+                                    </Button>
+                                </XStack>
                             </YStack>
-                            <XStack justifyContent={'space-around'} width={'100%'} paddingTop={10}>
-                                <Button
-                                    onPress={handleOnClickEditButton} flexGrow={1} paddingVertical={5} margin={0}
-                                    backgroundColor={'transparent'} borderTopRightRadius={0} borderBottomRightRadius={0}>
-                                    <Edit size={20} color={'$color'}/>
-                                </Button>
-                                {/*<Play size={20} color={'$color'}/>*/}
-                                <Button
-                                    onPress={handleOnClickDeleteButton} flexGrow={1} paddingVertical={5} margin={0}
-                                    backgroundColor={'transparent'} borderTopLeftRadius={0} borderBottomLeftRadius={0}>
-                                    <Trash size={20} color={'$color'}/>
-                                </Button>
-                            </XStack>
-                        </YStack>
-                    </React.Fragment>
-                )
-            }
-        </YStack>
+                        </React.Fragment>
+                    )
+                }
+            </YStack>
+        </KronosContainer>
     );
 }
 
@@ -243,7 +254,7 @@ export default function DurationsTab() {
 
     return (
         <FlatList
-            style={{width: '100%', marginVertical: 10,paddingHorizontal: '5%'}}
+            style={{width: '100%'}}
             data={Object.values(planner_app_state.durations)}
             renderItem={({item}) => (
                 <DurationPane app_state={planner_app_state} duration={item} open_duration={open_duration}

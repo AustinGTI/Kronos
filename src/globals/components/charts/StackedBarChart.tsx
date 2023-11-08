@@ -53,18 +53,18 @@ export default function StackedBarChart({data, keys, width, height}: StackedBarC
         <YStack w={width} h={height}>
             <XStack w={'100%'} height={height - boundary_size}>
                 {/* the amount labels on the left */}
-                <YStack w={boundary_size} h={'100%'} borderRightWidth={1} borderRightColor={'#ddd'}>
+                <YStack w={boundary_size} h={'100%'} borderRightWidth={1} borderRightColor={'$background'}>
                     {
                         x_labels.sort((a, b) => b - a).map((amount, index) => {
                             return (
                                 <XStack key={index} flexBasis={10} flexGrow={1} justifyContent={'flex-end'} w={'100%'}>
                                     <YStack h={'100%'} justifyContent={'flex-end'}>
-                                        <Paragraph fontSize={10} lineHeight={10} translateY={3} color={'#999'}>
+                                        <Paragraph fontSize={10} lineHeight={10} translateY={3}>
                                             {amount.toFixed(0)}
                                         </Paragraph>
                                     </YStack>
                                     <YStack w={10} h={'100%'} justifyContent={'flex-end'} alignItems={'flex-end'}>
-                                        <View h={1} w={7} backgroundColor={'#ddd'}/>
+                                        <View h={1} w={7} backgroundColor={'$background'}/>
                                     </YStack>
                                 </XStack>
                             )
@@ -102,15 +102,14 @@ export default function StackedBarChart({data, keys, width, height}: StackedBarC
                     {data.map((data_point, index) => {
                         return (
                             <YStack key={index} flexBasis={1} flexGrow={1} h={'100%'} borderTopWidth={1}
-                                    borderTopColor={'#ddd'}>
+                                    borderTopColor={'$background'}>
                                 {index % y_label_interval === 0 &&
                                     <React.Fragment>
                                         <XStack w={'100%'} h={7} justifyContent={'center'} mb={3}>
-                                            <View w={1} h={'100%'} backgroundColor={'#ddd'}/>
+                                            <View w={1} h={'100%'} backgroundColor={'$background'}/>
                                         </XStack>
                                         <XStack w={'100%'} justifyContent={'center'}>
-                                            <Paragraph fontSize={10} lineHeight={10}
-                                                       color={'#999'}>{data_point.label}</Paragraph>
+                                            <Paragraph fontSize={10} lineHeight={10}>{data_point.label}</Paragraph>
                                         </XStack>
                                     </React.Fragment>
                                 }

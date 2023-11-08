@@ -27,7 +27,7 @@ const sessionsSlice = createSlice({
             // if there isn't, create a day for today and add the new session to it
             else {
                 state[today] = {
-                    // the date should be 00:00:00 of today
+                    // the date_as_iso should be 00:00:00 of today
                     date: getStartOfDay(start_time).toISOString(),
                     sessions: {[new_session.id]: new_session}
                 }
@@ -169,7 +169,7 @@ const sessionsSlice = createSlice({
 
         // ! These functions are only used for testing, they should not be used in production
         generateDummySessions: (state, {payload}: { type: string, payload: { start_date: Date, end_date?: Date } }) => {
-            // if end date is not defined it is assumed to be yesterday
+            // if end date_as_iso is not defined it is assumed to be yesterday
             let end_date = payload.end_date ?? new Date()
             if (!payload.end_date) {
                 end_date.setDate(end_date.getDate() - 1)
