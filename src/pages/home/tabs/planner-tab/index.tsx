@@ -75,7 +75,7 @@ export default function PlannerTab() {
         // close the modal and clear the form
         setFormIsOpen(false)
         setFormProps(null)
-        // display a success message
+        // display a success description
         setAlertProps({
             title: 'Success',
             description: 'Activity created successfully',
@@ -97,7 +97,7 @@ export default function PlannerTab() {
         // close the modal and clear the form
         setFormIsOpen(false)
         setFormProps(null)
-        // display a success message
+        // display a success description
         setAlertProps({
             title: 'Success',
             description: 'Duration created successfully',

@@ -8,8 +8,7 @@ import {useTheme} from "tamagui";
 import {SECONDARY_COLOR} from "../../globals/types/main";
 import StatisticsTab from "./tabs/statistics-tab";
 import SettingsTab from "./tabs/settings-tab";
-import {clearSessions, generateDummySessions} from "../../globals/redux/reducers/sessionsReducer";
-import {useDispatch} from "react-redux";
+
 
 const Tab = createBottomTabNavigator()
 

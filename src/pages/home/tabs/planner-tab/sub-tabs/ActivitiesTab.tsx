@@ -5,7 +5,7 @@ import {AppState} from "../../../../../globals/redux/reducers";
 import {Activity} from "../../../../../globals/types/main";
 // import {ArrowDown, Delete, Edit, Play} from "@tamagui/lucide-icons";
 import {FlatList} from "react-native";
-import {ChevronDown, ChevronUp, Edit, Trash} from "@tamagui/lucide-icons";
+import {ChevronDown, ChevronUp, Edit, Edit2, Trash} from "@tamagui/lucide-icons";
 import usePlannerTabContext from "../context";
 import {
     deleteActivityValidation,
@@ -68,7 +68,7 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
                 dispatch(updateActivity(updated_activity))
                 // close the modal
                 setFormModalIsOpen(false)
-                // display success message
+                // display success description
                 setAlertProps({
                     title: 'Success',
                     description: 'Activity updated successfully',
@@ -98,7 +98,7 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
                     onPress: () => {
                         // validate the crud request
                         const validation = deleteActivityValidation(app_state, activity.id)
-                        // if validation fails, display the error message after a short delay
+                        // if validation fails, display the error description after a short delay
                         if (validation.status === ValidationStatus.ERROR) {
                             setAlertModalIsOpen(false)
                             setTimeout(() => {
@@ -117,7 +117,7 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
                         setAlertModalIsOpen(false)
                         // close the modal after a short delay
                         setTimeout(() => {
-                            // display success message
+                            // display success description
                             setAlertProps({
                                 title: 'Success',
                                 description: 'Activity deleted successfully',
@@ -151,11 +151,11 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
                     <Circle size={20} backgroundColor={activity.color}/>
                     <Paragraph color={'$color'} textTransform={'uppercase'} fontSize={14}>{activity.name}</Paragraph>
                     {/*{is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}*/}
-                    <XStack w={'20%'} justifyContent={'space-between'}>
+                    <XStack justifyContent={'space-between'}>
                         <KronosButton
-                            onPress={handleOnClickEditButton} icon={Edit}/>
-                        <KronosButton
-                            onPress={handleOnClickDeleteButton} icon={Trash}/>
+                            onPress={handleOnClickEditButton} icon={Edit2}/>
+                        {/*<KronosButton*/}
+                        {/*    onPress={handleOnClickDeleteButton} icon={Trash}/>*/}
                     </XStack>
                 </XStack>
                 {

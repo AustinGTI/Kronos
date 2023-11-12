@@ -117,6 +117,7 @@ export default function App() {
         'InterBold': require('@tamagui/font-inter/otf/Inter-Bold.otf'),
         'Akshar': require('./assets/fonts/Akshar/static/Akshar-Regular.ttf'),
         'Alatsi': require('./assets/fonts/Alatsi/Alatsi-Regular.ttf'),
+        'Rubik': require('./assets/fonts/Rubik/static/Rubik-Medium.ttf')
     })
 
     if (!fonts_loaded) return null

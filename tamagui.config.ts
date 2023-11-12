@@ -56,6 +56,37 @@ const alatsiFont = createFont({
     },
 })
 
+const rubikFont = createFont({
+    family: 'Rubik',
+    size: {
+        1: 11,
+        2: 14,
+        3: 32,
+        4: 48,
+        true: 14,
+    },
+    lineHeight: {
+        // 1 will be 22
+        1: 22,
+        2: 24,
+        3: 42,
+        4: 56,
+        true: 24,
+    },
+    weight: {
+        1: '500',
+        2: '600',
+        3: '800',
+        true: '500',
+    },
+    letterSpacing: {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+    },
+})
+
 const bodyFont = createInterFont()
 
 const common_theme  = {
@@ -69,8 +100,8 @@ const config = createTamagui({
     themeClassNameOnRoot: false,
     shorthands,
     fonts: {
-        heading: alatsiFont,
-        body: alatsiFont,
+        heading: rubikFont,
+        body: rubikFont,
     },
     themes: {
         ...themes,

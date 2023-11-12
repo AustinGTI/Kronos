@@ -9,8 +9,8 @@ import SegmentPicker from "../../../../../globals/components/form/pickers/Segmen
 
 interface SelectDurationModalProps {
     current_duration: Duration | null
-    setCurrentDuration: React.Dispatch<React.SetStateAction<Duration | null>>
-    closeSheetModal: () => void
+    setCurrentDuration: (duration: Duration | null) => void
+    closeModal: () => void
 }
 
 interface SelectExistingDurationPaneProps {
@@ -148,14 +148,14 @@ function SelectExistingDurationPane({duration, is_selected, setToTimerDuration}:
 export default function SelectDurationModal({
                                                 current_duration,
                                                 setCurrentDuration,
-                                                closeSheetModal
+                                                closeModal
                                             }: SelectDurationModalProps) {
     const durations = useSelector(selectDurationState)
 
     const setTimerDurationAndCloseModal = React.useCallback((duration: Duration) => {
         setCurrentDuration(duration)
-        closeSheetModal()
-    }, [setCurrentDuration, closeSheetModal])
+        closeModal()
+    }, [setCurrentDuration, closeModal])
 
     return (
         <YStack w={'100%'} alignItems={'center'}>

@@ -15,9 +15,9 @@ interface SelectActivityPaneProps {
 
 interface SelectActivityModalProps {
     current_activity: Activity | null
-    setCurrentActivity: React.Dispatch<React.SetStateAction<Activity | null>>
-    setCurrentDuration: React.Dispatch<React.SetStateAction<Duration | null>>
-    closeSheetModal: () => void
+    setCurrentActivity: (activity: Activity | null) => void
+    setCurrentDuration: (duration: Duration | null) => void
+    closeModal: () => void
 }
 
 function SelectActivityPane({activity, duration, setToTimerActivity, is_selected}: SelectActivityPaneProps) {
@@ -64,7 +64,7 @@ export default function SelectActivityModal({
                                                 current_activity,
                                                 setCurrentActivity,
                                                 setCurrentDuration,
-                                                closeSheetModal
+                                                closeModal
                                             }: SelectActivityModalProps) {
     const {durations, activities} = useSelector(selectTimerState)
     const setTimerActivityAndCloseModal = React.useCallback((activity: Activity) => {
@@ -73,8 +73,8 @@ export default function SelectActivityModal({
         if (activity.default_duration_id !== null) {
             setCurrentDuration(durations[activity.default_duration_id])
         }
-        closeSheetModal()
-    }, [setCurrentActivity, setCurrentDuration, durations, closeSheetModal])
+        closeModal()
+    }, [setCurrentActivity, setCurrentDuration, durations, closeModal])
 
 
     return (

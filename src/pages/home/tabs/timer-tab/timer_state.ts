@@ -32,7 +32,7 @@ interface TimerAlertProps {
     description: string,
 }
 
-interface TimerSegment {
+export interface TimerSegment {
     key: React.Key,
     initial_duration: number, // in seconds
     elapsed_duration: number, // in seconds

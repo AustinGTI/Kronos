@@ -1,7 +1,7 @@
 import React, {useCallback, useMemo} from 'react'
 import {Button, Circle, getTokens, Paragraph, Separator, Sheet, Square, Stack, XStack, YStack} from "tamagui";
 import {Duration, Segment, SegmentType} from "../../../../../globals/types/main";
-import {ChevronDown, ChevronUp, Delete, Edit, Play, Trash} from "@tamagui/lucide-icons";
+import {ChevronDown, ChevronUp, Delete, Edit, Edit2, Play, Trash} from "@tamagui/lucide-icons";
 import {ActivityStat} from "./ActivitiesTab";
 import {useDispatch, useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
@@ -108,7 +108,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
                 dispatch(updateDuration(updated_duration))
                 // close the modal
                 setFormModalIsOpen(false)
-                // display success message
+                // display success description
                 setAlertProps({
                     title: 'Success',
                     description: 'Duration updated successfully',
@@ -138,7 +138,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
                     onPress: () => {
                         // validate the crud request
                         const validation = deleteDurationValidation(app_state, duration.id)
-                        // if validation fails, display the error message after a short delay
+                        // if validation fails, display the error description after a short delay
                         if (validation.status === ValidationStatus.ERROR) {
                             setAlertModalIsOpen(false)
                             setTimeout(() => {
@@ -157,7 +157,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
                         setAlertModalIsOpen(false)
                         // close the modal after a short delay
                         setTimeout(() => {
-                            // display success message
+                            // display success description
                             setAlertProps({
                                 title: 'Success',
                                 description: 'Duration deleted successfully',
@@ -204,11 +204,11 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
                     </YStack>
                     <Paragraph textTransform={'uppercase'}>{duration.name}</Paragraph>
                     {/*{is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}*/}
-                    <XStack w={'20%'} justifyContent={'space-between'}>
+                    <XStack justifyContent={'space-between'}>
                         <KronosButton
-                            onPress={handleOnClickEditButton} icon={Edit}/>
-                        <KronosButton
-                            onPress={handleOnClickDeleteButton} icon={Trash}/>
+                            onPress={handleOnClickEditButton} icon={Edit2}/>
+                        {/*<KronosButton*/}
+                        {/*    onPress={handleOnClickDeleteButton} icon={Trash}/>*/}
                     </XStack>
                 </XStack>
                 {
