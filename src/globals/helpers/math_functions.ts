@@ -35,35 +35,27 @@ export function xyToPt(x: number, y: number): pt {
     return {x, y};
 }
 
+export function vecAdd(a: pt, b: pt): pt {
+    return {x: a.x + b.x, y: a.y + b.y};
+}
+
+export function scalarMult(a: pt, b: number): pt {
+    return {x: a.x * b, y: a.y * b};
+}
+
+
 /**
- * Returns a sample position on a cubic bezier curve given the four control points and a t value
- * representing the position on the curve from 0 to 1
- * * Obviously ChatGPT generated lol
- * @param p0 - The starting point
- * @param p1 - The first control point
- * @param p2 - The second control point
- * @param p3 - The ending point
+ * a recursive function that returns the point t between 0 and 1 of a n-point bezier curve given a list of points
+ * @param pts - The list of points
  * @param t - The position on the curve from 0 to 1
  */
-export function sampleCubicBezier(p0: pt, p1: pt, p2: pt, p3: pt, t: number): pt {
-    const invT = 1 - t;
-    const invT2 = invT * invT;
-    const invT3 = invT2 * invT;
-    const t2 = t * t;
-    const t3 = t2 * t;
-
-    let x = invT3 * p0.x;
-    x += 3 * invT2 * t * p1.x;
-    x += 3 * invT * t2 * p2.x;
-    x += t3 * p3.x;
-
-    let y = invT3 * p0.y;
-    y += 3 * invT2 * t * p1.y;
-    y += 3 * invT * t2 * p2.y;
-    y += t3 * p3.y;
-
-    return {x, y};
+export function bezierCurve(pts: pt[],t: number): pt {
+    if (pts.length === 1) {
+        return pts[0];
+    }
+    return vecAdd(scalarMult(bezierCurve(pts.slice(0,-1),t), 1 - t), scalarMult(bezierCurve(pts.slice(1),t), t));
 }
+
 
 /**
  * Given the specifications of a bezier curve  namely the starting point, ending point, and two control points,

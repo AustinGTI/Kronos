@@ -3,7 +3,11 @@ import {Canvas, Group, Path, Skia} from "@shopify/react-native-skia";
 import {TimerStatus} from "../useTimer";
 import {TimerSegment} from "../timer_state";
 import {View} from "react-native";
-import {sampleCubicBezier, subdivideCubicBezier, xyToPt} from "../../../../../globals/helpers/math_functions";
+import {
+    bezierCurve,
+    subdivideCubicBezier,
+    xyToPt
+} from "../../../../../globals/helpers/math_functions";
 import {number} from "yup";
 
 interface HourGlassProps {
@@ -66,7 +70,7 @@ export default function HourGlassAnimation({
         let low = 0, high = 1, mid = 0;
         while (low <= high) {
             mid = (low + high) / 2;
-            const {y} = sampleCubicBezier(xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy), mid)
+            const {y} = bezierCurve([xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)], mid)
             if (y < b_height) {
                 low = mid + 0.0001
             } else if (y > b_height) {
@@ -87,9 +91,9 @@ export default function HourGlassAnimation({
         // use 25 samples
         let {
             x, y
-        } = sampleCubicBezier(xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy), from)
+        } = bezierCurve([xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)], from)
         for (let i = Math.floor(NO_OF_AREA_SAMPLES * from); i < Math.ceil(NO_OF_AREA_SAMPLES * to); i++) {
-            const next_point = sampleCubicBezier(xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy), (i + 1) / NO_OF_AREA_SAMPLES)
+            const next_point = bezierCurve([xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)], (i + 1) / NO_OF_AREA_SAMPLES)
             // the trapezoid has base width of x - vx, top width of next_point.x - vx, and height of next_point.y - y
             curve_area += 1 / 2 * (50 - x + 50 - next_point.x) * (next_point.y - y)
             // update x and y to the next point
