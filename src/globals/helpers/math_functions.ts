@@ -49,51 +49,42 @@ export function scalarMult(a: pt, b: number): pt {
  * @param pts - The list of points
  * @param t - The position on the curve from 0 to 1
  */
-export function bezierCurve(pts: pt[],t: number): pt {
+export function bezierCurve(pts: pt[], t: number): pt {
     if (pts.length === 1) {
         return pts[0];
     }
-    return vecAdd(scalarMult(bezierCurve(pts.slice(0,-1),t), 1 - t), scalarMult(bezierCurve(pts.slice(1),t), t));
+    return vecAdd(scalarMult(bezierCurve(pts.slice(0, -1), t), 1 - t), scalarMult(bezierCurve(pts.slice(1), t), t));
 }
 
 
 /**
- * Given the specifications of a bezier curve  namely the starting point, ending point, and two control points,
- * and 2 t values representing the start and end of a segment of the curve, returns the 4 control points of the
- * segment of the curve between the two t values
- * * Obviously ChatGPT generated lol
- * @param P0 - The starting point
- * @param P1 - The first control point
- * @param P2 - The second control point
- * @param P3 - The ending point
- * @param t1 - The start of the segment of the curve
- * @param t2 - The end of the segment of the curve
+ * A function to subdivide a Bézier curve at given points t1 and t2 returning the start, control points and end point of the segment between t1 and t2
+ * @param pts - the starting point, control points and end point of the Bézier curve
+ * @param t1 - the first point to subdivide at
+ * @param t2 - the second point to subdivide at
  */
-export function subdivideCubicBezier(P0: pt, P1: pt, P2: pt, P3: pt, t1: number, t2: number): CubicBezier {
-    const lerp = (a: pt, b: pt, t: number): pt => ({
-        x: a.x + (b.x - a.x) * t,
-        y: a.y + (b.y - a.y) * t
-    });
+export function subdivideBezierCurve(pts: pt[], t1: number, t2: number): pt[] {
+    console.log('starting subdivideBezierCurve with', pts, t1, t2)
+    function div(pts: pt[], t: number, n_pts: pt[]): pt {
+        if (pts.length === 1) {
+            if (n_pts.length === 0) {
+                n_pts.push(pts[0]);
+            }
+            return pts[0];
+        }
+        const res = vecAdd(scalarMult(div(pts.slice(0, -1), t, n_pts), 1 - t), scalarMult(div(pts.slice(1), t, n_pts), t));
+        if (n_pts.length < pts.length) {
+            n_pts.push(res);
+        }
+        return res
+    }
 
-    // Subdivide up to t2
-    let [Q0, Q1, Q2, Q3] = [P0, P1, P2, P3];
-    [Q0, Q1, Q2, Q3] = [
-        lerp(Q0, Q1, t2),
-        lerp(lerp(Q1, Q2, t2), lerp(Q2, Q3, t2), t2),
-        lerp(lerp(lerp(Q1, Q2, t2), lerp(Q2, Q3, t2), t2), lerp(lerp(Q2, Q3, t2), Q3, t2), t2),
-        lerp(Q2, Q3, t2)
-    ];
-
-    // Adjust t1 for the new range
-    const adjustedT1 = (t1 - t2) / (1 - t2);
-
-    // Subdivide the [0, t2] segment to get [t1, t2]
-    const R0 = Q0;
-    const R1 = lerp(Q0, Q1, adjustedT1);
-    const R2 = lerp(lerp(Q0, Q1, adjustedT1), lerp(Q1, Q2, adjustedT1), adjustedT1);
-    const R3 = lerp(lerp(lerp(Q0, Q1, adjustedT1), lerp(Q1, Q2, adjustedT1), adjustedT1), lerp(lerp(Q1, Q2, adjustedT1), Q2, adjustedT1), adjustedT1);
-
-    return {
-        u: R0, cp1: R1, cp2: R2, v: R3
-    };
+    // first divide the curve into two curves at t2
+    let n_pts: pt[] = [];
+    div(pts, t2, n_pts);
+    // the new curve is the second curve, now divide it at t1 with the points reversed
+    let final_pts: pt[] = [];
+    div(n_pts.reverse(), 1 - t1, final_pts);
+    return final_pts.reverse()
 }
+

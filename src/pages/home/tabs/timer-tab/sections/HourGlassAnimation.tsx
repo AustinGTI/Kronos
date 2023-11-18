@@ -4,8 +4,7 @@ import {TimerStatus} from "../useTimer";
 import {TimerSegment} from "../timer_state";
 import {View} from "react-native";
 import {
-    bezierCurve,
-    subdivideCubicBezier,
+    bezierCurve, subdivideBezierCurve,
     xyToPt
 } from "../../../../../globals/helpers/math_functions";
 import {number} from "yup";
@@ -189,13 +188,11 @@ export default function HourGlassAnimation({
         // if the remaining time is not 0
         if (remaining_time) {
             // first get the sand level of the bulb
-            const curve_level = getHourGlassCurveLevel(remaining_time / total_time, 'top')
-            console.log('calculated sand level for the top sand path is', curve_level, ' based on level', remaining_time / total_time)
+            const sand_level = getHourGlassCurveLevel(remaining_time / total_time, 'top')
+            console.log('calculated sand level for the top sand path is', sand_level, ' based on level', remaining_time / total_time)
             // use this to calculate the control points for the bezier curve the corresponds to the sand level
-            const {
-                u: tp_u, cp1: tp_cp1, cp2: tp_cp2, v: tp_v
-            } = subdivideCubicBezier(xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy), curve_level, 1)
-            console.log('calculated control points for the top sand path are', tp_u, tp_cp1, tp_cp2, tp_v)
+            const [tp_u, tp_cp1, tp_cp2, tp_v] = subdivideBezierCurve([xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)], sand_level, 1)
+            console.log('calculated control points for the top sand path are', tp_u, tp_cp1, tp_cp2, tp_v, ' from initial path ', [xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)])
             // draw the path
             top_sand_path.moveTo(coordX(100 - tp_u.x), coordY(tp_u.y))
             top_sand_path.lineTo(coordX(tp_u.x), coordY(tp_u.y))
@@ -212,10 +209,8 @@ export default function HourGlassAnimation({
             const sand_level = getHourGlassCurveLevel(past_time / total_time, 'bottom')
             console.log('calculated sand level for the bottom sand path is', sand_level, ' based on level', past_time / total_time)
             // use this to calculate the control points for the bezier curve the corresponds to the sand level
-            const {
-                u: bp_u, cp1: bp_cp1, cp2: bp_cp2, v: bp_v
-            } = subdivideCubicBezier(xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy), 0, sand_level)
-            console.log('calculated control points for the bottom sand path are', bp_u, bp_cp1, bp_cp2, bp_v)
+            const [bp_u, bp_cp1, bp_cp2, bp_v] = subdivideBezierCurve([xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)], 0, sand_level)
+            console.log('calculated control points for the bottom sand path are', bp_u, bp_cp1, bp_cp2, bp_v, ' from initial path ', [xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)])
             // draw the path
             bottom_sand_path.moveTo(coordX(100 - bp_u.x), coordY(100 - bp_u.y))
             bottom_sand_path.lineTo(coordX(bp_u.x), coordY(100 - bp_u.y))
