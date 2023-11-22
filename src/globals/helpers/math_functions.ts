@@ -64,7 +64,6 @@ export function bezierCurve(pts: pt[], t: number): pt {
  * @param t2 - the second point to subdivide at
  */
 export function subdivideBezierCurve(pts: pt[], t1: number, t2: number): pt[] {
-    console.log('starting subdivideBezierCurve with', pts, t1, t2)
     function div(pts: pt[], t: number, n_pts: pt[]): pt {
         if (pts.length === 1) {
             if (n_pts.length === 0) {

@@ -1,10 +1,10 @@
 import React from 'react'
-import {Canvas, Group, Path, Skia} from "@shopify/react-native-skia";
+import {Canvas, Group, LinearGradient, Path, Skia, SkPoint, vec} from "@shopify/react-native-skia";
 import {TimerStatus} from "../useTimer";
 import {TimerSegment} from "../timer_state";
 import {View} from "react-native";
 import {
-    bezierCurve, subdivideBezierCurve,
+    bezierCurve, pt, subdivideBezierCurve,
     xyToPt
 } from "../../../../../globals/helpers/math_functions";
 import {number} from "yup";
@@ -23,22 +23,33 @@ interface ContainerDimensions {
     height: number
 }
 
+interface GradientSpecifications {
+    start: SkPoint,
+    end: SkPoint,
+    colors: string[]
+    positions: number[]
+}
 
-const HOURGLASS_DIMENSIONS = {
+const HOUR_GLASS_PROPERTIES = {
     ux: 20,
     uy: 10,
-    vx: 45,
+    vx: 47,
     vy: 50,
     u_curve: 30,
     v_curve: 10,
-    container_thickness: 10
+    container_thickness: 6
 }
 
-const NO_OF_AREA_SAMPLES = 25
+const NO_OF_AREA_SAMPLES = 100
 
 const MAX_HOURGLASS_CAPACITY = 0.8
 
 const SAND_LEVEL_MARGIN_OF_ERROR = 0.01
+
+const FALLING_SAND_PROPERTIES = {
+    margin: 1,
+    rounding_radius: 2
+}
 
 
 export default function HourGlassAnimation({
@@ -51,6 +62,15 @@ export default function HourGlassAnimation({
                                            }: HourGlassProps) {
     const [container_dimensions, setContainerDimensions] = React.useState<ContainerDimensions>({width: 0, height: 0})
 
+    const total_segments_duration = React.useMemo(() => ([...completed_segments, ...remaining_segments].reduce((total, segment) => total + segment.initial_duration, 0) +
+        (active_segment ? active_segment.initial_duration : 0)), [active_segment, completed_segments, remaining_segments])
+
+    // past time is the total amount of time in the remaining and active segments relative to the total time
+    const past_segments_duration = React.useMemo(() => (completed_segments.reduce((total, segment) => total + segment.initial_duration, 0) +
+        (active_segment ? Math.min(active_segment.elapsed_duration, active_segment.initial_duration) : 0)), [active_segment, completed_segments])
+
+    const remaining_segments_duration = React.useMemo(() => total_segments_duration - past_segments_duration, [total_segments_duration, past_segments_duration])
+
     const coordY = React.useCallback((ptg: number): number => {
         // convert a percentage value to the accurate y coordinate within the canvas using the container dimensions
         return container_dimensions.height * ptg / 100
@@ -61,32 +81,12 @@ export default function HourGlassAnimation({
         return container_dimensions.width * ptg / 100
     }, [container_dimensions.width]);
 
-    const calculateBezierDistanceGivenBezierHeight = React.useCallback((b_height: number): number => {
-        // given a value b_height between 0 and 1 denoting the height of the bezier curve, calculate the relative distance along the curve
-        // that corresponds to the given height
-        // we use binary search to find the closest distance
-        const {ux, uy, vx, vy, u_curve, v_curve} = HOURGLASS_DIMENSIONS
-        let low = 0, high = 1, mid = 0;
-        while (low <= high) {
-            mid = (low + high) / 2;
-            const {y} = bezierCurve([xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)], mid)
-            if (y < b_height) {
-                low = mid + 0.0001
-            } else if (y > b_height) {
-                high = mid - 0.0001
-            } else {
-                break
-            }
-        }
-        return mid
-    }, []);
-
 
     // calculate the area of one bulb of the hourglass by sampling points along the bezier curve then adding up the area of the trapezoids
     const calculateHourGlassBulbArea = React.useCallback((from: number, to: number) => {
         let curve_area = 0
         // get the area of the rect from the top of the curve to the first control point
-        const {ux, uy, vx, vy, u_curve, v_curve} = HOURGLASS_DIMENSIONS
+        const {ux, uy, vx, vy, u_curve, v_curve} = HOUR_GLASS_PROPERTIES
         // use 25 samples
         let {
             x, y
@@ -109,7 +109,6 @@ export default function HourGlassAnimation({
         const total_bulb_area = calculateHourGlassBulbArea(0, 1)
         const target_area = total_bulb_area * relative_amount * MAX_HOURGLASS_CAPACITY
 
-        console.log('the total bulb area is', total_bulb_area, 'and the target bulb area is', target_area)
 
         // if we are calculating the level of the top half, our 'to' value is always 1 and it is the from that is variable
         // correspondingly, if we are calculating the level of the bottom half, our 'from' value is always 0 and it is the 'to'
@@ -118,7 +117,6 @@ export default function HourGlassAnimation({
         while (low <= high) {
             mid = (low + high) / 2;
             const area = hour_glass_half === 'top' ? calculateHourGlassBulbArea(mid, 1) : calculateHourGlassBulbArea(0, mid)
-            console.log('on evaluating for the ', hour_glass_half, 'the current mid is', mid, 'and the area is', area, 'yet the target is', target_area)
             if (area < target_area && area + SAND_LEVEL_MARGIN_OF_ERROR < target_area) {
                 if (hour_glass_half === 'top') {
                     // if we are calculating the top half, we want to decrease the sand level, so we decrease the 'from' value
@@ -140,12 +138,11 @@ export default function HourGlassAnimation({
             }
         }
 
-        console.log('using the given mid value of', mid, 'the calculated area is', hour_glass_half === 'top' ? calculateHourGlassBulbArea(mid, 1) : calculateHourGlassBulbArea(0, mid))
         return mid
     }, [calculateHourGlassBulbArea]);
 
     const generateHourGlassContainer = React.useCallback(() => {
-        const {ux, uy, vx, vy, u_curve, v_curve} = HOURGLASS_DIMENSIONS
+        const {ux, uy, vx, vy, u_curve, v_curve} = HOUR_GLASS_PROPERTIES
         // use skia to create a rounded hour glass shape
         const container_path = Skia.Path.Make()
         container_path.moveTo(coordX(100 - ux), coordY(uy))
@@ -167,32 +164,24 @@ export default function HourGlassAnimation({
     const generateHourGlassContents = React.useCallback(() => {
         // calculate the total time as the sum of the durations of all segments
 
-        // const total_time = completed_segments.reduce((total, segment) => total + segment.initial_duration, 0) +
-        //     remaining_segments.reduce((total, segment) => total + segment.initial_duration, 0) +
-        //     (active_segment ? active_segment.initial_duration : 0)
-        // // past time is the total amount of time in the remaining and active segments relative to the total time
-        // const past_time = remaining_segments.reduce((total, segment) => total + segment.initial_duration, 0) +
-        //     (active_segment ? active_segment.elapsed_duration : 0)
-        //
-        // const remaining_time = total_time - past_time
+
+        console.log('currently the total time is', total_segments_duration, 'the past time is', past_segments_duration, 'and the remaining time is', remaining_segments_duration)
 
         // ! TEST DATA
-        const total_time = 100
-        const past_time = 50
-        const remaining_time = total_time - past_time
+        // const total_time = 100
+        // const past_time = 50
+        // const remaining_time = total_time - past_time
 
-        const {ux, uy, vx, vy, u_curve, v_curve} = HOURGLASS_DIMENSIONS
+        const {ux, uy, vx, vy, u_curve, v_curve} = HOUR_GLASS_PROPERTIES
 
         // first the top half of the hourglass
         const top_sand_path = Skia.Path.Make()
         // if the remaining time is not 0
-        if (remaining_time) {
+        if (remaining_segments_duration) {
             // first get the sand level of the bulb
-            const sand_level = getHourGlassCurveLevel(remaining_time / total_time, 'top')
-            console.log('calculated sand level for the top sand path is', sand_level, ' based on level', remaining_time / total_time)
+            const sand_level = getHourGlassCurveLevel(remaining_segments_duration / total_segments_duration, 'top')
             // use this to calculate the control points for the bezier curve the corresponds to the sand level
             const [tp_u, tp_cp1, tp_cp2, tp_v] = subdivideBezierCurve([xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)], sand_level, 1)
-            console.log('calculated control points for the top sand path are', tp_u, tp_cp1, tp_cp2, tp_v, ' from initial path ', [xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)])
             // draw the path
             top_sand_path.moveTo(coordX(100 - tp_u.x), coordY(tp_u.y))
             top_sand_path.lineTo(coordX(tp_u.x), coordY(tp_u.y))
@@ -204,13 +193,11 @@ export default function HourGlassAnimation({
         // now the bottom half of the hourglass
         const bottom_sand_path = Skia.Path.Make()
         // if the past time is not 0
-        if (past_time) {
+        if (past_segments_duration) {
             // first get the sand level of the bulb
-            const sand_level = getHourGlassCurveLevel(past_time / total_time, 'bottom')
-            console.log('calculated sand level for the bottom sand path is', sand_level, ' based on level', past_time / total_time)
+            const sand_level = getHourGlassCurveLevel(past_segments_duration / total_segments_duration, 'bottom')
             // use this to calculate the control points for the bezier curve the corresponds to the sand level
             const [bp_u, bp_cp1, bp_cp2, bp_v] = subdivideBezierCurve([xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)], 0, sand_level)
-            console.log('calculated control points for the bottom sand path are', bp_u, bp_cp1, bp_cp2, bp_v, ' from initial path ', [xyToPt(ux, uy), xyToPt(ux, uy + u_curve), xyToPt(vx, vy - v_curve), xyToPt(vx, vy)])
             // draw the path
             bottom_sand_path.moveTo(coordX(100 - bp_u.x), coordY(100 - bp_u.y))
             bottom_sand_path.lineTo(coordX(bp_u.x), coordY(100 - bp_u.y))
@@ -220,11 +207,89 @@ export default function HourGlassAnimation({
         }
 
         return [top_sand_path, bottom_sand_path]
-    }, [getHourGlassCurveLevel, coordX, coordY])
+    }, [getHourGlassCurveLevel, coordX, coordY, completed_segments, remaining_segments, active_segment])
 
     const [top_sand_path, bottom_sand_path] = React.useMemo(() => {
         return generateHourGlassContents()
     }, [generateHourGlassContents]);
+
+    const generateFallingSand = React.useCallback((t: number) => {
+        const {vx, vy, uy, ux} = HOUR_GLASS_PROPERTIES
+        const {margin, rounding_radius} = FALLING_SAND_PROPERTIES
+        // falling sand path goes from the bottom of the top sand path to the top of the bottom sand path and is a rounded rectangle
+        const falling_sand_path = Skia.Path.Make()
+
+        const sand_fall_height = 100 - uy - vy
+
+        const distance_sand_fallen = sand_fall_height * t
+
+        falling_sand_path.moveTo(coordX(vx + margin), coordY(vy))
+        falling_sand_path.lineTo(coordX(100 - vx - margin), coordY(vy))
+        falling_sand_path.lineTo(coordX(100 - vx - margin), coordY(vy + distance_sand_fallen))
+
+        // if the sand is still falling, that is t is not yet 1, the bottom of the sand is rounded
+        if (t !== 1) {
+            falling_sand_path.cubicTo(coordX(100 - vx - margin), coordY(vy + distance_sand_fallen + rounding_radius), coordX(vx + margin), coordY(vy + distance_sand_fallen + rounding_radius), coordX(vx + margin), coordY(vy + distance_sand_fallen))
+        } else {
+            falling_sand_path.lineTo(coordX(vx + margin), coordY(vy + distance_sand_fallen))
+        }
+
+        return falling_sand_path
+    }, [coordX, coordY])
+
+    const [top_sand_gradient, bottom_sand_gradient] = React.useMemo(() => {
+        const {x: t_x, y: t_y, width: t_w, height: t_h} = top_sand_path.getBounds()
+        const remaining_or_active_segments = [...remaining_segments, active_segment]
+
+        const top_sand_gradient: GradientSpecifications = {
+            colors: remaining_or_active_segments.reduce((colors, segment) => {
+                if (!segment) return colors
+                // we need to push color twice to act as the bounds for the gradient as we want the gradient to be a sequence of solid colors
+                colors.push(segment.segment_type.color)
+                colors.push(segment.segment_type.color)
+                return colors
+            }, [] as string[]),
+            positions: remaining_or_active_segments.reduce((positions, segment) => {
+                if (!segment) return positions
+                const t = positions[positions.length - 1] + (segment.initial_duration - segment.elapsed_duration) / remaining_segments_duration
+                positions.push(t)
+                positions.push(t)
+                return positions
+            }, [0] as number[]).slice(0, -1),
+            // starting from the top center to the bottom center
+            start: vec(t_x + t_w / 2, t_y),
+            end: vec(t_x + t_w / 2, t_y + t_h)
+        }
+
+        // get the bottom sand gradient
+        const {x: b_x, y: b_y, width: b_w, height: b_h} = bottom_sand_path.getBounds()
+        const completed_or_active_segments = [active_segment, ...completed_segments.slice().reverse()]
+
+        const bottom_sand_gradient: GradientSpecifications = {
+            colors: completed_or_active_segments.reduce((colors, segment) => {
+                if (!segment) return colors
+                // we need to push color twice to act as the bounds for the gradient as we want the gradient to be a sequence of solid colors
+                colors.push(segment.segment_type.color)
+                colors.push(segment.segment_type.color)
+                return colors
+            }, [] as string[]),
+            positions: completed_or_active_segments.reduce((positions, segment) => {
+                if (!segment) return positions
+                const t = positions[positions.length - 1] + segment.elapsed_duration / past_segments_duration
+                positions.push(t)
+                positions.push(t)
+                return positions
+            }, [0] as number[]).slice(0, -1),
+            // starting from the top center to the bottom center
+            start: vec(b_x + b_w / 2, b_y),
+            end: vec(b_x + b_w / 2, b_y + b_h)
+        }
+
+        return [top_sand_gradient, bottom_sand_gradient]
+    }, [top_sand_path, bottom_sand_path, completed_segments, remaining_segments, active_segment]);
+
+    console.log('active segment is', active_segment, 'completed segments are', completed_segments, 'remaining segments are', remaining_segments)
+
 
     return (
         <View
@@ -233,7 +298,7 @@ export default function HourGlassAnimation({
                 width: event.nativeEvent.layout.width,
                 height: event.nativeEvent.layout.height
             })}>
-            <Canvas style={{width: '100%', height: '100%', backgroundColor: 'pink'}}>
+            <Canvas style={{width: '100%', height: '100%'}}>
                 <Group>
                     <Path
                         path={generateHourGlassContainer()}
@@ -244,17 +309,41 @@ export default function HourGlassAnimation({
                     <Path
                         path={top_sand_path}
                         style="fill"
-                        color={'yellow'}
-                        strokeCap="round"/>
+                        color={'red'}
+                        strokeCap="round">
+                        <LinearGradient
+                            start={top_sand_gradient.start}
+                            end={top_sand_gradient.end}
+                            colors={top_sand_gradient.colors}
+                            positions={top_sand_gradient.positions}
+                        />
+                    </Path>
+
+                    {
+                        timer_status === TimerStatus.RUNNING ?
+                            <Path path={generateFallingSand(1)}
+                                  style="fill"
+                                  color={top_sand_gradient.colors[top_sand_gradient.colors.length - 1]}
+                                  strokeCap="round"/>
+                            : null
+                    }
 
                     <Path path={bottom_sand_path}
                           style="fill"
                           color={'purple'}
-                          strokeCap="round"/>
+                          strokeCap="round">
+                        <LinearGradient
+                            start={bottom_sand_gradient.start}
+                            end={bottom_sand_gradient.end}
+                            colors={bottom_sand_gradient.colors}
+                            positions={bottom_sand_gradient.positions}
+                        />
+                    </Path>
+
                     <Path
                         path={generateHourGlassContainer()}
                         style="stroke"
-                        strokeWidth={10}
+                        strokeWidth={HOUR_GLASS_PROPERTIES.container_thickness}
                         color={'black'}
                         strokeCap="round"
                     />

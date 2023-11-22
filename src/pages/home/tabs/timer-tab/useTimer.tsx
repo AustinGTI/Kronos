@@ -13,7 +13,8 @@ import KronosAlert, {AlertModalProps} from "../../../../globals/components/wrapp
 export enum TimerStatus {
     OFF = 'OFF',
     RUNNING = 'RUNNING',
-    PAUSED = 'PAUSED'
+    PAUSED = 'PAUSED',
+    DONE = 'DONE'
 }
 
 
@@ -71,7 +72,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
         updateTimerState({
             type: TimerStateActionTypes.PAUSE_TIMER, payload: null
         })
-    }, [timer_state?.timing_state.is_running,updateTimerState])
+    }, [timer_state?.timing_state.is_running, updateTimerState])
 
     const resumeTimer = React.useCallback(() => {
         if (timer_state?.timing_state.is_running) {
@@ -243,7 +244,9 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
                 !timer_state ?
                     TimerStatus.OFF :
                     timer_state.timing_state.is_running ?
-                        TimerStatus.RUNNING : TimerStatus.PAUSED
+                        // if the active segment is the last one left and on_complete_alert_props is open, then the timer is done
+                        !timer_state.segments_state.segments_remaining.length && active_segment?.on_complete_alert_props.is_open ?
+                            TimerStatus.DONE : TimerStatus.RUNNING : TimerStatus.PAUSED
             ),
             active_segment,
             completed_segments: timer_state?.segments_state.segments_completed ?? [],

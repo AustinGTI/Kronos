@@ -268,31 +268,31 @@ function TimerTabContents() {
                     timer_status={timer_status}
                     timer_activity={timer_activity} setTimerActivity={setTimerActivity}
                     timer_duration={timer_duration} setTimerDuration={setTimerDuration}/>
-                <YStack width={wp('85%')} height={hp(timer_status !== TimerStatus.OFF ? '20%' : '0%')}
-                        overflow={'scroll'} pt={15}>
-                    {
-                        [
-                            ...completed_segments,
-                            ...(active_segment ? [active_segment] : [])
-                        ].slice().reverse().map((segment, index) => {
-                            const is_last_segment = index === completed_segments.length
-                            return (
-                                <XStack key={index} width={'100%'} py={10} alignItems={'center'}
-                                        justifyContent={'space-around'}
-                                        borderBottomWidth={is_last_segment ? 0 : 1} borderBottomColor={'$color'}
-                                >
-                                    <XStack alignItems={'center'}>
-                                        <Circle size={10} backgroundColor={segment.segment_type.color}/>
-                                        <Paragraph color={'$color'} px={5} fontSize={15}
-                                                   textTransform={'uppercase'}>{segment.segment_type.name}</Paragraph>
-                                    </XStack>
-                                    <Paragraph color={'$color'} px={5} fontSize={15}
-                                               textTransform={'uppercase'}>{`${Math.floor(segment.elapsed_duration / 60)} MINS`}</Paragraph>
-                                </XStack>
-                            )
-                        })
-                    }
-                </YStack>
+                {/*<YStack width={wp('85%')} height={hp(timer_status !== TimerStatus.OFF ? '20%' : '0%')}*/}
+                {/*        overflow={'scroll'} pt={15}>*/}
+                {/*    {*/}
+                {/*        [*/}
+                {/*            ...completed_segments,*/}
+                {/*            ...(active_segment ? [active_segment] : [])*/}
+                {/*        ].slice().reverse().map((segment, index) => {*/}
+                {/*            const is_last_segment = index === completed_segments.length*/}
+                {/*            return (*/}
+                {/*                <XStack key={index} width={'100%'} py={10} alignItems={'center'}*/}
+                {/*                        justifyContent={'space-around'}*/}
+                {/*                        borderBottomWidth={is_last_segment ? 0 : 1} borderBottomColor={'$color'}*/}
+                {/*                >*/}
+                {/*                    <XStack alignItems={'center'}>*/}
+                {/*                        <Circle size={10} backgroundColor={segment.segment_type.color}/>*/}
+                {/*                        <Paragraph color={'$color'} px={5} fontSize={15}*/}
+                {/*                                   textTransform={'uppercase'}>{segment.segment_type.name}</Paragraph>*/}
+                {/*                    </XStack>*/}
+                {/*                    <Paragraph color={'$color'} px={5} fontSize={15}*/}
+                {/*                               textTransform={'uppercase'}>{`${Math.floor(segment.elapsed_duration / 60)} MINS`}</Paragraph>*/}
+                {/*                </XStack>*/}
+                {/*            )*/}
+                {/*        })*/}
+                {/*    }*/}
+                {/*</YStack>*/}
             </YStack>
         </KronosPage>
     )
