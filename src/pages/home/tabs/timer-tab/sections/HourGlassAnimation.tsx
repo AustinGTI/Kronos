@@ -251,11 +251,15 @@ export default function HourGlassAnimation({
             }, [] as string[]),
             positions: remaining_or_active_segments.reduce((positions, segment) => {
                 if (!segment) return positions
-                const t = positions[positions.length - 1] + (segment.initial_duration - segment.elapsed_duration) / remaining_segments_duration
-                positions.push(t)
-                positions.push(t)
+                const t = positions[1][positions[1].length - 1] + (segment.initial_duration - segment.elapsed_duration) / remaining_segments_duration
+                positions[1].push(t)
+                console.log('t top at the moment is', t,'from initial duration',segment.initial_duration,'and elapsed duration',segment.elapsed_duration,'and remaining duration',remaining_segments_duration)
+                const total_sand_level = getHourGlassCurveLevel(remaining_segments_duration / total_segments_duration, 'top')
+                const sand_level = 1-(1 - getHourGlassCurveLevel((1 - t) * remaining_segments_duration / total_segments_duration, 'top')) / (1 - total_sand_level)
+                positions[0].push(sand_level)
+                positions[0].push(sand_level)
                 return positions
-            }, [0] as number[]).slice(0, -1),
+            }, [[0],[0]] as [number[],number[]])[0].slice(0, -1),
             // starting from the top center to the bottom center
             start: vec(t_x + t_w / 2, t_y),
             end: vec(t_x + t_w / 2, t_y + t_h)
@@ -275,18 +279,23 @@ export default function HourGlassAnimation({
             }, [] as string[]),
             positions: completed_or_active_segments.reduce((positions, segment) => {
                 if (!segment) return positions
-                const t = positions[positions.length - 1] + segment.elapsed_duration / past_segments_duration
-                positions.push(t)
-                positions.push(t)
+                const t = positions[1][positions[1].length - 1] + (segment.key === active_segment?.key ? segment.elapsed_duration : segment.initial_duration) / past_segments_duration
+                positions[1].push(t)
+                console.log('t at the moment is', t)
+                const total_sand_level = getHourGlassCurveLevel(past_segments_duration / total_segments_duration, 'bottom')
+                const sand_level = getHourGlassCurveLevel((1 - t) * past_segments_duration / total_segments_duration, 'bottom')/total_sand_level
+                positions[0].push(sand_level)
+                positions[0].push(sand_level)
                 return positions
-            }, [0] as number[]).slice(0, -1),
+            }, [[0],[0]] as [number[],number[]])[0].slice(0, -1),
             // starting from the top center to the bottom center
             start: vec(b_x + b_w / 2, b_y),
             end: vec(b_x + b_w / 2, b_y + b_h)
         }
 
+        console.log('top sand positions are', top_sand_gradient.positions, 'bottom sand positions are', bottom_sand_gradient.positions)
         return [top_sand_gradient, bottom_sand_gradient]
-    }, [top_sand_path, bottom_sand_path, completed_segments, remaining_segments, active_segment]);
+    }, [top_sand_path, bottom_sand_path, completed_segments, remaining_segments, active_segment, past_segments_duration, getHourGlassCurveLevel, total_segments_duration]);
 
     console.log('active segment is', active_segment, 'completed segments are', completed_segments, 'remaining segments are', remaining_segments)
 
