@@ -238,6 +238,8 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
     // ? ........................
     // End
 
+    console.log('remaining segments length is', timer_state?.segments_state.segments_remaining.length, 'and active segment is', active_segment)
+
     return {
         timer_state: {
             timer_status: (
@@ -245,7 +247,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
                     TimerStatus.OFF :
                     timer_state.timing_state.is_running ?
                         // if the active segment is the last one left and on_complete_alert_props is open, then the timer is done
-                        !timer_state.segments_state.segments_remaining.length && active_segment?.on_complete_alert_props.is_open ?
+                        active_segment?.on_complete_alert_props.is_open ?
                             TimerStatus.DONE : TimerStatus.RUNNING : TimerStatus.PAUSED
             ),
             active_segment,

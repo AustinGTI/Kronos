@@ -8,6 +8,7 @@ import {
     xyToPt
 } from "../../../../../globals/helpers/math_functions";
 import {number} from "yup";
+import {SegmentTypes} from "../../../../../globals/types/main";
 
 interface HourGlassProps {
     timer_status: TimerStatus
@@ -51,6 +52,15 @@ const FALLING_SAND_PROPERTIES = {
     rounding_radius: 2
 }
 
+function generateTestSegment(type: 'focus' | 'break', initial_duration: number,elapsed_duration: number):TimerSegment {
+    return {
+        key: `${type}-${Math.random()}`,
+        initial_duration,
+        elapsed_duration,
+        segment_type: SegmentTypes[type.toUpperCase() as 'FOCUS' | 'BREAK'],
+        on_complete_alert_props: {is_open: false,title: 'nan',description:'who cares'}
+    }
+}
 
 export default function HourGlassAnimation({
                                                active_segment,
@@ -60,6 +70,12 @@ export default function HourGlassAnimation({
                                                canvas_height_as_ptg = 60,
                                                canvas_width_as_ptg = 100
                                            }: HourGlassProps) {
+    // ! TEST DATA
+    // const active_segment: TimerSegment = generateTestSegment('focus', 60, 30)
+    //
+    // const completed_segments: TimerSegment[] = ([['focus', 60, 60], ['break', 60, 60]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
+    // const remaining_segments: TimerSegment[] = ([['focus', 60, 0], ['break', 60, 0]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
+
     const [container_dimensions, setContainerDimensions] = React.useState<ContainerDimensions>({width: 0, height: 0})
 
     const total_segments_duration = React.useMemo(() => ([...completed_segments, ...remaining_segments].reduce((total, segment) => total + segment.initial_duration, 0) +
@@ -253,7 +269,7 @@ export default function HourGlassAnimation({
                 if (!segment) return positions
                 const t = positions[1][positions[1].length - 1] + (segment.initial_duration - segment.elapsed_duration) / remaining_segments_duration
                 positions[1].push(t)
-                console.log('t top at the moment is', t,'from initial duration',segment.initial_duration,'and elapsed duration',segment.elapsed_duration,'and remaining duration',remaining_segments_duration)
+                // console.log('t top at the moment is', t,'from initial duration',segment.initial_duration,'and elapsed duration',segment.elapsed_duration,'and remaining duration',remaining_segments_duration)
                 const total_sand_level = getHourGlassCurveLevel(remaining_segments_duration / total_segments_duration, 'top')
                 const sand_level = 1-(1 - getHourGlassCurveLevel((1 - t) * remaining_segments_duration / total_segments_duration, 'top')) / (1 - total_sand_level)
                 positions[0].push(sand_level)
@@ -281,9 +297,9 @@ export default function HourGlassAnimation({
                 if (!segment) return positions
                 const t = positions[1][positions[1].length - 1] + (segment.key === active_segment?.key ? segment.elapsed_duration : segment.initial_duration) / past_segments_duration
                 positions[1].push(t)
-                console.log('t at the moment is', t)
+                // console.log('t bottom at the moment is', t,'from initial duration',segment.initial_duration,'and elapsed duration',segment.elapsed_duration,'and past duration',past_segments_duration)
                 const total_sand_level = getHourGlassCurveLevel(past_segments_duration / total_segments_duration, 'bottom')
-                const sand_level = getHourGlassCurveLevel((1 - t) * past_segments_duration / total_segments_duration, 'bottom')/total_sand_level
+                const sand_level = 1 - getHourGlassCurveLevel((1 - t) * past_segments_duration / total_segments_duration, 'bottom')/total_sand_level
                 positions[0].push(sand_level)
                 positions[0].push(sand_level)
                 return positions
@@ -293,11 +309,11 @@ export default function HourGlassAnimation({
             end: vec(b_x + b_w / 2, b_y + b_h)
         }
 
-        console.log('top sand positions are', top_sand_gradient.positions, 'bottom sand positions are', bottom_sand_gradient.positions)
+        // console.log('top sand positions are', top_sand_gradient.positions, 'bottom sand positions are', bottom_sand_gradient.positions)
         return [top_sand_gradient, bottom_sand_gradient]
     }, [top_sand_path, bottom_sand_path, completed_segments, remaining_segments, active_segment, past_segments_duration, getHourGlassCurveLevel, total_segments_duration]);
 
-    console.log('active segment is', active_segment, 'completed segments are', completed_segments, 'remaining segments are', remaining_segments)
+    // console.log('active segment is', active_segment, 'completed segments are', completed_segments, 'remaining segments are', remaining_segments)
 
 
     return (
