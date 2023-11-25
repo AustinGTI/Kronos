@@ -13,7 +13,7 @@ import useTimer, {TimerStatus} from "./useTimer";
 import KronosPage from "../../../../globals/components/wrappers/KronosPage";
 import SelectionControls from "./sections/SelectionControls";
 import TimerControls from "./sections/TimerControls";
-import HourGlassAnimation from "./sections/HourGlassAnimation";
+import HourGlassAnimation from "./sections/hourglass";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
