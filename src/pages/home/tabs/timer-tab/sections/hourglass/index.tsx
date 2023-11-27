@@ -5,21 +5,11 @@ import {
     Group,
     LinearGradient,
     Path,
-    rect,
-    Rect,
-    rrect,
-    Skia,
-    SkPoint,
-    vec
 } from "@shopify/react-native-skia";
 import {TimerStatus} from "../../useTimer";
 import {TimerSegment} from "../../timer_state";
-import {Animated, View} from "react-native";
-import {
-    bezierCurve, pt, subdivideBezierCurve,
-    xyToPt
-} from "../../../../../../globals/helpers/math_functions";
-import {number} from "yup";
+import {View} from "react-native";
+import Animated from 'react-native-reanimated'
 import {SegmentTypes} from "../../../../../../globals/types/main";
 import {ContainerDimensions} from "../../../../../../globals/types/ui";
 import {calculateSegmentGroupDurations} from "./helpers";
@@ -27,6 +17,7 @@ import useHourGlassRender from "./hooks/useHourGlassRender";
 import {HOUR_GLASS_PROPERTIES} from "./constants";
 import useHourGlassTexture from "./hooks/useHourGlassTexture";
 import useAnimatedValue from "../../../../../../globals/hooks/useAnimatedValue";
+import FallingSand from "./components/FallingSand";
 
 interface HourGlassProps {
     timer_status: TimerStatus
@@ -61,15 +52,36 @@ export default function HourGlassAnimation({
     //
     // const completed_segments: TimerSegment[] = ([['focus', 60, 60], ['break', 60, 60]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
     // const remaining_segments: TimerSegment[] = ([['focus', 60, 0], ['break', 60, 0]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
+    //
+    // const timer_status = TimerStatus.RUNNING
 
     const [container_dimensions, setContainerDimensions] = React.useState<ContainerDimensions>({width: 0, height: 0})
+
+    // Region COORD CALLBACKS
+    // ? ........................
+
+    const coordY = React.useCallback((ptg: number): number => {
+        // convert a percentage value to the accurate y coordinate within the canvas using the container dimensions
+        return container_dimensions.height * ptg / 100
+    }, [container_dimensions.height]);
+
+    const coordX = React.useCallback((ptg: number) => {
+        // convert a percentage value to the accurate x coordinate within the canvas using the container dimensions
+        return container_dimensions.width * ptg / 100
+    }, [container_dimensions.width]);
+
+    // ? ........................
+    // End ........................
 
     const {
         container_path,
         top_sand_path,
         bottom_sand_path,
         falling_sand_path
-    } = useHourGlassRender(timer_status,container_dimensions, {active_segment, remaining_segments, completed_segments})
+    } = useHourGlassRender(timer_status, {active_segment, remaining_segments, completed_segments}, {
+        x: coordX,
+        y: coordY
+    })
 
     const {
         top_sand_gradient,
@@ -112,7 +124,8 @@ export default function HourGlassAnimation({
                           style="fill"
                           color={top_sand_gradient.colors[top_sand_gradient.colors.length - 1]}
                           strokeCap="round"/>
-                    {/*<Box box={rrect(rect())}/>*/}
+                    {/*<FallingSand coord_functions={{x: coordX, y: coordY}} timer_status={timer_status}*/}
+                    {/*             active_segment={active_segment}/>*/}
 
                     <Path path={bottom_sand_path}
                           style="fill"

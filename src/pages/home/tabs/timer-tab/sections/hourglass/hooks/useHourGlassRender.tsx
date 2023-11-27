@@ -1,37 +1,46 @@
 import React from 'react'
-import {Skia, SkPath} from "@shopify/react-native-skia";
+import {
+    Easing,
+    runTiming,
+    Skia,
+    SkiaValue,
+    SkPath,
+    useComputedValue,
+    useTiming,
+    useValue
+} from "@shopify/react-native-skia";
 import {subdivideBezierCurve, xyToPt} from "../../../../../../../globals/helpers/math_functions";
 import {ContainerDimensions} from "../../../../../../../globals/types/ui";
 import {FALLING_SAND_PROPERTIES, HOUR_GLASS_PROPERTIES} from "../constants";
 import {calculateSegmentGroupDurations, getHourGlassCurveLevel} from "../helpers";
-import {SegmentData} from "./types";
+import {CoordFunctions, SegmentData} from "./types";
 import {Animated} from "react-native";
 import {TimerStatus} from "../../../useTimer";
+import {useSharedValue, withTiming} from "react-native-reanimated";
 
 interface HourGlassRender {
     container_path: SkPath
     top_sand_path: SkPath
     bottom_sand_path: SkPath
-    falling_sand_path: SkPath
+    falling_sand_path: SkiaValue<SkPath>
 }
 
-export default function useHourGlassRender(timer_status: TimerStatus, container_dimensions: ContainerDimensions, segments_data: SegmentData): HourGlassRender {
+export default function useHourGlassRender(timer_status: TimerStatus, segments_data: SegmentData, coord_functions: CoordFunctions): HourGlassRender {
+    const {x: coordX, y: coordY} = coord_functions
+
+    // Region SEGMENTS DURATIONS
+    // ? ........................
     const {active_segment, completed_segments, remaining_segments} = segments_data
+
     const {
         completed_segments_duration, remaining_segments_duration, total_segments_duration
     } = calculateSegmentGroupDurations(active_segment, completed_segments, remaining_segments)
 
     const total_duration = completed_segments_duration + remaining_segments_duration
 
-    const coordY = React.useCallback((ptg: number): number => {
-        // convert a percentage value to the accurate y coordinate within the canvas using the container dimensions
-        return container_dimensions.height * ptg / 100
-    }, [container_dimensions.height]);
+    // ? ........................
+    // End ........................
 
-    const coordX = React.useCallback((ptg: number) => {
-        // convert a percentage value to the accurate x coordinate within the canvas using the container dimensions
-        return container_dimensions.width * ptg / 100
-    }, [container_dimensions.width]);
 
     console.log('durations are ', completed_segments_duration, remaining_segments_duration, total_segments_duration)
 
@@ -102,37 +111,74 @@ export default function useHourGlassRender(timer_status: TimerStatus, container_
         return [top_sand_path, bottom_sand_path]
     }, [coordX, coordY, remaining_segments_duration, completed_segments_duration])
 
-    const falling_sand_path = React.useMemo(() => {
-        const from = 0
-        const to = timer_status === TimerStatus.RUNNING ? 1 : 0
+
+    const curr_timer_status_ref = React.useRef<TimerStatus>(timer_status)
+
+    const falling_sand_top_position = useValue<number>(0)
+    const falling_sand_bottom_position = useValue<number>(0)
+
+    const startSandFall = () => {
+        // animate from 0 to 1 over 300 ms
+        runTiming(falling_sand_bottom_position, 1, {duration: 300, easing: Easing.in(Easing.quad)})
+    }
+
+    const stopSandFall = () => {
+        // animate from 1 to 0 over 300 ms
+        runTiming(falling_sand_top_position, 1, {duration: 300, easing: Easing.in(Easing.quad)}, () => {
+            falling_sand_top_position.current = 0
+            falling_sand_bottom_position.current = 0
+        })
+    }
+
+    React.useEffect(() => {
+        // if the timer status goes from anything else to running, start the sand fall animation
+        if (timer_status === TimerStatus.RUNNING) {
+            startSandFall()
+        }
+        // else if the timer status goes from running to anything else, stop the sand fall animation
+        else if (curr_timer_status_ref.current === TimerStatus.RUNNING) {
+            stopSandFall()
+        }
+        // update the current timer status ref
+        curr_timer_status_ref.current = timer_status
+    }, [timer_status]);
+
+    const falling_sand_path = useComputedValue(() => {
+        const from = falling_sand_top_position.current
+        const to = falling_sand_bottom_position.current
+
+        const falling_sand_path = Skia.Path.Make()
 
         const {vx, vy, uy, ux} = HOUR_GLASS_PROPERTIES
         const {margin, rounding_radius} = FALLING_SAND_PROPERTIES
         // falling sand path goes from the bottom of the top sand path to the top of the bottom sand path and is a rounded rectangle
-        const falling_sand_path = Skia.Path.Make()
 
         const sand_fall_height = vy - uy
 
-        const falling_sand_top = sand_fall_height * from
-        const falling_sand_bottom = sand_fall_height * (1 - to)
+        const falling_sand_top_height = sand_fall_height * from
+        const falling_sand_bottom_height = sand_fall_height * (1 - to)
 
-        falling_sand_path.moveTo(coordX(vx + margin), coordY(100 - vy + falling_sand_top))
-        falling_sand_path.lineTo(coordX(100 - vx - margin), coordY(100 - vy + falling_sand_top))
-        falling_sand_path.lineTo(coordX(100 - vx - margin), coordY(100 - uy - falling_sand_bottom))
+        falling_sand_path.moveTo(coordX(vx + margin), coordY(100 - vy + falling_sand_top_height))
+        falling_sand_path.cubicTo(
+            coordX(vx + margin), coordY(100 - vy + falling_sand_top_height - rounding_radius),
+            coordX(100 - vx - margin), coordY(100 - vy + falling_sand_top_height - rounding_radius),
+            coordX(100 - vx - margin), coordY(100 - vy + falling_sand_top_height))
+        falling_sand_path.lineTo(coordX(100 - vx - margin), coordY(100 - uy - falling_sand_bottom_height))
 
         // if the sand is still falling, that is t is not yet 1, the bottom of the sand is rounded
         if (to !== 1) {
             falling_sand_path.cubicTo(
-                coordX(100 - vx - margin), coordY(100 - uy - falling_sand_bottom + rounding_radius),
-                coordX(vx + margin), coordY(100 - uy - falling_sand_bottom + rounding_radius),
-                coordX(vx + margin), coordY(100 - uy - falling_sand_bottom)
+                coordX(100 - vx - margin), coordY(100 - uy - falling_sand_bottom_height + rounding_radius),
+                coordX(vx + margin), coordY(100 - uy - falling_sand_bottom_height + rounding_radius),
+                coordX(vx + margin), coordY(100 - uy - falling_sand_bottom_height)
             )
         } else {
-            falling_sand_path.lineTo(coordX(vx + margin), coordY(100 - uy - falling_sand_bottom))
+            falling_sand_path.lineTo(coordX(vx + margin), coordY(100 - uy - falling_sand_bottom_height))
         }
 
         return falling_sand_path
-    }, [coordX, coordY, timer_status])
+    }, [coordX, coordY, timer_status, falling_sand_top_position, falling_sand_bottom_position])
+
 
     return (
         {

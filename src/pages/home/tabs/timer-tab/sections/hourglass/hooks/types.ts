@@ -5,3 +5,8 @@ export interface SegmentData {
     completed_segments: TimerSegment[]
     remaining_segments: TimerSegment[]
 }
+
+export interface CoordFunctions {
+    x: (t: number) => number
+    y: (t: number) => number
+}
