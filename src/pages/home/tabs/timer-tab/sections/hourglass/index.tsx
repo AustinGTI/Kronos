@@ -1,7 +1,7 @@
 import React from 'react'
 import {
     Box,
-    Canvas,
+    Canvas, FractalNoise,
     Group,
     LinearGradient,
     Path,
@@ -12,12 +12,9 @@ import {View} from "react-native";
 import Animated from 'react-native-reanimated'
 import {SegmentTypes} from "../../../../../../globals/types/main";
 import {ContainerDimensions} from "../../../../../../globals/types/ui";
-import {calculateSegmentGroupDurations} from "./helpers";
 import useHourGlassRender from "./hooks/useHourGlassRender";
 import {HOUR_GLASS_PROPERTIES} from "./constants";
 import useHourGlassTexture from "./hooks/useHourGlassTexture";
-import useAnimatedValue from "../../../../../../globals/hooks/useAnimatedValue";
-import FallingSand from "./components/FallingSand";
 
 interface HourGlassProps {
     timer_status: TimerStatus

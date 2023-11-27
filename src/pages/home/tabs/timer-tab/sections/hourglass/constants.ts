@@ -10,12 +10,17 @@ export const HOUR_GLASS_PROPERTIES = {
     container_thickness: 6
 }
 
+export const SAND_PROPERTIES = {
+    max_bulge: 4,
+    bulge_rounding_factor: 2
+}
+
 export const FALLING_SAND_PROPERTIES = {
     margin: 1,
     rounding_radius: 2
 }
 
-export const MAX_HOURGLASS_CAPACITY = 0.8
+export const MAX_HOURGLASS_CAPACITY = 0.7
 
 
 export const NO_OF_AREA_SAMPLES = 1000
