@@ -1,7 +1,7 @@
 import React from 'react'
 import {heightPercentageToDP as hp, widthPercentageToDP as wp} from 'react-native-responsive-screen';
 import {AlertDialog, Button, Circle, Heading, Paragraph, Sheet, Square, View, XStack, YStack} from "tamagui";
-import {Activity, Duration} from "../../../../globals/types/main";
+import {Activity, Duration, SegmentType} from "../../../../globals/types/main";
 import {AlertProps} from "../../../../globals/types/alert";
 import {TimerTabContext, TimerTabContextProps} from "./context";
 import {Keyboard, TouchableWithoutFeedback} from "react-native";
@@ -14,6 +14,7 @@ import KronosPage from "../../../../globals/components/wrappers/KronosPage";
 import SelectionControls from "./sections/SelectionControls";
 import TimerControls from "./sections/TimerControls";
 import HourGlassAnimation from "./sections/hourglass";
+import KronosContainer from "../../../../globals/components/wrappers/KronosContainer";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
@@ -33,10 +34,11 @@ interface CircleCoords {
 }
 
 interface TimeDisplayProps {
+    segment_type?: SegmentType
     duration?: number // in seconds
 }
 
-function TimeDisplay({duration}: TimeDisplayProps) {
+function TimeDisplay({duration, segment_type}: TimeDisplayProps) {
     const is_negative = React.useMemo(() => {
         return duration && duration < 0
     }, [duration])
@@ -55,7 +57,7 @@ function TimeDisplay({duration}: TimeDisplayProps) {
     const ValueDisplay = React.useCallback(({value}: { value: string }) => {
         return (
             <XStack width={55} alignItems={'center'} justifyContent={'center'}>
-                <Paragraph fontSize={40} lineHeight={40}>{value}</Paragraph>
+                <Paragraph fontSize={40} lineHeight={45} paddingVertical={0}>{value}</Paragraph>
             </XStack>
         )
     }, [])
@@ -71,14 +73,27 @@ function TimeDisplay({duration}: TimeDisplayProps) {
     console.log('displaying on the time display ', hours, minutes, seconds)
 
     return (
-        <XStack alignItems={'center'} justifyContent={'center'} pt={'5%'}>
-            {is_negative ? <Paragraph fontSize={15}>-</Paragraph> : null}
-            <ValueDisplay value={hours}/>
-            <Separator/>
-            <ValueDisplay value={minutes}/>
-            <Separator/>
-            <ValueDisplay value={seconds}/>
-        </XStack>
+        <KronosContainer w={'90%'} paddingVertical={5}>
+            <YStack w={'100%'} alignItems={'center'}>
+                <XStack justifyContent={'center'} alignItems={'center'} paddingVertical={5}>
+                    <Circle size={7} backgroundColor={segment_type?.color ?? '$color'}/>
+                    <Paragraph
+                        paddingHorizontal={5}
+                        fontSize={20} color={'$color'} textTransform={'uppercase'}>
+                        {segment_type?.name ?? 'NONE'}
+                    </Paragraph>
+                    <Circle size={7} backgroundColor={segment_type?.color ?? '$color'}/>
+                </XStack>
+                <XStack alignItems={'center'} justifyContent={'center'} paddingVertical={5}>
+                    {is_negative ? <Paragraph fontSize={40} lineHeight={40} marginRight={2}>-</Paragraph> : null}
+                    <ValueDisplay value={hours}/>
+                    <Separator/>
+                    <ValueDisplay value={minutes}/>
+                    <Separator/>
+                    <ValueDisplay value={seconds}/>
+                </XStack>
+            </YStack>
+        </KronosContainer>
     )
 }
 
@@ -222,45 +237,13 @@ function TimerTabContents() {
     return (
         <KronosPage>
             <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'} w={'100%'}>
+                <TimeDisplay
+                    segment_type={active_segment ? active_segment.segment_type : undefined}
+                    duration={active_segment ? active_segment.initial_duration - active_segment.elapsed_duration : undefined}/>
                 <HourGlassAnimation
                     timer_status={timer_status}
                     active_segment={active_segment}
                     completed_segments={completed_segments} remaining_segments={remaining_segments}/>
-                {/*<XStack w={'90%'} justifyContent={'center'} alignItems={'center'} py={5}>*/}
-                {/*    <Heading*/}
-                {/*        fontSize={25}*/}
-                {/*        textTransform={'uppercase'}*/}
-                {/*        textDecorationLine={'underline'}>*/}
-                {/*        Pomodoro Timer*/}
-                {/*    </Heading>*/}
-                {/*</XStack>*/}
-                {/*<Square position={'relative'} width={wp('85%')} height={wp('85%')} marginVertical={15}>*/}
-                {/*    <Canvas style={{width: '100%', height: '100%'}}>*/}
-                {/*        <Group>*/}
-                {/*            {clock}*/}
-                {/*            {pointer}*/}
-                {/*        </Group>*/}
-                {/*    </Canvas>*/}
-                {/*    <YStack position={'absolute'} top={0} left={0} width={'100%'} height={'100%'}*/}
-                {/*            alignItems={'center'} justifyContent={'space-between'}>*/}
-                {/*        <XStack pt={'22%'} width={'100%'} alignItems={'center'}*/}
-                {/*                justifyContent={'center'}>*/}
-                {/*            {*/}
-                {/*                active_segment &&*/}
-                {/*                <React.Fragment>*/}
-                {/*                    <Circle size={5}*/}
-                {/*                            backgroundColor={active_segment?.segment_type.color ?? 'gray'}/>*/}
-                {/*                    <Paragraph color={'$color'} px={5} fontSize={15}*/}
-                {/*                               textTransform={'uppercase'}>{active_segment?.segment_type.name ?? '-'}</Paragraph>*/}
-                {/*                    <Circle size={5}*/}
-                {/*                            backgroundColor={active_segment?.segment_type.color ?? 'gray'}/>*/}
-                {/*                </React.Fragment>*/}
-                {/*            }*/}
-                {/*        </XStack>*/}
-                {/*    </YStack>*/}
-                {/*</Square>*/}
-                <TimeDisplay
-                    duration={active_segment ? active_segment.initial_duration - active_segment.elapsed_duration : undefined}/>
                 <TimerControls
                     timer_ready={!!(timer_activity && timer_duration)} timer_status={timer_status}
                     startTimer={startTimer} stopTimer={stopTimer} pauseTimer={pauseTimer} resumeTimer={resumeTimer}/>
@@ -268,31 +251,6 @@ function TimerTabContents() {
                     timer_status={timer_status}
                     timer_activity={timer_activity} setTimerActivity={setTimerActivity}
                     timer_duration={timer_duration} setTimerDuration={setTimerDuration}/>
-                {/*<YStack width={wp('85%')} height={hp(timer_status !== TimerStatus.OFF ? '20%' : '0%')}*/}
-                {/*        overflow={'scroll'} pt={15}>*/}
-                {/*    {*/}
-                {/*        [*/}
-                {/*            ...completed_segments,*/}
-                {/*            ...(active_segment ? [active_segment] : [])*/}
-                {/*        ].slice().reverse().map((segment, index) => {*/}
-                {/*            const is_last_segment = index === completed_segments.length*/}
-                {/*            return (*/}
-                {/*                <XStack key={index} width={'100%'} py={10} alignItems={'center'}*/}
-                {/*                        justifyContent={'space-around'}*/}
-                {/*                        borderBottomWidth={is_last_segment ? 0 : 1} borderBottomColor={'$color'}*/}
-                {/*                >*/}
-                {/*                    <XStack alignItems={'center'}>*/}
-                {/*                        <Circle size={10} backgroundColor={segment.segment_type.color}/>*/}
-                {/*                        <Paragraph color={'$color'} px={5} fontSize={15}*/}
-                {/*                                   textTransform={'uppercase'}>{segment.segment_type.name}</Paragraph>*/}
-                {/*                    </XStack>*/}
-                {/*                    <Paragraph color={'$color'} px={5} fontSize={15}*/}
-                {/*                               textTransform={'uppercase'}>{`${Math.floor(segment.elapsed_duration / 60)} MINS`}</Paragraph>*/}
-                {/*                </XStack>*/}
-                {/*            )*/}
-                {/*        })*/}
-                {/*    }*/}
-                {/*</YStack>*/}
             </YStack>
         </KronosPage>
     )

@@ -4,7 +4,7 @@ import {
     Canvas, FractalNoise,
     Group,
     LinearGradient,
-    Path,
+    Path, Shadow,
 } from "@shopify/react-native-skia";
 import {TimerStatus} from "../../useTimer";
 import {TimerSegment} from "../../timer_state";
@@ -15,6 +15,8 @@ import {ContainerDimensions} from "../../../../../../globals/types/ui";
 import useHourGlassRender from "./hooks/useHourGlassRender";
 import {HOUR_GLASS_PROPERTIES} from "./constants";
 import useHourGlassTexture from "./hooks/useHourGlassTexture";
+import {useTheme} from "tamagui";
+import chroma from "chroma-js";
 
 interface HourGlassProps {
     timer_status: TimerStatus
@@ -41,7 +43,7 @@ export default function HourGlassAnimation({
                                                completed_segments,
                                                remaining_segments,
                                                timer_status,
-                                               canvas_height_as_ptg = 60,
+                                               canvas_height_as_ptg = 55,
                                                canvas_width_as_ptg = 100
                                            }: HourGlassProps) {
     // ! TEST DATA
@@ -84,10 +86,17 @@ export default function HourGlassAnimation({
         top_sand_gradient,
         bottom_sand_gradient
     } = useHourGlassTexture({
-        top_sand_bounds: top_sand_path.getBounds(),
-        bottom_sand_bounds: bottom_sand_path.getBounds()
+        top_sand_bounds: top_sand_path.current.getBounds(),
+        bottom_sand_bounds: bottom_sand_path.current.getBounds()
     }, {active_segment, remaining_segments, completed_segments})
 
+    const {
+        foreground: {val: foreground},
+        background: {val: background},
+        color: {val: color},
+        borderColor: {val: borderColor},
+        shadowColor: {val: shadowColor}
+    } = useTheme()
 
     return (
         <View
@@ -101,9 +110,10 @@ export default function HourGlassAnimation({
                     <Path
                         path={container_path}
                         style="fill"
-                        color={'white'}
-                        strokeCap="round"
-                    />
+                        color={foreground}
+                        strokeCap="round">
+                        <Shadow dx={0} dy={0} blur={10} color={chroma(shadowColor).alpha(0.3).hex()}/>
+                    </Path>
                     <Path
                         path={top_sand_path}
                         style="fill"
@@ -136,13 +146,13 @@ export default function HourGlassAnimation({
                         />
                     </Path>
 
-                    <Path
-                        path={container_path}
-                        style="stroke"
-                        strokeWidth={HOUR_GLASS_PROPERTIES.container_thickness}
-                        color={'black'}
-                        strokeCap="round"
-                    />
+                    {/*<Path*/}
+                    {/*    path={container_path}*/}
+                    {/*    style="stroke"*/}
+                    {/*    strokeWidth={HOUR_GLASS_PROPERTIES.container_thickness}*/}
+                    {/*    color={color}*/}
+                    {/*    strokeCap="round"*/}
+                    {/*/>*/}
                 </Group>
             </Canvas>
         </View>

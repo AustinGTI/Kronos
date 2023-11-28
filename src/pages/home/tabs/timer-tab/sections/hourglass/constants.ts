@@ -1,9 +1,9 @@
 import {bezierCurve, xyToPt} from "../../../../../../globals/helpers/math_functions";
 
 export const HOUR_GLASS_PROPERTIES = {
-    ux: 20,
-    uy: 10,
-    vx: 47,
+    ux: 22,
+    uy: 5,
+    vx: 48,
     vy: 50,
     u_curve: 30,
     v_curve: 10,
@@ -16,7 +16,7 @@ export const SAND_PROPERTIES = {
 }
 
 export const FALLING_SAND_PROPERTIES = {
-    margin: 1,
+    margin: 0,
     rounding_radius: 2
 }
 
