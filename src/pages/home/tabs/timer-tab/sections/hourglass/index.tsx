@@ -98,6 +98,7 @@ export default function HourGlassAnimation({
         shadowColor: {val: shadowColor}
     } = useTheme()
 
+
     return (
         <View
             style={{width: `${canvas_width_as_ptg}%`, height: `${canvas_height_as_ptg}%`}}
@@ -120,16 +121,16 @@ export default function HourGlassAnimation({
                         color={'red'}
                         strokeCap="round">
                         <LinearGradient
-                            start={top_sand_gradient.start}
-                            end={top_sand_gradient.end}
-                            colors={top_sand_gradient.colors}
-                            positions={top_sand_gradient.positions}
+                            start={top_sand_gradient.current.start}
+                            end={top_sand_gradient.current.end}
+                            colors={top_sand_gradient.current.colors}
+                            positions={top_sand_gradient.current.positions}
                         />
                     </Path>
 
                     <Path path={falling_sand_path}
                           style="fill"
-                          color={top_sand_gradient.colors[top_sand_gradient.colors.length - 1]}
+                          color={top_sand_gradient.current.colors[top_sand_gradient.current.colors.length - 1]}
                           strokeCap="round"/>
                     {/*<FallingSand coord_functions={{x: coordX, y: coordY}} timer_status={timer_status}*/}
                     {/*             active_segment={active_segment}/>*/}
@@ -139,10 +140,10 @@ export default function HourGlassAnimation({
                           color={'purple'}
                           strokeCap="round">
                         <LinearGradient
-                            start={bottom_sand_gradient.start}
-                            end={bottom_sand_gradient.end}
-                            colors={bottom_sand_gradient.colors}
-                            positions={bottom_sand_gradient.positions}
+                            start={bottom_sand_gradient.current.start}
+                            end={bottom_sand_gradient.current.end}
+                            colors={bottom_sand_gradient.current.colors}
+                            positions={bottom_sand_gradient.current.positions}
                         />
                     </Path>
 

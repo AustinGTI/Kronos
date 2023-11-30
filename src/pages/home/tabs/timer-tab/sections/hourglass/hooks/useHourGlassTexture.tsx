@@ -1,6 +1,6 @@
 import React from 'react'
 import {number} from "yup";
-import {SkPoint, SkRect, vec} from "@shopify/react-native-skia";
+import {runTiming, SkiaValue, SkPoint, SkRect, useComputedValue, useValue, vec} from "@shopify/react-native-skia";
 import {calculateSegmentGroupDurations, getHourGlassCurveLevel} from "../helpers";
 import {TimerSegment} from "../../../timer_state";
 import {SegmentData} from "./types";
@@ -13,8 +13,8 @@ interface GradientSpecifications {
 }
 
 interface HourGlassTexture {
-    top_sand_gradient: GradientSpecifications
-    bottom_sand_gradient: GradientSpecifications
+    top_sand_gradient: SkiaValue<GradientSpecifications>
+    bottom_sand_gradient: SkiaValue<GradientSpecifications>
 }
 
 interface BoundsData {
@@ -31,7 +31,18 @@ export default function useHourGlassTexture(bounds_data: BoundsData, segment_dat
         completed_segments_duration, remaining_segments_duration, total_segments_duration
     } = calculateSegmentGroupDurations(active_segment, completed_segments, remaining_segments)
 
-    const [top_sand_gradient, bottom_sand_gradient] = React.useMemo(() => {
+    const active_segment_elapsed_duration = React.useMemo(() => (
+        Math.min(active_segment?.elapsed_duration ?? 0, active_segment?.initial_duration ?? 0)
+    ), [active_segment?.elapsed_duration, active_segment?.initial_duration]);
+
+    const animated_active_segment_elapsed_duration = useValue<number>(active_segment_elapsed_duration)
+
+    React.useEffect(() => {
+        // when the active segment elapsed duration changes, update the animated value
+        runTiming(animated_active_segment_elapsed_duration, active_segment_elapsed_duration, {duration: 1000})
+    }, [active_segment_elapsed_duration]);
+
+    const top_sand_gradient = useComputedValue(() => {
         const {x: t_x, y: t_y, width: t_w, height: t_h} = top_sand_bounds
         const remaining_or_active_segments = [...remaining_segments, active_segment]
 
@@ -45,7 +56,13 @@ export default function useHourGlassTexture(bounds_data: BoundsData, segment_dat
             }, [] as string[]),
             positions: remaining_or_active_segments.reduce((positions, segment) => {
                 if (!segment) return positions
-                const t = positions[1][positions[1].length - 1] + (segment.initial_duration - segment.elapsed_duration) / remaining_segments_duration
+                let current_segment_remaining_duration: number;
+                if (segment.key === active_segment?.key) {
+                    current_segment_remaining_duration = segment.initial_duration - animated_active_segment_elapsed_duration.current
+                } else {
+                    current_segment_remaining_duration = segment.initial_duration
+                }
+                const t = positions[1][positions[1].length - 1] + current_segment_remaining_duration / remaining_segments_duration
                 positions[1].push(t)
                 // console.log('t top at the moment is', t,'from initial duration',segment.initial_duration,'and elapsed duration',segment.elapsed_duration,'and remaining duration',remaining_segments_duration)
                 const total_sand_level = getHourGlassCurveLevel(remaining_segments_duration / total_segments_duration, 'top')
@@ -59,6 +76,12 @@ export default function useHourGlassTexture(bounds_data: BoundsData, segment_dat
             end: vec(t_x + t_w / 2, t_y + t_h)
         }
 
+
+        // console.log('top sand positions are', top_sand_gradient.positions, 'bottom sand positions are', bottom_sand_gradient.positions)
+        return top_sand_gradient
+    }, [completed_segments, remaining_segments, active_segment, top_sand_bounds, bottom_sand_bounds, total_segments_duration, animated_active_segment_elapsed_duration]);
+
+    const bottom_sand_gradient = useComputedValue(() => {
         // get the bottom sand gradient
         const {x: b_x, y: b_y, width: b_w, height: b_h} = bottom_sand_bounds
         const completed_or_active_segments = [active_segment, ...completed_segments.slice().reverse()]
@@ -73,7 +96,13 @@ export default function useHourGlassTexture(bounds_data: BoundsData, segment_dat
             }, [] as string[]),
             positions: completed_or_active_segments.reduce((positions, segment) => {
                 if (!segment) return positions
-                const t = positions[1][positions[1].length - 1] + (segment.key === active_segment?.key ? segment.elapsed_duration : segment.initial_duration) / completed_segments_duration
+                let current_segment_completed_duration: number;
+                if (segment.key === active_segment?.key) {
+                    current_segment_completed_duration = animated_active_segment_elapsed_duration.current
+                } else {
+                    current_segment_completed_duration = segment.initial_duration
+                }
+                const t = positions[1][positions[1].length - 1] + current_segment_completed_duration / completed_segments_duration
                 positions[1].push(t)
                 // console.log('t bottom at the moment is', t,'from initial duration',segment.initial_duration,'and elapsed duration',segment.elapsed_duration,'and past duration',past_segments_duration)
                 const total_sand_level = getHourGlassCurveLevel(completed_segments_duration / total_segments_duration, 'bottom')
@@ -87,9 +116,8 @@ export default function useHourGlassTexture(bounds_data: BoundsData, segment_dat
             end: vec(b_x + b_w / 2, b_y + b_h)
         }
 
-        // console.log('top sand positions are', top_sand_gradient.positions, 'bottom sand positions are', bottom_sand_gradient.positions)
-        return [top_sand_gradient, bottom_sand_gradient]
-    }, [completed_segments, remaining_segments, active_segment, top_sand_bounds, bottom_sand_bounds, total_segments_duration]);
+        return bottom_sand_gradient
+    }, [completed_segments, remaining_segments, active_segment, top_sand_bounds, bottom_sand_bounds, total_segments_duration, animated_active_segment_elapsed_duration])
 
     return (
         {
