@@ -1,12 +1,14 @@
-import {bezierCurve, xyToPt} from "../../../../../../globals/helpers/math_functions";
+import {bezierCurve, pt, xyToPt} from "../../../../../../globals/helpers/math_functions";
 
 export const HOUR_GLASS_PROPERTIES = {
     ux: 22,
-    uy: 5,
+    // must be more than cap_radius
+    uy: 10,
     vx: 48,
     vy: 50,
-    u_curve: 30,
+    u_curve: 25,
     v_curve: 10,
+    cap_radius: 3,
     container_thickness: 6
 }
 
@@ -23,7 +25,20 @@ export const FALLING_SAND_PROPERTIES = {
 export const MAX_HOURGLASS_CAPACITY = 0.7
 
 
-export const NO_OF_AREA_SAMPLES = 1000
+export const NO_OF_AREA_SAMPLES = 100
+
+export const CAP_BEZIER_POINTS = [
+    xyToPt(HOUR_GLASS_PROPERTIES.ux + HOUR_GLASS_PROPERTIES.cap_radius, HOUR_GLASS_PROPERTIES.uy - HOUR_GLASS_PROPERTIES.cap_radius),
+    xyToPt(HOUR_GLASS_PROPERTIES.ux, HOUR_GLASS_PROPERTIES.uy - HOUR_GLASS_PROPERTIES.cap_radius),
+    xyToPt(HOUR_GLASS_PROPERTIES.ux, HOUR_GLASS_PROPERTIES.uy)
+]
+
+export const FUNNEL_BEZIER_POINTS = [
+    xyToPt(HOUR_GLASS_PROPERTIES.ux, HOUR_GLASS_PROPERTIES.uy),
+    xyToPt(HOUR_GLASS_PROPERTIES.ux, HOUR_GLASS_PROPERTIES.uy + HOUR_GLASS_PROPERTIES.u_curve),
+    xyToPt(HOUR_GLASS_PROPERTIES.vx, HOUR_GLASS_PROPERTIES.vy - HOUR_GLASS_PROPERTIES.v_curve),
+    xyToPt(HOUR_GLASS_PROPERTIES.vx, HOUR_GLASS_PROPERTIES.vy)
+]
 
 
 /**
@@ -56,5 +71,107 @@ function generateHourGlassBulbAreaCache() {
     return cache
 }
 
-export const HOUR_GLASS_BULB_AREA_CACHE = generateHourGlassBulbAreaCache()
+function generateBezierCurveAreaLookup(bezier_points: pt[], no_of_samples: number) {
+    let curve_area = 0
 
+    const lookup: number[] = [0]
+
+    let curr_point = bezierCurve(bezier_points, 0)
+
+    for (let i = 0; i <= no_of_samples; i++) {
+        // update x and y to the next point
+        const next_point = bezierCurve(bezier_points, (i + 1) / no_of_samples)
+        // the trapezoid has base width of x - vx, top width of next_point.x - vx, and height of next_point.y - y
+        // multiply by 2 for the 2 halves of a bulb
+        curve_area += 1 / 2 * (50 - curr_point.x + 50 - next_point.x) * (next_point.y - curr_point.y) * 2
+        lookup.push(curve_area)
+
+        curr_point = {...next_point}
+    }
+
+    return lookup
+}
+
+function generateHourGlassFunnelAreaCache() {
+    return generateBezierCurveAreaLookup(FUNNEL_BEZIER_POINTS, NO_OF_AREA_SAMPLES)
+}
+
+function generateHourGlassCapAreaCache() {
+    return generateBezierCurveAreaLookup(CAP_BEZIER_POINTS, NO_OF_AREA_SAMPLES)
+}
+
+function getClosestCurveUnitIntervalToHeightUnitInterval(height_unit_interval: number, getHeightGivenCurve: (curve_unit_interval: number) => number): number {
+    // use binary search with at most 10 iterations to find the curve unit interval that is closest to the height unit interval
+    let low = 0;
+    let high = 1;
+
+    let iterations = 0
+    while (iterations++ < 10 && low < high) {
+        const mid = (low + high) / 2;
+        const height = getHeightGivenCurve(mid);
+        if (height < height_unit_interval) {
+            low = mid;
+        } else if (height > height_unit_interval) {
+            high = mid;
+        } else {
+            return mid;
+        }
+    }
+
+
+    // get the closest estimate between the low and high
+    return Math.abs(getHeightGivenCurve(low) - height_unit_interval) < Math.abs(getHeightGivenCurve(high) - height_unit_interval) ? low : high
+}
+
+function generateHourGlassHeightToAreaCache() {
+    const {ux, uy, vx, vy, cap_radius} = HOUR_GLASS_PROPERTIES
+    const max_height = vy - uy + cap_radius
+
+    let curr_height = 0
+    const cache: number[] = [0]
+
+    for (let i = 0; i < NO_OF_AREA_SAMPLES; i++) {
+        let area = 0
+        const next_height = (i + 1) / NO_OF_AREA_SAMPLES * max_height
+        // if the height is more than the cap radius, then we need to calculate the area of the funnel, just add the area of the cap
+        if (next_height > cap_radius) {
+            area += HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE[NO_OF_AREA_SAMPLES]
+            const t = getClosestCurveUnitIntervalToHeightUnitInterval(
+                next_height - cap_radius,
+                (curve_unit_interval) => bezierCurve(FUNNEL_BEZIER_POINTS, curve_unit_interval).y - uy
+            )
+            area += HOUR_GLASS_BULB_FUNNEL_CURVE_TO_AREA_CACHE[Math.round(t * NO_OF_AREA_SAMPLES)]
+        } else {
+            // if the height is less than the cap radius, then only the cap needs to be considered for the area
+            const t = getClosestCurveUnitIntervalToHeightUnitInterval(
+                next_height,
+                (curve_unit_interval) => bezierCurve(CAP_BEZIER_POINTS, curve_unit_interval).y - uy
+            )
+            area += HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE[Math.round(t * NO_OF_AREA_SAMPLES)]
+        }
+
+        cache.push(area)
+
+        curr_height = next_height
+    }
+
+    return cache
+}
+
+/**
+ * this is a cache that maps the t parameter of the bezier curve to the area of the curve swept so far from 0 to 1 in increments of 1/NO_OF_AREA_SAMPLES
+ * as denoted in the variable name, this goes for the cap and funnel curves which have separate caches
+ */
+export const HOUR_GLASS_BULB_FUNNEL_CURVE_TO_AREA_CACHE = generateHourGlassFunnelAreaCache()
+export const HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE = generateHourGlassCapAreaCache()
+
+/**
+ * this is a cache that maps the height of the hourglass to the area of the bulb from 0 to 1 (top to bottom) of a bulb in increments of 1/NO_OF_AREA_SAMPLES
+ * this is unified for both the cap and funnel curves thus regards the whole bulb as a single area
+ */
+export const HOUR_GLASS_HEIGHT_TO_AREA_CACHE = generateHourGlassHeightToAreaCache()
+
+
+console.log('hour glass funnel curve to area', HOUR_GLASS_BULB_FUNNEL_CURVE_TO_AREA_CACHE)
+console.log('hour glass cap curve to area', HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE)
+console.log('hour glass height to area', HOUR_GLASS_HEIGHT_TO_AREA_CACHE)

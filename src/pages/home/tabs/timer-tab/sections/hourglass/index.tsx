@@ -4,7 +4,7 @@ import {
     Canvas, FractalNoise,
     Group,
     LinearGradient,
-    Path, Shadow,
+    Path, Shadow, vec,
 } from "@shopify/react-native-skia";
 import {TimerStatus} from "../../useTimer";
 import {TimerSegment} from "../../timer_state";
@@ -39,20 +39,20 @@ function generateTestSegment(type: 'focus' | 'break', initial_duration: number, 
 }
 
 export default function HourGlassAnimation({
-                                               active_segment,
-                                               completed_segments,
-                                               remaining_segments,
-                                               timer_status,
-                                               canvas_height_as_ptg = 55,
+                                               // active_segment,
+                                               // completed_segments,
+                                               // remaining_segments,
+                                               // timer_status,
+                                               canvas_height_as_ptg = 60,
                                                canvas_width_as_ptg = 100
                                            }: HourGlassProps) {
     // ! TEST DATA
-    // const active_segment: TimerSegment = generateTestSegment('focus', 60, 30)
-    //
-    // const completed_segments: TimerSegment[] = ([['focus', 60, 60], ['break', 60, 60]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
-    // const remaining_segments: TimerSegment[] = ([['focus', 60, 0], ['break', 60, 0]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
-    //
-    // const timer_status = TimerStatus.RUNNING
+    const active_segment: TimerSegment = generateTestSegment('focus', 60, 30)
+
+    const completed_segments: TimerSegment[] = ([['focus', 60, 60], ['break', 60, 60]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
+    const remaining_segments: TimerSegment[] = ([['focus', 60, 0], ['break', 60, 0]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
+
+    const timer_status = TimerStatus.RUNNING
 
     const [container_dimensions, setContainerDimensions] = React.useState<ContainerDimensions>({width: 0, height: 0})
 
@@ -85,10 +85,7 @@ export default function HourGlassAnimation({
     const {
         top_sand_gradient,
         bottom_sand_gradient
-    } = useHourGlassTexture({
-        top_sand_bounds: top_sand_path.current.getBounds(),
-        bottom_sand_bounds: bottom_sand_path.current.getBounds()
-    }, {active_segment, remaining_segments, completed_segments})
+    } = useHourGlassTexture(top_sand_path, bottom_sand_path, {active_segment, remaining_segments, completed_segments})
 
     const {
         foreground: {val: foreground},
@@ -121,29 +118,42 @@ export default function HourGlassAnimation({
                         color={'red'}
                         strokeCap="round">
                         <LinearGradient
-                            start={top_sand_gradient.current.start}
-                            end={top_sand_gradient.current.end}
-                            colors={top_sand_gradient.current.colors}
-                            positions={top_sand_gradient.current.positions}
+                            start={top_sand_gradient.start}
+                            end={top_sand_gradient.end}
+                            positions={top_sand_gradient.positions}
+                            // the first and last segment have one color, the middle segments have two colors, active is the last segment
+                            colors={
+                                [...remaining_segments, ...(active_segment ? [active_segment] : [])]
+                                    .reduce((colors, segment, index) => {
+                                        const color = segment.segment_type.color
+                                        colors.push(color)
+                                        colors.push(color)
+                                        return colors
+                                    }, [] as string[])}
                         />
                     </Path>
 
                     <Path path={falling_sand_path}
                           style="fill"
-                          color={top_sand_gradient.current.colors[top_sand_gradient.current.colors.length - 1]}
+                          color={active_segment ? active_segment.segment_type.color : 'purple'}
                           strokeCap="round"/>
-                    {/*<FallingSand coord_functions={{x: coordX, y: coordY}} timer_status={timer_status}*/}
-                    {/*             active_segment={active_segment}/>*/}
 
                     <Path path={bottom_sand_path}
                           style="fill"
                           color={'purple'}
                           strokeCap="round">
                         <LinearGradient
-                            start={bottom_sand_gradient.current.start}
-                            end={bottom_sand_gradient.current.end}
-                            colors={bottom_sand_gradient.current.colors}
-                            positions={bottom_sand_gradient.current.positions}
+                            start={bottom_sand_gradient.start}
+                            end={bottom_sand_gradient.end}
+                            positions={bottom_sand_gradient.positions}
+                            colors={
+                                [...(active_segment ? [active_segment] : []),...completed_segments.slice().reverse()]
+                                    .reduce((colors, segment, index) => {
+                                        const color = segment.segment_type.color
+                                        colors.push(color)
+                                        colors.push(color)
+                                        return colors
+                                    }, [] as string[])}
                         />
                     </Path>
 

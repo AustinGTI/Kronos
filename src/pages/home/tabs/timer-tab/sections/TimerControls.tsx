@@ -45,7 +45,7 @@ export default function TimerControls({
         throw new Error('Timer is not ready but timer status is ON')
     }
     return (
-        <XStack w={'100%'} justifyContent={'center'} paddingVertical={5}>
+        <XStack w={'100%'} justifyContent={'center'} paddingBottom={2}>
             {/* if the timer status is OFF, show a play button with startTimer onClick */}
             {timer_status === TimerStatus.OFF &&
                 <ControlButton icon={Play} onClick={startTimer} disabled={!timer_ready}/>}
