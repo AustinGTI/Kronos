@@ -15,6 +15,7 @@ import SelectionControls from "./sections/SelectionControls";
 import TimerControls from "./sections/TimerControls";
 import HourGlassAnimation from "./sections/hourglass";
 import KronosContainer from "../../../../globals/components/wrappers/KronosContainer";
+import {durationToTimerState, TimerSegment} from "./timer_state";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
@@ -126,113 +127,16 @@ function TimerTabContents() {
     // ? ........................
     // End
 
-
-    // Region TIMER PATH
-
-    const [main_clock_coords, pointer_coords] = React.useMemo(() => {
-        const main: CircleCoords = {
-            x: wp(`${85 * 0.5}%`),
-            y: wp(`${85 * 0.5}%`),
-            radius: wp(`${85 * 0.5 * 0.9}%`)
-        }
-        const pointer: CircleCoords = {
-            x: wp(`${85 * 0.5}%`),
-            y: hp(`${50 * 0.85 * 0.5}%`),
-            radius: wp(`${85 * 0.5 * 0.6}%`)
-        }
-        return [main, pointer]
-    }, [])
-
-    const generateTimerPath = React.useCallback(({x, y, radius}: CircleCoords) => {
-        const path = Skia.Path.Make()
-        path.addCircle(x, y, radius)
-        // rotate the path by -90 degrees
-        const matrix = Skia.Matrix()
-        matrix.translate(x, y)
-        matrix.rotate((-90 * Math.PI) / 180)
-        matrix.translate(-x, -y)
-
-        path.transform(matrix)
-        return path
-    }, [])
-
-    const clock = React.useMemo(() => {
-        // the session visualization, if there is no session, a gray circle
-        if (!timer_duration) {
-            return (
-                <React.Fragment>
-                    <Path
-                        path={generateTimerPath(main_clock_coords)}
-                        style="stroke"
-                        strokeWidth={30}
-                        color={'gray'}
-                        strokeCap="butt"
-                    />
-                </React.Fragment>
-            )
+    // we want to display the potential hourglass of the duration before the user starts the timer if there is no timer running yet
+    const hourglass_remaining_segments: TimerSegment[] = React.useMemo(() => {
+        if (remaining_segments.length || active_segment) {
+            return remaining_segments
+        } else if (timer_duration) {
+            return durationToTimerState(timer_duration).segments_state.segments_remaining
         } else {
-            // for each segment, draw a segment of the circle corresponding to its start and end time
-            const total_time = timer_duration.segments.reduce((total, segment) => segment.duration + total, 0)
-
-            const intervals = timer_duration.segments.reduce((positions, segment, index) => {
-                const prev_position = index === 0 ? 0 : positions[index - 1]
-                const position = prev_position + segment.duration / total_time
-                positions.push(position)
-                return positions
-            }, [] as number[])
-
-
-            return (
-                <React.Fragment>
-                    {
-                        intervals.map((interval, index) => {
-                            return (
-                                <Path
-                                    key={index}
-                                    path={generateTimerPath(main_clock_coords)}
-                                    style="stroke"
-                                    strokeWidth={30}
-                                    color={timer_duration.segments[index].type.color}
-                                    start={(index !== 0 ? intervals[index - 1] : 0)}
-                                    end={interval}
-                                    strokeCap={'butt'}
-                                />
-                            )
-                        })
-                    }
-                </React.Fragment>
-            )
+            return []
         }
-    }, [timer_duration, generateTimerPath, main_clock_coords])
-
-    const pointer = React.useMemo(() => {
-        let timer_location = 0;
-        if (timer_status !== TimerStatus.OFF && active_segment && timer_duration) {
-            // add up all the completed segments then the proportion of the active segment that is complete
-            const total_duration = timer_duration.segments.reduce((total, segment) => segment.duration + total, 0) * 60
-
-            let elapsed_duration = completed_segments.reduce((total, segment) => total + segment.initial_duration, 0)
-            elapsed_duration += Math.min(active_segment.initial_duration, active_segment.elapsed_duration)
-
-            console.log('total increment is', total_duration, 'elapsed increment is', elapsed_duration)
-
-            timer_location = elapsed_duration / total_duration
-        }
-        return (
-            <Path
-                path={generateTimerPath(main_clock_coords)}
-                style="stroke"
-                strokeWidth={10}
-                color={'white'}
-                start={0}
-                end={timer_location > 0 ? timer_location : 0.0001} // if timer location is 0, set timer location to just above 0 to display a single dot at the top
-                strokeCap="round"
-            />
-        )
-    }, [active_segment, timer_duration, generateTimerPath, main_clock_coords])
-
-// End
-
+    }, [remaining_segments, timer_duration]);
 
     return (
         <KronosPage>
@@ -243,7 +147,8 @@ function TimerTabContents() {
                 <HourGlassAnimation
                     timer_status={timer_status}
                     active_segment={active_segment}
-                    completed_segments={completed_segments} remaining_segments={remaining_segments}/>
+                    completed_segments={completed_segments}
+                    remaining_segments={hourglass_remaining_segments}/>
                 <TimerControls
                     timer_ready={!!(timer_activity && timer_duration)} timer_status={timer_status}
                     startTimer={startTimer} stopTimer={stopTimer} pauseTimer={pauseTimer} resumeTimer={resumeTimer}/>

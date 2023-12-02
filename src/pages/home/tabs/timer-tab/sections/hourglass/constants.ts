@@ -3,7 +3,7 @@ import {bezierCurve, pt, xyToPt} from "../../../../../../globals/helpers/math_fu
 export const HOUR_GLASS_PROPERTIES = {
     ux: 22,
     // must be more than cap_radius
-    uy: 10,
+    uy: 6,
     vx: 48,
     vy: 50,
     u_curve: 25,
@@ -13,8 +13,10 @@ export const HOUR_GLASS_PROPERTIES = {
 }
 
 export const SAND_PROPERTIES = {
-    max_bulge: 4,
-    bulge_rounding_factor: 2
+    // how much to increase the x value of the logistic function that represents the sand level by
+    funnel_bulge_sigmoid_factor: 0.03,
+    cap_bulge_sigmoid_factor: 0.1,
+    bulge_spread_factor: 1,
 }
 
 export const FALLING_SAND_PROPERTIES = {
@@ -22,10 +24,10 @@ export const FALLING_SAND_PROPERTIES = {
     rounding_radius: 2
 }
 
-export const MAX_HOURGLASS_CAPACITY = 0.7
+export const MAX_HOURGLASS_CAPACITY = 0.8
 
 
-export const NO_OF_AREA_SAMPLES = 100
+export const NO_OF_AREA_SAMPLES = 1000
 
 export const CAP_BEZIER_POINTS = [
     xyToPt(HOUR_GLASS_PROPERTIES.ux + HOUR_GLASS_PROPERTIES.cap_radius, HOUR_GLASS_PROPERTIES.uy - HOUR_GLASS_PROPERTIES.cap_radius),
@@ -158,6 +160,16 @@ function generateHourGlassHeightToAreaCache() {
     return cache
 }
 
+function calculateFunnelAreaProportion() {
+    const total = HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE[NO_OF_AREA_SAMPLES] + HOUR_GLASS_BULB_FUNNEL_CURVE_TO_AREA_CACHE[NO_OF_AREA_SAMPLES]
+    return HOUR_GLASS_BULB_FUNNEL_CURVE_TO_AREA_CACHE[NO_OF_AREA_SAMPLES] / total
+}
+
+function calculateCapAreaProportion() {
+    const total = HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE[NO_OF_AREA_SAMPLES] + HOUR_GLASS_BULB_FUNNEL_CURVE_TO_AREA_CACHE[NO_OF_AREA_SAMPLES]
+    return HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE[NO_OF_AREA_SAMPLES] / total
+}
+
 /**
  * this is a cache that maps the t parameter of the bezier curve to the area of the curve swept so far from 0 to 1 in increments of 1/NO_OF_AREA_SAMPLES
  * as denoted in the variable name, this goes for the cap and funnel curves which have separate caches
@@ -171,7 +183,13 @@ export const HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE = generateHourGlassCapAreaC
  */
 export const HOUR_GLASS_HEIGHT_TO_AREA_CACHE = generateHourGlassHeightToAreaCache()
 
+/**
+ * the proportion of the area of the funnel and cap respectively to the total area of the bulb
+ */
+export const FUNNEL_AREA_PROPORTION = calculateFunnelAreaProportion()
+export const CAP_AREA_PROPORTION = calculateCapAreaProportion()
 
-console.log('hour glass funnel curve to area', HOUR_GLASS_BULB_FUNNEL_CURVE_TO_AREA_CACHE)
-console.log('hour glass cap curve to area', HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE)
-console.log('hour glass height to area', HOUR_GLASS_HEIGHT_TO_AREA_CACHE)
+
+// console.log('hour glass funnel curve to area', HOUR_GLASS_BULB_FUNNEL_CURVE_TO_AREA_CACHE)
+// console.log('hour glass cap curve to area', HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE)
+// console.log('hour glass height to area', HOUR_GLASS_HEIGHT_TO_AREA_CACHE)

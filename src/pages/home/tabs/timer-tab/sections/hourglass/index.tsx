@@ -39,20 +39,20 @@ function generateTestSegment(type: 'focus' | 'break', initial_duration: number, 
 }
 
 export default function HourGlassAnimation({
-                                               // active_segment,
-                                               // completed_segments,
-                                               // remaining_segments,
-                                               // timer_status,
+                                               active_segment,
+                                               completed_segments,
+                                               remaining_segments,
+                                               timer_status,
                                                canvas_height_as_ptg = 60,
                                                canvas_width_as_ptg = 100
                                            }: HourGlassProps) {
     // ! TEST DATA
-    const active_segment: TimerSegment = generateTestSegment('focus', 60, 30)
-
-    const completed_segments: TimerSegment[] = ([['focus', 60, 60], ['break', 60, 60]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
-    const remaining_segments: TimerSegment[] = ([['focus', 60, 0], ['break', 60, 0]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
-
-    const timer_status = TimerStatus.RUNNING
+    // const active_segment: TimerSegment = generateTestSegment('focus', 60, 30)
+    //
+    // const completed_segments: TimerSegment[] = ([['focus', 60, 60], ['break', 60, 60]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
+    // const remaining_segments: TimerSegment[] = ([['focus', 60, 0], ['break', 60, 0]] as ['focus' | 'break',number,number][]).map(([type, initial_duration, elapsed_duration]) => generateTestSegment(type, initial_duration, elapsed_duration))
+    //
+    // const timer_status = TimerStatus.RUNNING
 
     const [container_dimensions, setContainerDimensions] = React.useState<ContainerDimensions>({width: 0, height: 0})
 
@@ -95,6 +95,8 @@ export default function HourGlassAnimation({
         shadowColor: {val: shadowColor}
     } = useTheme()
 
+    console.log('at the moment there are', completed_segments.length, 'completed segments', remaining_segments.length, 'remaining segments')
+
 
     return (
         <View
@@ -115,7 +117,7 @@ export default function HourGlassAnimation({
                     <Path
                         path={top_sand_path}
                         style="fill"
-                        color={'red'}
+                        color={foreground}
                         strokeCap="round">
                         <LinearGradient
                             start={top_sand_gradient.start}
@@ -133,21 +135,25 @@ export default function HourGlassAnimation({
                         />
                     </Path>
 
-                    <Path path={falling_sand_path}
-                          style="fill"
-                          color={active_segment ? active_segment.segment_type.color : 'purple'}
-                          strokeCap="round"/>
+                    {
+                        (remaining_segments.length || active_segment) ?
+                            <Path path={falling_sand_path}
+                                  style="fill"
+                                  color={active_segment ? active_segment.segment_type.color : remaining_segments.length ? remaining_segments[remaining_segments.length - 1].segment_type.color : 'black'}
+                                  strokeCap="round"/>
+                            : null
+                    }
 
                     <Path path={bottom_sand_path}
                           style="fill"
-                          color={'purple'}
+                          color={foreground}
                           strokeCap="round">
                         <LinearGradient
                             start={bottom_sand_gradient.start}
                             end={bottom_sand_gradient.end}
                             positions={bottom_sand_gradient.positions}
                             colors={
-                                [...(active_segment ? [active_segment] : []),...completed_segments.slice().reverse()]
+                                [...(active_segment ? [active_segment] : []), ...completed_segments.slice().reverse()]
                                     .reduce((colors, segment, index) => {
                                         const color = segment.segment_type.color
                                         colors.push(color)

@@ -50,6 +50,11 @@ export default function useHourGlassTexture(top_sand_path: SkiaValue<SkPath>, bo
         runTiming(animated_active_segment_elapsed_duration, active_segment_elapsed_duration, {duration: 1000})
     }, [active_segment_elapsed_duration]);
 
+    // if active segment changes, directly update the animated value
+    React.useEffect(() => {
+        animated_active_segment_elapsed_duration.current = active_segment_elapsed_duration
+    }, [active_segment?.key]);
+
     // Region TOP SAND GRADIENT
     // ? ........................
 

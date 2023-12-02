@@ -87,3 +87,30 @@ export function subdivideBezierCurve(pts: pt[], t1: number, t2: number): pt[] {
     return final_pts.reverse()
 }
 
+
+const K_FACTOR = 5
+
+/**
+ * a modified logistic function that returns a value between 0 and 1 given a value between 0 and 1
+ * @param x
+ */
+export function modifiedLogisticFunction(x: number): number {
+    return 1 / (1 + Math.exp(-K_FACTOR * (2*x - 1)))
+}
+
+/**
+ * the inverse of the modified logistic function
+ * @param y
+ */
+export function inverseModifiedLogisticFunction(y: number): number {
+    return 1/2 * (-1/K_FACTOR * Math.log(1/y - 1) + 1)
+}
+
+/**
+ * a function that returns the euclidean distance between two points
+ * @param a
+ * @param b
+ */
+export function euclideanDistance(a: pt, b: pt): number {
+    return Math.sqrt((a.x - b.x)**2 + (a.y - b.y)**2)
+}

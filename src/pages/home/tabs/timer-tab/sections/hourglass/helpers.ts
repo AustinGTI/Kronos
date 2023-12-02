@@ -12,11 +12,11 @@ interface HourGlassCurvesUnitIntervals {
     funnel: number
 }
 
-export function calculateHourGlassBulbFunnelArea(from: number, to: number) : number {
+export function calculateHourGlassBulbFunnelArea(from: number, to: number): number {
     return HOUR_GLASS_BULB_FUNNEL_CURVE_TO_AREA_CACHE[Math.round(to * NO_OF_AREA_SAMPLES)] - HOUR_GLASS_BULB_FUNNEL_CURVE_TO_AREA_CACHE[Math.round(from * NO_OF_AREA_SAMPLES)]
 }
 
-export function calculateHourGlassBulbCapArea(from: number, to: number) : number {
+export function calculateHourGlassBulbCapArea(from: number, to: number): number {
     return HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE[Math.round(to * NO_OF_AREA_SAMPLES)] - HOUR_GLASS_BULB_CAP_CURVE_TO_AREA_CACHE[Math.round(from * NO_OF_AREA_SAMPLES)]
 }
 
@@ -61,24 +61,24 @@ export function getHourGlassCurvesUnitRatiosGivenAreaUnitRatio(area_unit_interva
     let funnel_unit_interval = 0
 
     // if the hour glass half is bottom, we start with the cap, if the target area overflows the cap, we move to the funnel
-    if (hour_glass_half === 'bottom') {
-        if (target_area > calculateHourGlassBulbCapArea(0, 1)) {
-            cap_unit_interval = 1
-            funnel_unit_interval = getHourGlassCurveUnitInterval(target_area - calculateHourGlassBulbCapArea(0, 1), calculateHourGlassBulbFunnelArea)
-        } else {
-            cap_unit_interval = getHourGlassCurveUnitInterval(target_area, calculateHourGlassBulbCapArea)
-            funnel_unit_interval = 0
-        }
+    // if (hour_glass_half === 'bottom') {
+    if (target_area > calculateHourGlassBulbCapArea(0, 1)) {
+        cap_unit_interval = 1
+        funnel_unit_interval = getHourGlassCurveUnitInterval(target_area - calculateHourGlassBulbCapArea(0, 1), calculateHourGlassBulbFunnelArea)
     } else {
-        // otherwise we start with the funnel, if the target area overflows the funnel, we move to the cap
-        if (target_area > calculateHourGlassBulbFunnelArea(0, 1)) {
-            funnel_unit_interval = 1
-            cap_unit_interval = getHourGlassCurveUnitInterval(target_area - calculateHourGlassBulbFunnelArea(0, 1), calculateHourGlassBulbCapArea)
-        } else {
-            funnel_unit_interval = getHourGlassCurveUnitInterval(target_area, calculateHourGlassBulbFunnelArea)
-            cap_unit_interval = 0
-        }
+        cap_unit_interval = getHourGlassCurveUnitInterval(target_area, calculateHourGlassBulbCapArea)
+        funnel_unit_interval = 0
     }
+    // } else {
+    //     // otherwise we start with the funnel, if the target area overflows the funnel, we move to the cap
+    //     if (target_area > calculateHourGlassBulbFunnelArea(0, 1)) {
+    //         funnel_unit_interval = 1
+    //         cap_unit_interval = getHourGlassCurveUnitInterval(target_area - calculateHourGlassBulbFunnelArea(0, 1), calculateHourGlassBulbCapArea)
+    //     } else {
+    //         funnel_unit_interval = getHourGlassCurveUnitInterval(target_area, calculateHourGlassBulbFunnelArea)
+    //         cap_unit_interval = 0
+    //     }
+    // }
 
     return {
         cap: cap_unit_interval,
@@ -131,7 +131,7 @@ interface SegmentGroupDurations {
  * @param completed_segments
  * @param remaining_segments
  */
-export function calculateSegmentGroupDurations(active_segment:TimerSegment | null,completed_segments:TimerSegment[],remaining_segments:TimerSegment[]):SegmentGroupDurations {
+export function calculateSegmentGroupDurations(active_segment: TimerSegment | null, completed_segments: TimerSegment[], remaining_segments: TimerSegment[]): SegmentGroupDurations {
     const total_segments_duration = ([...completed_segments, ...remaining_segments].reduce((total, segment) => total + segment.initial_duration, 0) +
         (active_segment ? active_segment.initial_duration : 0))
 

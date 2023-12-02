@@ -9,7 +9,12 @@ import {
     useTiming,
     useValue
 } from "@shopify/react-native-skia";
-import {bezierCurve, subdivideBezierCurve, xyToPt} from "../../../../../../../globals/helpers/math_functions";
+import {
+    bezierCurve, euclideanDistance,
+    inverseModifiedLogisticFunction, modifiedLogisticFunction,
+    subdivideBezierCurve,
+    xyToPt
+} from "../../../../../../../globals/helpers/math_functions";
 import {ContainerDimensions} from "../../../../../../../globals/types/ui";
 import {
     CAP_BEZIER_POINTS,
@@ -73,9 +78,11 @@ function useFallingSandPath(coordX: (x: number) => number, coordY: (y: number) =
 
         const falling_sand_path = Skia.Path.Make()
 
-        const {vx, vy, uy, ux} = HOUR_GLASS_PROPERTIES
+        const {vx, vy, uy: uy_origin, ux, cap_radius} = HOUR_GLASS_PROPERTIES
         const {margin, rounding_radius} = FALLING_SAND_PROPERTIES
         // falling sand path goes from the bottom of the top sand path to the top of the bottom sand path and is a rounded rectangle
+
+        const uy = uy_origin - cap_radius
 
         const sand_fall_height = vy - uy
 
@@ -83,10 +90,15 @@ function useFallingSandPath(coordX: (x: number) => number, coordY: (y: number) =
         const falling_sand_bottom_height = sand_fall_height * (1 - to)
 
         falling_sand_path.moveTo(coordX(vx + margin), coordY(100 - vy + falling_sand_top_height))
-        falling_sand_path.cubicTo(
-            coordX(vx + margin), coordY(100 - vy + falling_sand_top_height - rounding_radius),
-            coordX(100 - vx - margin), coordY(100 - vy + falling_sand_top_height - rounding_radius),
-            coordX(100 - vx - margin), coordY(100 - vy + falling_sand_top_height))
+        if (from !== 0) {
+            falling_sand_path.cubicTo(
+                coordX(vx + margin), coordY(100 - vy + falling_sand_top_height - rounding_radius),
+                coordX(100 - vx - margin), coordY(100 - vy + falling_sand_top_height - rounding_radius),
+                coordX(100 - vx - margin), coordY(100 - vy + falling_sand_top_height))
+        } else {
+            falling_sand_path.lineTo(coordX(100 - vx - margin), coordY(100 - vy + falling_sand_top_height))
+        }
+
         falling_sand_path.lineTo(coordX(100 - vx - margin), coordY(100 - uy - falling_sand_bottom_height))
 
         // if the sand is still falling, that is t is not yet 1, the bottom of the sand is rounded
@@ -136,9 +148,6 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
     // End ........................
 
 
-    console.log('durations are ', completed_segments_duration, remaining_segments_duration, total_segments_duration)
-
-
     const container_path = React.useMemo(() => {
         const {ux, uy, vx, vy, u_curve, v_curve, cap_radius} = HOUR_GLASS_PROPERTIES
 
@@ -174,7 +183,7 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
     const top_sand_path = useComputedValue(() => {
         // calculate the total time as the sum of the durations of all segments
         const {ux, uy, vx, vy, u_curve, v_curve, cap_radius} = HOUR_GLASS_PROPERTIES
-        const {max_bulge, bulge_rounding_factor} = SAND_PROPERTIES
+        const {funnel_bulge_sigmoid_factor, bulge_spread_factor} = SAND_PROPERTIES
 
         // ! TEST DATA
         // const total_time = 100
@@ -184,12 +193,7 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
         // first the top half of the hourglass
         const top_sand_path = Skia.Path.Make()
 
-        const proportion_completed = animated_remaining_segments_duration.current / (animated_completed_segments_duration.current + animated_remaining_segments_duration.current)
-        // const proportion_completed = remaining_segments_duration / (completed_segments_duration + remaining_segments_duration)
-
-        const top_sand_bulge = proportion_completed * max_bulge
-
-        const hourglass_neck_width = (50 - vx) * 2
+        const proportion_remaining = animated_remaining_segments_duration.current / (animated_completed_segments_duration.current + animated_remaining_segments_duration.current)
 
         // if the remaining time is not 0
         if (animated_remaining_segments_duration.current) {
@@ -198,17 +202,35 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
             const {
                 cap: top_cap_unit_ratio,
                 funnel: top_funnel_unit_ratio
-            } = getHourGlassCurvesUnitRatiosGivenAreaUnitRatio(proportion_completed, 'top')
+            } = getHourGlassCurvesUnitRatiosGivenAreaUnitRatio(proportion_remaining, 'top')
             // use this to calculate the control points for the bezier curve the corresponds to the sand level
 
-            console.log('top cap unit ratio is ', top_cap_unit_ratio,'while top funnel unit ratio is ', top_funnel_unit_ratio)
 
             // Region FUNNEL PATH
             // ? ........................
 
 
-            if (top_funnel_unit_ratio) {
+            if (top_funnel_unit_ratio !== 1) {
                 const [tf_u, tf_cp1, tf_cp2, tf_v] = subdivideBezierCurve(FUNNEL_BEZIER_POINTS, top_funnel_unit_ratio, 1)
+                const hourglass_neck_width = (50 - vx) * 2
+
+                // Region BULGE
+                // ? ........................
+
+                // the bulge control point is defined as a point further along the bezier curve than top_funnel_unit_ratio
+                // to calculate this, top_funnel_unit_ratio is taken as a value y on a modified logistic curve f(x), the bulge control ratio is thus f(x - funnel_bulge_sigmoid_factor) (negative because this is the top half of the hourglass)
+                // passed through a bezier curve function with the same funnel bezier points you get the bulge control point
+                const top_bulge_unit_ratio = modifiedLogisticFunction(inverseModifiedLogisticFunction(top_funnel_unit_ratio) - funnel_bulge_sigmoid_factor)
+                const top_bulge_cp = bezierCurve(FUNNEL_BEZIER_POINTS, top_bulge_unit_ratio)
+
+                // the bulge end point is the point along the horizontal line that crosses the bulge control point.
+                // its distance from the bulge control point is the distance between the bulge control point and the funnel end point times the bulge_spread_factor, of course this is capped at the center of the hourglass
+                const top_bulge_v = xyToPt(Math.min(50, top_bulge_cp.x + euclideanDistance(tf_u, top_bulge_cp) * bulge_spread_factor), top_bulge_cp.y)
+
+
+                // ? ........................
+                // End ........................
+
 
                 // ? start at top left of the funnel
                 top_sand_path.moveTo(coordX(tf_u.x), coordY(tf_u.y))
@@ -220,13 +242,13 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
                 // ? draw the right curve aligned to the hourglass
                 top_sand_path.cubicTo(coordX(100 - tf_cp2.x), coordY(tf_cp2.y), coordX(100 - tf_cp1.x), coordY(tf_cp1.y), coordX(100 - tf_u.x), coordY(tf_u.y))
                 // if the top_cap unit ratio is 0, we can draw the top of the path as a bulge, otherwise the bulge is drawn as part of the cap path
-                if (!top_cap_unit_ratio) {
+                if (top_cap_unit_ratio === 1) {
                     // ? draw the top right curve
-                    top_sand_path.quadTo(coordX(100 - tf_u.x), coordY(tf_u.y - top_sand_bulge), coordX(100 - tf_u.x - top_sand_bulge * bulge_rounding_factor), coordY(tf_u.y - top_sand_bulge))
+                    top_sand_path.quadTo(coordX(100 - top_bulge_cp.x), coordY(top_bulge_cp.y), coordX(100 - top_bulge_v.x), coordY(top_bulge_v.y))
                     // ? draw the top of the path
-                    top_sand_path.lineTo(coordX(tf_u.x + top_sand_bulge * bulge_rounding_factor), coordY(tf_u.y - top_sand_bulge))
+                    top_sand_path.lineTo(coordX(top_bulge_v.x), coordY(top_bulge_v.y))
                     // ? draw the top left curve
-                    top_sand_path.quadTo(coordX(tf_u.x), coordY(tf_u.y - top_sand_bulge), coordX(tf_u.x), coordY(tf_u.y))
+                    top_sand_path.quadTo(coordX(top_bulge_cp.x), coordY(top_bulge_cp.y), coordX(tf_u.x), coordY(tf_u.y))
                 }
             }
 
@@ -236,8 +258,7 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
             // Region CAP PATH
             // ? ........................
 
-
-            if (top_cap_unit_ratio) {
+            if (top_cap_unit_ratio !== 1) {
                 const [tc_u, tc_cp1, tc_v] = subdivideBezierCurve(CAP_BEZIER_POINTS, top_cap_unit_ratio, 1)
 
                 // ? draw the right curve aligned to the hourglass of the cap, if there is a top_cap_ratio the previous path ended at the bottom right of the cap
@@ -257,15 +278,12 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
 
     const bottom_sand_path = useComputedValue(() => {
 
-        const {max_bulge, bulge_rounding_factor} = SAND_PROPERTIES
+        const {funnel_bulge_sigmoid_factor,cap_bulge_sigmoid_factor,  bulge_spread_factor} = SAND_PROPERTIES
 
         // now the bottom half of the hourglass
         const bottom_sand_path = Skia.Path.Make()
 
         const proportion_completed = animated_completed_segments_duration.current / (animated_completed_segments_duration.current + animated_remaining_segments_duration.current)
-        // const proportion_completed = completed_segments_duration / (completed_segments_duration + remaining_segments_duration)
-
-        const bottom_sand_bulge = proportion_completed * max_bulge
 
         // if the past time is not 0
         if (animated_completed_segments_duration.current) {
@@ -274,7 +292,6 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
                 cap: bottom_cap_unit_ratio,
                 funnel: bottom_funnel_unit_ratio
             } = getHourGlassCurvesUnitRatiosGivenAreaUnitRatio(proportion_completed, 'bottom')
-            console.log('bottom cap unit ratio is ', bottom_cap_unit_ratio,'while bottom funnel unit ratio is ', bottom_funnel_unit_ratio)
             // use this to calculate the control points for the bezier curve the corresponds to the sand level
 
             // Region CAP PATH
@@ -285,7 +302,6 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
             if (bottom_cap_unit_ratio) {
                 const [bc_u, bc_cp1, bc_v] = subdivideBezierCurve(CAP_BEZIER_POINTS, 0, bottom_cap_unit_ratio)
 
-                console.log('bc_u is ', bc_u, 'bc_cp1 is ', bc_cp1, 'bc_v is ', bc_v)
 
                 // ? start from the top left of the cap
                 bottom_sand_path.moveTo(coordX(bc_v.x), coordY(100 - bc_v.y))
@@ -298,12 +314,24 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
 
                 // if the top_funnel unit ratio is 0, we can draw the top of the cap as a bulge, otherwise the bulge is drawn as part of the funnel path
                 if (!bottom_funnel_unit_ratio) {
-                    // ? draw the top right curve
-                    bottom_sand_path.quadTo(coordX(100 - bc_v.x), coordY(100 - bc_v.y + bottom_sand_bulge), coordX(100 - bc_v.x - bottom_sand_bulge * bulge_rounding_factor), coordY(100 - bc_v.y + bottom_sand_bulge))
+                    const bottom_cap_bulge_unit_ratio = modifiedLogisticFunction(inverseModifiedLogisticFunction(bottom_cap_unit_ratio) + cap_bulge_sigmoid_factor)
+                    const bbc_cp = bezierCurve(CAP_BEZIER_POINTS, bottom_cap_bulge_unit_ratio)
+
+                    const bbc_v = xyToPt(Math.min(50, bbc_cp.x + euclideanDistance(bbc_cp, bc_v) * bulge_spread_factor), bbc_cp.y)
+
+                    // ? draw the top bulge of the funnel starting with the top right edge of the bulge
+                    bottom_sand_path.quadTo(coordX(100 - bbc_cp.x), coordY(100 - bbc_cp.y), coordX(100 - bbc_v.x), coordY(100 - bbc_v.y))
                     // ? draw the top of the path
-                    bottom_sand_path.lineTo(coordX(bc_v.x + bottom_sand_bulge * bulge_rounding_factor), coordY(100 - bc_v.y + bottom_sand_bulge))
+                    bottom_sand_path.lineTo(coordX(bbc_v.x), coordY(100 - bbc_v.y))
                     // ? draw the top left curve
-                    bottom_sand_path.quadTo(coordX(bc_v.x), coordY(100 - bc_v.y + bottom_sand_bulge), coordX(bc_v.x), coordY(100 - bc_v.y))
+                    bottom_sand_path.quadTo(coordX(bbc_cp.x), coordY(100 - bbc_cp.y), coordX(bc_v.x), coordY(100 - bc_v.y))
+
+                    // // ? draw the top right curve
+                    // bottom_sand_path.quadTo(coordX(100 - bc_v.x), coordY(100 - bc_v.y - bottom_cap_bulge), coordX(100 - bc_v.x - bottom_cap_bulge * bulge_spread_factor), coordY(100 - bc_v.y - bottom_cap_bulge))
+                    // // ? draw the top of the path
+                    // bottom_sand_path.lineTo(coordX(bc_v.x + bottom_cap_bulge * bulge_spread_factor), coordY(100 - bc_v.y - bottom_cap_bulge))
+                    // // ? draw the top left curve
+                    // bottom_sand_path.quadTo(coordX(bc_v.x), coordY(100 - bc_v.y - bottom_cap_bulge), coordX(bc_v.x), coordY(100 - bc_v.y))
                 }
             }
 
@@ -317,16 +345,33 @@ export default function useHourGlassRender(timer_status: TimerStatus, segments_d
             if (bottom_funnel_unit_ratio) {
                 const [bf_u, bf_cp1, bf_cp2, bf_v] = subdivideBezierCurve(FUNNEL_BEZIER_POINTS, 0, bottom_funnel_unit_ratio)
 
+                // Region BULGE
+                // ? ........................
+
+                // the bulge control point is defined as a point further along the bezier curve than bottom_cap_unit_ratio
+                // to calculate this, bottom_funnel_unit_ratio is taken as a value y on a modified logistic curve f(x), the bulge control ratio is thus f(x + funnel_bulge_sigmoid_factor)
+                // passed through a bezier curve function with the same cap bezier points you get the bulge control point
+                const bottom_funnel_bulge_unit_ratio = modifiedLogisticFunction(inverseModifiedLogisticFunction(bottom_funnel_unit_ratio) + funnel_bulge_sigmoid_factor)
+                const bbf_cp = bezierCurve(FUNNEL_BEZIER_POINTS, bottom_funnel_bulge_unit_ratio)
+
+                // the bulge end point is the point along the horizontal line that crosses the bulge control point.
+                // its distance from the bulge control point is the distance between the bulge control point and the funnel end point times the bulge_spread_factor, of course this is capped at the center of the hourglass
+                const bbf_v = xyToPt(Math.min(50, bbf_cp.x + euclideanDistance(bbf_cp, bf_v) * bulge_spread_factor), bbf_cp.y)
+
+
+                // ? ........................
+                // End ........................
+
+
                 // if there is a bottom_cap_ratio the previous path ended at the top right of the cap
                 // ? draw the right curve aligned to the hourglass
                 bottom_sand_path.cubicTo(coordX(100 - bf_cp1.x), coordY(100 - bf_cp1.y), coordX(100 - bf_cp2.x), coordY(100 - bf_cp2.y), coordX(100 - bf_v.x), coordY(100 - bf_v.y))
                 // ? draw the top bulge of the funnel starting with the top right edge of the bulge
-                bottom_sand_path.quadTo(coordX(100 - bf_v.x), coordY(100 - bf_v.y - bottom_sand_bulge), coordX(100 - bf_v.x - bottom_sand_bulge * bulge_rounding_factor), coordY(100 - bf_v.y - bottom_sand_bulge))
-                // bottom_sand_path.quadTo(coordX(100 - bulge_cp.x), coordY(100 - bulge_cp.y), coordX(100 - bf_v.x - bottom_sand_bulge * bulge_rounding_factor), coordY(100 - bf_v.y - bottom_sand_bulge))
+                bottom_sand_path.quadTo(coordX(100 - bbf_cp.x), coordY(100 - bbf_cp.y), coordX(100 - bbf_v.x), coordY(100 - bbf_v.y))
                 // ? draw the top of the path
-                bottom_sand_path.lineTo(coordX(bf_v.x + bottom_sand_bulge * bulge_rounding_factor), coordY(100 - bf_v.y - bottom_sand_bulge))
+                bottom_sand_path.lineTo(coordX(bbf_v.x), coordY(100 - bbf_v.y))
                 // ? draw the top left curve
-                bottom_sand_path.quadTo(coordX(bf_v.x), coordY(100 - bf_v.y - bottom_sand_bulge), coordX(bf_v.x), coordY(100 - bf_v.y))
+                bottom_sand_path.quadTo(coordX(bbf_cp.x), coordY(100 - bbf_cp.y), coordX(bf_v.x), coordY(100 - bf_v.y))
                 // ? draw the left curve aligned to the hourglass
                 bottom_sand_path.cubicTo(coordX(bf_cp2.x), coordY(100 - bf_cp2.y), coordX(bf_cp1.x), coordY(100 - bf_cp1.y), coordX(bf_u.x), coordY(100 - bf_u.y))
             }
