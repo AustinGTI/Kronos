@@ -2,9 +2,21 @@ import React from 'react'
 import {useSelector} from "react-redux";
 import {AppState} from "../../../redux/reducers";
 import {Duration} from "../../../types/main";
-import {Adapt, Button, Dialog, DialogOverlay, Paragraph, ScrollView, Sheet, XStack, YStack} from "tamagui";
+import {
+    Adapt,
+    Button,
+    Checkbox,
+    Dialog,
+    DialogOverlay,
+    Paragraph,
+    ScrollView,
+    Sheet,
+    Square,
+    XStack,
+    YStack
+} from "tamagui";
 import DialogContainer from "../DialogContainer";
-import {ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
+import {Check, ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
 import plannerTabSelector from "../../../redux/selectors/plannerTabSelector";
 import {AccordionContext} from "../../wrappers/Accordion";
 
@@ -24,11 +36,15 @@ interface DurationPickerProps {
 function DurationPickerPane({duration, onClick, is_active}: DurationPickerPaneProps) {
     return (
         <XStack justifyContent={'space-between'} alignItems={'center'}
-                marginVertical={5} padding={10} backgroundColor={'$background'}
+                marginVertical={5} paddingVertical={5} paddingHorizontal={10}
                 borderRadius={10} borderColor={'$color'} width={'95%'}>
-            <Paragraph color={'$color'}
-                       textDecorationLine={is_active ? 'underline' : 'none'}>{duration.name}</Paragraph>
-            <Button onPress={onClick}>Select</Button>
+            <Paragraph color={'$color'}>{duration.name}</Paragraph>
+            {/*<Button onPress={onClick}>Select</Button>*/}
+            <Checkbox checked={is_active} onPress={onClick}>
+                <Checkbox.Indicator>
+                    <Check strokeWidth={4}/>
+                </Checkbox.Indicator>
+            </Checkbox>
         </XStack>
     )
 }
@@ -88,12 +104,14 @@ export default function DurationPicker({
             {dialog_open &&
                 <DialogContainer onClose={() => setDialogOpen(false)} maxHeight={200}>
                     <YStack width={'100%'} alignItems={'center'} paddingVertical={5}>
-                        {Object.values(durations).map((duration) => (
-                            <DurationPickerPane
-                                key={duration.id}
-                                duration={duration}
-                                is_active={selected_duration?.id === duration.id}
-                                onClick={() => handleClickDuration(duration)}/>
+                        {Object.values(durations).map((duration, index) => (
+                            <React.Fragment key={duration.id}>
+                                <DurationPickerPane
+                                    duration={duration}
+                                    is_active={selected_duration?.id === duration.id}
+                                    onClick={() => handleClickDuration(duration)}/>
+                                {/*{index !== Object.values(duration).length - 1 && <Square width={'90%'} height={1} backgroundColor={'#555'}/>}*/}
+                            </React.Fragment>
                         ))}
                     </YStack>
                 </DialogContainer>

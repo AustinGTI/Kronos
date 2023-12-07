@@ -10,6 +10,8 @@ import {FormProps} from "../../../../../globals/types/form";
 import SwatchColorPicker from "../../../../../globals/components/form/pickers/SwatchColorPicker";
 import SubmitButton from "../../../../../globals/components/form/SubmitButton";
 import Accordion from "../../../../../globals/components/wrappers/Accordion";
+import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
+import FormTitle from "../../../../../globals/components/form/text/FormTitle";
 
 function ActivityFormFields() {
     const {
@@ -19,7 +21,7 @@ function ActivityFormFields() {
     } = useFormikContext<Activity>()
 
     return (
-        <YStack alignItems={'center'} paddingHorizontal={10}>
+        <KronosContainer alignItems={'center'} paddingHorizontal={10}>
             <Accordion>
                 <InputContainer field_key={'name'} label={'Name'} error={touched['name'] ? errors['name'] : undefined}>
                     <Input onChangeText={handleChange('name')} value={values['name']} onBlur={handleBlur('name')}/>
@@ -36,7 +38,7 @@ function ActivityFormFields() {
                                        setColor={(color) => setValues({...values, color})} close_on_select={false}/>
                 </InputContainer>
             </Accordion>
-        </YStack>
+        </KronosContainer>
     )
 }
 
@@ -48,19 +50,14 @@ export default function ActivityForm({title, initial_values, onSubmit, submit_te
     return (
         <Formik initialValues={initial_values ?? EMPTY_ACTIVITY} onSubmit={formikOnSubmit}
                 validationSchema={ActivityValidation} enableReinitialize>
-            <React.Fragment>
-                <XStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
-                    <Heading
-                        fontSize={20}
-                        textTransform={'uppercase'}
-                        textDecorationLine={'underline'}>
-                        {title}
-                    </Heading>
+            <YStack w={'100%'} paddingHorizontal={10}>
+                <XStack w={'100%'} alignItems={'center'} justifyContent={'space-between'} paddingVertical={10}>
+                    <FormTitle title={title}/>
+                    <SubmitButton<Activity> text={submit_text}/>
                 </XStack>
                 {global_error && <Paragraph>{global_error}</Paragraph>}
                 <ActivityFormFields/>
-                <SubmitButton<Activity> text={submit_text}/>
-            </React.Fragment>
+            </YStack>
         </Formik>
     )
 }

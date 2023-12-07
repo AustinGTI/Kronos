@@ -70,7 +70,7 @@ export default function SwatchColorPicker({
     return (
         <React.Fragment>
             <XStack w={'100%'} paddingVertical={10} alignItems={'center'} justifyContent={'space-between'}
-                    onPress={() => setDialogOpen(!dialog_open)} paddingRight={10}>
+                    onPress={() => setDialogOpen(!dialog_open)}>
                 <View w={'60%'} h={50} borderRadius={5} borderWidth={1} borderColor={'#bbb'}
                       backgroundColor={active_color}/>
                 {

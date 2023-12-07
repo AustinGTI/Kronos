@@ -5,7 +5,7 @@ import {AppState} from "../../../../../globals/redux/reducers";
 import {Activity} from "../../../../../globals/types/main";
 // import {ArrowDown, Delete, Edit, Play} from "@tamagui/lucide-icons";
 import {FlatList} from "react-native";
-import {ChevronDown, ChevronUp, Edit, Edit2, Trash} from "@tamagui/lucide-icons";
+import {Edit, Edit2, Trash} from "@tamagui/lucide-icons";
 import usePlannerTabContext from "../context";
 import {
     deleteActivityValidation,
@@ -16,6 +16,9 @@ import {deleteActivity, updateActivity} from "../../../../../globals/redux/reduc
 import selectPlannerState from "../../../../../globals/redux/selectors/plannerTabSelector";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
 import KronosButton from "../../../../../globals/components/wrappers/KronosButton";
+import {KronosPageContext, ModalType} from "../../../../../globals/components/wrappers/KronosPage";
+import ActivityForm from "../forms/ActivityForm";
+import KronosAlert from "../../../../../globals/components/wrappers/KronosAlert";
 
 interface ActivityPaneProps {
     app_state: AppState
@@ -39,12 +42,12 @@ export function ActivityStat({value, label}: ActivityStatProps) {
 }
 
 function ActivityPane({app_state, activity, open_activity, setOpenActivity}: ActivityPaneProps) {
+    const {modal_props: {openModal}} = React.useContext(KronosPageContext)
+
     const dispatch = useDispatch()
-    const {
-        modal_data: {setFormModalIsOpen, setAlertModalIsOpen},
-        form_data: {setFormProps},
-        alert_data: {setAlertProps}
-    } = usePlannerTabContext()
+
+    // Region CALLBACKS
+    // ? ........................
 
     const handleOnClickPane = React.useCallback(() => {
         if (open_activity === activity) {
@@ -54,85 +57,97 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
         }
     }, [open_activity, setOpenActivity, activity])
 
+    const updateCurrentActivity = React.useCallback((updated_activity: Activity) => {
+        const validation = updateActivityValidation(app_state, updated_activity)
+        if (validation.status === ValidationStatus.ERROR) {
+            return validation
+        }
+        dispatch(updateActivity(updated_activity))
+        openModal({
+            type: ModalType.ALERT,
+            component: KronosAlert,
+            component_props: {
+                title: 'Success',
+                description: 'Activity updated successfully',
+                buttons: [],
+                with_cancel_button: true
+            },
+        })
+        return validation
+    }, [app_state, dispatch, openModal]);
+
+    const deleteCurrentActivity = React.useCallback(() => {
+        // validate the crud request
+        const validation = deleteActivityValidation(app_state, activity.id)
+        // if validation fails, display the error description after a short delay
+        if (validation.status === ValidationStatus.ERROR) {
+            openModal({
+                type: ModalType.ALERT,
+                component: KronosAlert,
+                component_props: {
+                    title: 'Error',
+                    description: validation.error?.message ?? '',
+                    buttons: [],
+                    with_cancel_button: true,
+                    timeout_in_ms: 1000
+                }
+            })
+            return
+        }
+        // else delete the activity
+        dispatch(deleteActivity(activity.id))
+        openModal({
+            type: ModalType.ALERT,
+            component: KronosAlert,
+            component_props: {
+                title: 'Success',
+                description: 'Activity deleted successfully',
+                buttons: [],
+                with_cancel_button: true,
+                timeout_in_ms: 2000
+            },
+        })
+    }, [app_state, activity.id, dispatch, openModal]);
 
     const handleOnClickEditButton = React.useCallback(() => {
-        setFormProps({
-            title: 'Edit Activity',
-            submit_text: 'Save',
-            initial_values: activity,
-            onSubmit: (updated_activity: Activity) => {
-                const validation = updateActivityValidation(app_state, updated_activity)
-                if (validation.status === ValidationStatus.ERROR) {
-                    return validation
-                }
-                dispatch(updateActivity(updated_activity))
-                // close the modal
-                setFormModalIsOpen(false)
-                // display success description
-                setAlertProps({
-                    title: 'Success',
-                    description: 'Activity updated successfully',
-                    buttons: [],
-                    with_cancel_button: true
-                })
-                setAlertModalIsOpen(true)
-                return validation
-            }
+        openModal({
+            type: ModalType.SHEET,
+            component: ActivityForm,
+            component_props: {
+                title: 'Edit Activity',
+                submit_text: 'Save',
+                initial_values: activity,
+                onSubmit: updateCurrentActivity
+            },
         })
-        setFormModalIsOpen(true)
-    }, [setFormProps, activity, app_state, dispatch, setFormModalIsOpen, setAlertProps, setAlertModalIsOpen])
+    }, [activity, openModal, updateCurrentActivity])
 
     const handleOnClickDeleteButton = React.useCallback(() => {
-        setAlertProps({
-            title: 'Delete Activity',
-            description: 'Are you sure you want to delete this activity?',
-            buttons: [
-                {
-                    text: 'No',
-                    onPress: () => {
-                        setAlertModalIsOpen(false)
-                    }
-                },
-                {
-                    text: 'Yes',
-                    onPress: () => {
-                        // validate the crud request
-                        const validation = deleteActivityValidation(app_state, activity.id)
-                        // if validation fails, display the error description after a short delay
-                        if (validation.status === ValidationStatus.ERROR) {
-                            setAlertModalIsOpen(false)
-                            setTimeout(() => {
-                                setAlertProps({
-                                    title: 'Error',
-                                    description: validation.error?.message ?? '',
-                                    buttons: [],
-                                    with_cancel_button: true
-                                })
-                                setAlertModalIsOpen(true)
-                            }, 500)
-                            return
+        openModal({
+            type: ModalType.ALERT,
+            component: KronosAlert,
+            component_props: {
+                title: 'Delete Activity',
+                description: 'Are you sure you want to delete this activity?',
+                buttons: [
+                    {
+                        label: 'No',
+                        onPress: (closeAlert) => {
+                            closeAlert()
                         }
-                        // else delete the activity
-                        dispatch(deleteActivity(activity.id))
-                        setAlertModalIsOpen(false)
-                        // close the modal after a short delay
-                        setTimeout(() => {
-                            // display success description
-                            setAlertProps({
-                                title: 'Success',
-                                description: 'Activity deleted successfully',
-                                buttons: [],
-                                with_cancel_button: true
-                            })
-                            setAlertModalIsOpen(true)
-                        }, 500)
-                    }
-                },
-            ],
-            with_cancel_button: false
+                    },
+                    {
+                        label: 'Yes',
+                        onPress: deleteCurrentActivity
+                    },
+                ],
+            }
         })
-        setAlertModalIsOpen(true)
-    }, [setAlertProps, setAlertModalIsOpen, dispatch, activity.id])
+    }, [openModal, deleteCurrentActivity])
+
+    // ? ........................
+    // End ........................
+
 
     const is_open = React.useMemo(() => {
         return open_activity?.id === activity.id

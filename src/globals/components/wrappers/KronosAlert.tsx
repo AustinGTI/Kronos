@@ -10,6 +10,7 @@ export interface AlertModalProps {
     title: string
     description: string
     buttons: AlertButtonProps[]
+    timeout_in_ms?: number
     with_cancel_button?: boolean
 }
 
@@ -17,7 +18,14 @@ interface KronosAlertProps extends AlertModalProps{
     closeModal: () => void
 }
 
-export default function KronosAlert({title, description, buttons, with_cancel_button,closeModal}: KronosAlertProps) {
+export default function KronosAlert({title, description, buttons, with_cancel_button,timeout_in_ms,closeModal}: KronosAlertProps) {
+    React.useEffect(() => {
+        // if the timeout_in_ms prop has been set, then close the modal after the timeout
+        if (timeout_in_ms) {
+            setTimeout(() => closeModal(), timeout_in_ms)
+        }
+    }, []);
+
     return (
         <YStack space>
             <AlertDialog.Title w={'100%'} textAlign={'center'} textTransform={'uppercase'}

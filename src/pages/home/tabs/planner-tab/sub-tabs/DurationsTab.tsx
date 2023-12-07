@@ -1,12 +1,11 @@
 import React, {useCallback, useMemo} from 'react'
-import {Button, Circle, getTokens, Paragraph, Separator, Sheet, Square, Stack, XStack, YStack} from "tamagui";
-import {Duration, Segment, SegmentType} from "../../../../../globals/types/main";
-import {ChevronDown, ChevronUp, Delete, Edit, Edit2, Play, Trash} from "@tamagui/lucide-icons";
-import {ActivityStat} from "./ActivitiesTab";
+import {Button, Paragraph, Separator, Stack, XStack, YStack} from "tamagui";
+import {Duration, Segment} from "../../../../../globals/types/main";
+import {Edit, Edit2, Trash} from "@tamagui/lucide-icons";
 import {useDispatch, useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
 import {FlatList} from "react-native";
-import usePlannerTabContext, {PlannerTabContext} from "../context";
+import usePlannerTabContext from "../context";
 import {deleteDuration, updateDuration} from "../../../../../globals/redux/reducers/durationsReducer";
 import {
     deleteDurationValidation,
@@ -16,6 +15,9 @@ import {ValidationStatus} from "../../../../../globals/redux/types";
 import selectPlannerState from "../../../../../globals/redux/selectors/plannerTabSelector";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
 import KronosButton from "../../../../../globals/components/wrappers/KronosButton";
+import {KronosPageContext, ModalType} from "../../../../../globals/components/wrappers/KronosPage";
+import KronosAlert from "../../../../../globals/components/wrappers/KronosAlert";
+import DurationForm from "../forms/DurationForm";
 
 interface DurationPaneProps {
     app_state: AppState,
@@ -80,12 +82,9 @@ function DurationSegmentTimeline({duration}: DurationSegmentTimelineProps) {
 }
 
 function DurationPane({app_state, duration, open_duration, setOpenDuration}: DurationPaneProps) {
+    const {modal_props: {openModal}} = React.useContext(KronosPageContext)
+
     const dispatch = useDispatch()
-    const {
-        modal_data: {setFormModalIsOpen, setAlertModalIsOpen},
-        form_data: {setFormProps},
-        alert_data: {setAlertProps}
-    } = usePlannerTabContext()
 
     const handleOnClickPane = useCallback(() => {
         if (open_duration === duration) {
@@ -95,84 +94,91 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
         }
     }, [open_duration, duration, setOpenDuration]);
 
-    const handleOnClickEditButton = React.useCallback(() => {
-        setFormProps({
-            title: 'Edit Duration',
-            submit_text: 'Save',
-            initial_values: duration,
-            onSubmit: (updated_duration: Duration) => {
-                const validation = updateDurationValidation(app_state, updated_duration)
-                if (validation.status === ValidationStatus.ERROR) {
-                    return validation
-                }
-                dispatch(updateDuration(updated_duration))
-                // close the modal
-                setFormModalIsOpen(false)
-                // display success description
-                setAlertProps({
-                    title: 'Success',
-                    description: 'Duration updated successfully',
-                    buttons: [],
-                    with_cancel_button: true
-                })
-                setAlertModalIsOpen(true)
-                return validation
+    const updateCurrentDuration = React.useCallback((updated_duration: Duration) => {
+        const validation = updateDurationValidation(app_state, updated_duration)
+        if (validation.status === ValidationStatus.ERROR) {
+            return validation
+        }
+        dispatch(updateDuration(updated_duration))
+        openModal({
+            type: ModalType.ALERT,
+            component: KronosAlert,
+            component_props: {
+                title: 'Success',
+                description: 'Duration updated successfully',
+                buttons: [],
+                with_cancel_button: true
             }
         })
-        setFormModalIsOpen(true)
-    }, [setFormProps, duration, dispatch, setFormModalIsOpen, setAlertProps, setAlertModalIsOpen])
+        return validation
+    }, [app_state, dispatch, openModal]);
+
+    const deleteCurrentDuration = React.useCallback(() => {
+        // validate the crud request
+        const validation = deleteDurationValidation(app_state, duration.id)
+        // if validation fails, display the error description after a short delay
+        if (validation.status === ValidationStatus.ERROR) {
+            openModal({
+                type: ModalType.ALERT,
+                component: KronosAlert,
+                component_props: {
+                    title: 'Error',
+                    description: validation.error?.message ?? '',
+                    buttons: [],
+                    with_cancel_button: true,
+                    timeout_in_ms: 1000
+                }
+            })
+            return
+        }
+        // else delete the activity
+        dispatch(deleteDuration(duration.id))
+        openModal({
+            type: ModalType.ALERT,
+            component: KronosAlert,
+            component_props: {
+                title: 'Success',
+                description: 'Duration deleted successfully',
+                buttons: [],
+                with_cancel_button: true,
+                timeout_in_ms: 2000
+            }
+        })
+    }, [app_state, duration.id, dispatch, openModal]);
+
+    const handleOnClickEditButton = React.useCallback(() => {
+        openModal({
+            type: ModalType.SHEET,
+            component: DurationForm,
+            component_props: {
+                title: 'Edit Duration',
+                submit_text: 'Save',
+                initial_values: duration,
+                onSubmit: updateCurrentDuration
+            }
+        })
+    }, [duration, openModal, updateCurrentDuration])
 
     const handleOnClickDeleteButton = React.useCallback(() => {
-        setAlertProps({
-            title: 'Delete Duration',
-            description: 'Are you sure you want to delete this increment?',
-            buttons: [
-                {
-                    text: 'No',
-                    onPress: () => {
-                        setAlertModalIsOpen(false)
+        openModal({
+            type: ModalType.ALERT,
+            component: KronosAlert,
+            component_props: {
+                title: 'Delete Duration',
+                description: 'Are you sure you want to delete this duration?',
+                buttons: [
+                    {
+                        label: 'No',
+                        onPress: (closeAlert) => closeAlert()
+                    },
+                    {
+                        label: 'Yes',
+                        onPress: deleteCurrentDuration
                     }
-                },
-                {
-                    text: 'Yes',
-                    onPress: () => {
-                        // validate the crud request
-                        const validation = deleteDurationValidation(app_state, duration.id)
-                        // if validation fails, display the error description after a short delay
-                        if (validation.status === ValidationStatus.ERROR) {
-                            setAlertModalIsOpen(false)
-                            setTimeout(() => {
-                                setAlertProps({
-                                    title: 'Error',
-                                    description: validation.error?.message ?? '',
-                                    buttons: [],
-                                    with_cancel_button: true
-                                })
-                                setAlertModalIsOpen(true)
-                            }, 500)
-                            return
-                        }
-                        // else delete the activity
-                        dispatch(deleteDuration(duration.id))
-                        setAlertModalIsOpen(false)
-                        // close the modal after a short delay
-                        setTimeout(() => {
-                            // display success description
-                            setAlertProps({
-                                title: 'Success',
-                                description: 'Duration deleted successfully',
-                                buttons: [],
-                                with_cancel_button: true
-                            })
-                            setAlertModalIsOpen(true)
-                        }, 500)
-                    }
-                },
-            ],
-            with_cancel_button: false
+                ]
+            }
         })
-        setAlertModalIsOpen(true)
-    }, [setAlertProps, setAlertModalIsOpen, dispatch, duration.id])
+    }, [openModal, deleteCurrentDuration])
 
 
     const is_open = useMemo(() => {

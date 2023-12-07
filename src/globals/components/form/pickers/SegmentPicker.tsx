@@ -59,7 +59,7 @@ function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegmen
                            setDurationHours(hours)
                            setDuration(hours * 60 + duration_minutes)
                        }}/>
-                <Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>HOURS</Paragraph>
+                {/*<Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>HOURS</Paragraph>*/}
             </YStack>
             <XStack h={'100%'} paddingBottom={12} alignItems={'center'} justifyContent={'center'}>
                 <Paragraph fontSize={20} paddingHorizontal={10}>:</Paragraph>
@@ -76,7 +76,7 @@ function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegmen
                     setDurationMinutes(minutes)
                     setDuration(duration_hours * 60 + minutes)
                 }}/>
-                <Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>MINUTES</Paragraph>
+                {/*<Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>MINUTES</Paragraph>*/}
             </YStack>
         </XStack>
     )
@@ -147,7 +147,7 @@ function InputSegmentPane({segment, segments, setSegments}: InputSegmentPaneProp
     }, [setSegments, segment.key, segments])
     return (
         <XStack w={'100%'} h={60} alignItems={'center'} borderColor={'#aaa'} borderWidth={1} borderRadius={10}
-                marginVertical={5} backgroundColor={'$background'}>
+                marginVertical={5}>
             <XStack h={'100%'} padding={4} w={'25%'} alignItems={'center'}>
                 <View w={15} h={30} backgroundColor={segment.type.color} marginHorizontal={10} borderRadius={7}/>
                 <Paragraph textTransform={'uppercase'} fontSize={14}>{segment.type.name}</Paragraph>

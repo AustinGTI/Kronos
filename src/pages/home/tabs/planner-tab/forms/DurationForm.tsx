@@ -11,6 +11,8 @@ import SegmentPicker from "../../../../../globals/components/form/pickers/Segmen
 import SubmitButton from "../../../../../globals/components/form/SubmitButton";
 import SegmentsBarView from "../../../../../globals/components/duration/SegmentsBarView";
 import FormError from "../../../../../globals/components/form/text/FormError";
+import FormTitle from "../../../../../globals/components/form/text/FormTitle";
+import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
 
 function DurationFormFields() {
     const {errors, values, touched, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
@@ -33,17 +35,19 @@ function DurationFormFields() {
         }
     }, [errors['segments']])
     return (
-        <YStack alignItems={'center'} paddingHorizontal={10}>
-            <InputContainer field_key={'name'} label={'Name'} error={touched['name'] ? errors['name'] : undefined}>
-                <Input value={values['name']} onChangeText={handleChange('name')} onBlur={handleBlur('name')}/>
-            </InputContainer>
-            <InputContainer field_key={'segments'} label={'Segments'}
-                            error={segments_touched ? segment_error : undefined}>
-                <SegmentPicker setSegments={(segments) => setValues({...values, segments})}
-                               active_segments={values['segments']} setTouched={() => setSegmentsTouched(true)}/>
-                <SegmentsBarView segments={values['segments']} marginTop={10}/>
-            </InputContainer>
-        </YStack>
+        <KronosContainer>
+            <YStack alignItems={'center'}>
+                <InputContainer field_key={'name'} label={'Name'} error={touched['name'] ? errors['name'] : undefined}>
+                    <Input value={values['name']} onChangeText={handleChange('name')} onBlur={handleBlur('name')}/>
+                </InputContainer>
+                <InputContainer field_key={'segments'} label={'Segments'}
+                                error={segments_touched ? segment_error : undefined}>
+                    <SegmentPicker setSegments={(segments) => setValues({...values, segments})}
+                                   active_segments={values['segments']} setTouched={() => setSegmentsTouched(true)}/>
+                    <SegmentsBarView segments={values['segments']} marginTop={10}/>
+                </InputContainer>
+            </YStack>
+        </KronosContainer>
     )
 }
 
@@ -53,19 +57,14 @@ export default function DurationForm({title, initial_values, onSubmit, submit_te
     return (
         <Formik initialValues={initial_values ?? EMPTY_DURATION} onSubmit={formikOnSubmit}
                 validationSchema={DurationFormValidation} enableReinitialize>
-            <React.Fragment>
-                <XStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
-                    <Heading
-                        fontSize={20}
-                        textTransform={'uppercase'}
-                        textDecorationLine={'underline'}>
-                        {title}
-                    </Heading>
+            <YStack w={'100%'} paddingHorizontal={10}>
+                <XStack w={'100%'} alignItems={'center'} justifyContent={'space-between'} paddingVertical={10}>
+                    <FormTitle title={title}/>
+                    <SubmitButton<Duration> text={submit_text}/>
                 </XStack>
                 <FormError error={global_error}/>
                 <DurationFormFields/>
-                <SubmitButton<Duration> text={submit_text}/>
-            </React.Fragment>
+            </YStack>
         </Formik>
     )
 }

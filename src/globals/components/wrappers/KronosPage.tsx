@@ -3,6 +3,7 @@ import {AlertDialog, Sheet, View, YStack} from "tamagui";
 import SessionViewModal from "../../../pages/home/tabs/calendar-tab/modals/SessionViewModal";
 import CalendarPicker from "react-native-calendar-picker";
 import {dateToDDMMYYYY} from "../../helpers/datetime_functions";
+import {Keyboard, TouchableWithoutFeedback} from "react-native";
 
 export enum ModalType {
     ALERT = 'ALERT',
@@ -10,7 +11,7 @@ export enum ModalType {
 }
 
 export interface GenericModalComponentProps extends Object {
-    closeModal: () => void
+    closeModal?: () => void
 }
 
 export interface ModalProps {
@@ -44,12 +45,14 @@ interface KronosPageProps {
 export interface KronosPageContextProps {
     modal_props: {
         openModal: <ModalComponentProps extends GenericModalComponentProps>(modal_props: PageModalProps<ModalComponentProps>) => void
+        closeModal: () => void
     }
 }
 
 export const KronosPageContext = React.createContext<KronosPageContextProps>({
     modal_props: {
-        openModal: modal_props => null
+        openModal: modal_props => null,
+        closeModal: () => null
     }
 })
 
@@ -76,11 +79,16 @@ export default function KronosPage({children}: KronosPageProps) {
                 }
                 // set the modal data
                 setModalData(modal_props)
+            },
+            closeModal: () => {
+                setSheetModalOpen(false)
+                setAlertModalOpen(false)
+                setModalData(null)
             }
         },
     }), [setSheetModalOpen, setAlertModalOpen, setModalData]);
 
-    console.log('alert modal open', alert_modal_open,'modal data',modal_data)
+    console.log('alert modal open', alert_modal_open, 'modal data', modal_data)
 
     return (
         <KronosPageContext.Provider value={page_context}>
@@ -110,21 +118,22 @@ export default function KronosPage({children}: KronosPageProps) {
                         // ! This is a fix that sets the background color of the frame to transparent so the glitch can't be seen
                         // ! then creates a View in the sheet with max dimensions and bg white
                     }
-                    <Sheet.Frame height={400} backgroundColor={"transparent"} borderTopWidth={2}
-                                 borderColor={'$border'}>
-                        <Sheet.Frame w={"100%"} h={"100%"} backgroundColor={"$background"}>
-                            {
-                                sheet_modal_open && modal_data && (
-                                    React.createElement(modal_data.component, {
-                                        ...modal_data.component_props,
-                                        closeModal: () => {
-                                            setSheetModalOpen(false)
-                                            setModalData(null)
-                                        }
-                                    })
-                                )
-                            }
-                        </Sheet.Frame>
+                    <Sheet.Frame height={400} backgroundColor={"transparent"} borderWidth={0}>
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                            <Sheet.ScrollView w={"100%"} h={"100%"} backgroundColor={"$background"}>
+                                {
+                                    sheet_modal_open && modal_data && (
+                                        React.createElement(modal_data.component, {
+                                            ...modal_data.component_props,
+                                            closeModal: () => {
+                                                setSheetModalOpen(false)
+                                                setModalData(null)
+                                            }
+                                        })
+                                    )
+                                }
+                            </Sheet.ScrollView>
+                        </TouchableWithoutFeedback>
                     </Sheet.Frame>
                 </Sheet>
                 <AlertDialog

@@ -11,5 +11,5 @@ export const DEFAULT_FORM_PROPS: FormProps<any> = {
     title: '',
     submit_text: 'Submit',
     initial_values: null,
-    onSubmit: () => ({status: ValidationStatus.SUCCESS})
+    onSubmit: () => ({status: ValidationStatus.SUCCESS}),
 }
