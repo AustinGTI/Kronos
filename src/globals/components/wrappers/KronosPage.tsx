@@ -1,9 +1,9 @@
 import React from 'react'
-import {AlertDialog, Sheet, View, YStack} from "tamagui";
+import {AlertDialog, Sheet, useTheme, useThemeName, View, YStack} from "tamagui";
 import SessionViewModal from "../../../pages/home/tabs/calendar-tab/modals/SessionViewModal";
 import CalendarPicker from "react-native-calendar-picker";
 import {dateToDDMMYYYY} from "../../helpers/datetime_functions";
-import {Keyboard, TouchableWithoutFeedback} from "react-native";
+import {Keyboard, StatusBar, TouchableWithoutFeedback} from "react-native";
 
 export enum ModalType {
     ALERT = 'ALERT',
@@ -88,11 +88,18 @@ export default function KronosPage({children}: KronosPageProps) {
         },
     }), [setSheetModalOpen, setAlertModalOpen, setModalData]);
 
-    console.log('alert modal open', alert_modal_open, 'modal data', modal_data)
+    console.log('status bar height is ', StatusBar.currentHeight)
+
+    const theme_name = useThemeName()
 
     return (
         <KronosPageContext.Provider value={page_context}>
             <View w={'100%'} h={'100%'} backgroundColor={'$background'} padding={KRONOS_PAGE_PADDING}>
+                <StatusBar
+                    backgroundColor={'rgba(0,0,0,0)'}
+                    translucent={true}
+                    barStyle={theme_name === 'dark' ? 'light-content' : 'dark-content'}/>
+                <View w={'100%'} h={StatusBar.currentHeight}/>
                 {children}
                 <Sheet modal={true}
                        open={sheet_modal_open}
@@ -111,7 +118,13 @@ export default function KronosPage({children}: KronosPageProps) {
                        }}
                        dismissOnSnapToBottom
                        disableDrag>
-                    <Sheet.Overlay/>
+                    <Sheet.Overlay
+                        key="sheet-overlay"
+                        animation="quick"
+                        opacity={0.3}
+                        enterStyle={{opacity: 0}}
+                        exitStyle={{opacity: 0}}
+                    />
                     <Sheet.Handle/>
                     {
                         // ! There is a bug that causes the sheet frame to glitch upwards when the window frame is open for a few milliseconds
@@ -147,7 +160,7 @@ export default function KronosPage({children}: KronosPageProps) {
                     }}>
                     <AlertDialog.Portal>
                         <AlertDialog.Overlay
-                            key="overlay"
+                            key="alert-overlay"
                             animation="quick"
                             opacity={0.5}
                             enterStyle={{opacity: 0}}

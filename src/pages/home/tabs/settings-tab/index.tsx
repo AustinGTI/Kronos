@@ -10,6 +10,7 @@ import SwatchColorPicker from "../../../../globals/components/form/pickers/Swatc
 import {string} from "yup";
 import selectSettingsPageState from "../../../../globals/redux/selectors/settingsPageSelector";
 import Accordion from "../../../../globals/components/wrappers/Accordion";
+import KronosPage from "../../../../globals/components/wrappers/KronosPage";
 
 interface PaneWrapperProps {
     label: string
@@ -33,23 +34,25 @@ export default function SettingsTab() {
     const dispatch = useDispatch()
 
     return (
-        <YStack w={'100%'} h={'100%'} backgroundColor={'$background'}>
-            <Accordion>
-                <PaneWrapper label={'Theme'}>
-                    <ThemeSetting active_theme={theme} setTheme={(theme: AppTheme) => dispatch(setTheme(theme))}/>
-                </PaneWrapper>
-                <PaneWrapper label={'Focus Color'}>
-                    <SwatchColorPicker active_color={focus_color} accordion_id={'focus_color_picker'}
-                                       setColor={(color: string) => dispatch(setFocusColor(color))}/>
-                </PaneWrapper>
-                <PaneWrapper label={'Break Color'}>
-                    <SwatchColorPicker active_color={break_color} accordion_id={'break_color_picker'}
-                                       setColor={(color: string) => dispatch(setBreakColor(color))}/>
-                </PaneWrapper>
-                <PaneWrapper label={'Data'}>
-                    <DataSetting/>
-                </PaneWrapper>
-            </Accordion>
-        </YStack>
+        <KronosPage>
+            <YStack w={'100%'} f={1} backgroundColor={'$background'}>
+                <Accordion>
+                    <PaneWrapper label={'Theme'}>
+                        <ThemeSetting active_theme={theme} setTheme={(theme: AppTheme) => dispatch(setTheme(theme))}/>
+                    </PaneWrapper>
+                    <PaneWrapper label={'Focus Color'}>
+                        <SwatchColorPicker active_color={focus_color} accordion_id={'focus_color_picker'}
+                                           setColor={(color: string) => dispatch(setFocusColor(color))}/>
+                    </PaneWrapper>
+                    <PaneWrapper label={'Break Color'}>
+                        <SwatchColorPicker active_color={break_color} accordion_id={'break_color_picker'}
+                                           setColor={(color: string) => dispatch(setBreakColor(color))}/>
+                    </PaneWrapper>
+                    <PaneWrapper label={'Data'}>
+                        <DataSetting/>
+                    </PaneWrapper>
+                </Accordion>
+            </YStack>
+        </KronosPage>
     )
 }

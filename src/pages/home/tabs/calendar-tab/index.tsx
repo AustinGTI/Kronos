@@ -73,7 +73,7 @@ export default function CalendarTab() {
             date_strings.push(dateToDDMMYYYY(date))
         }
         setDatesAsDmy(date_strings)
-        console.log('new date strings are',date_strings)
+        console.log('new date strings are', date_strings)
     }, [dates_as_dmy, setDatesAsDmy])
 
     const renderDayPane = React.useCallback(({item: date_as_dmy}: ListRenderItemInfo<string>) => {
@@ -202,7 +202,7 @@ export default function CalendarTab() {
     return (
         <CalendarTabContext.Provider value={calendar_tab_context}>
             <KronosPage>
-                <XStack w={'100%'} h={'100%'}>
+                <XStack w={'100%'} f={1}>
                     <CalendarSideBar day={active_day} w={'30%'} h={'100%'}/>
                     <KronosContainer w={'70%'} h={'100%'}>
                         <YStack height={'100%'} width={'100%'} ai={'center'} backgroundColor={'$background'}>

@@ -1,14 +1,6 @@
 import React from 'react'
-import {heightPercentageToDP as hp, widthPercentageToDP as wp} from 'react-native-responsive-screen';
 import {AlertDialog, Button, Circle, Heading, Paragraph, Sheet, Square, View, XStack, YStack} from "tamagui";
 import {Activity, Duration, SegmentType} from "../../../../globals/types/main";
-import {AlertProps} from "../../../../globals/types/alert";
-import {TimerTabContext, TimerTabContextProps} from "./context";
-import {Keyboard, TouchableWithoutFeedback} from "react-native";
-import SelectActivityModal from "./modals/SelectActivityModal";
-import SelectDurationModal from "./modals/SelectDurationModal";
-import {Canvas, Group, Path, Skia} from "@shopify/react-native-skia";
-import {Pause, Play, Square as SquareIcon} from "@tamagui/lucide-icons";
 import useTimer, {TimerStatus} from "./useTimer";
 import KronosPage from "../../../../globals/components/wrappers/KronosPage";
 import SelectionControls from "./sections/SelectionControls";
@@ -139,24 +131,22 @@ function TimerTabContents() {
     }, [remaining_segments, timer_duration]);
 
     return (
-        <KronosPage>
-            <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'} w={'100%'}>
-                <TimeDisplay
-                    segment_type={active_segment ? active_segment.segment_type : undefined}
-                    duration={active_segment ? active_segment.initial_duration - active_segment.elapsed_duration : undefined}/>
-                <HourGlassAnimation
-                    timer_status={timer_status}
-                    active_segment={active_segment}
-                    completed_segments={completed_segments}
-                    remaining_segments={hourglass_remaining_segments}/>
-                <TimerControls
-                    timer_ready={!!(timer_activity && timer_duration)} timer_status={timer_status}
-                    startTimer={startTimer} stopTimer={stopTimer} pauseTimer={pauseTimer} resumeTimer={resumeTimer}/>
-                <SelectionControls
-                    timer_status={timer_status}
-                    timer_activity={timer_activity} setTimerActivity={setTimerActivity}
-                    timer_duration={timer_duration} setTimerDuration={setTimerDuration}/>
-            </YStack>
-        </KronosPage>
+        <YStack f={1} jc={'center'} ai={'center'} backgroundColor={'$background'} w={'100%'}>
+            <TimeDisplay
+                segment_type={active_segment ? active_segment.segment_type : undefined}
+                duration={active_segment ? active_segment.initial_duration - active_segment.elapsed_duration : undefined}/>
+            <HourGlassAnimation
+                timer_status={timer_status}
+                active_segment={active_segment}
+                completed_segments={completed_segments}
+                remaining_segments={hourglass_remaining_segments}/>
+            <TimerControls
+                timer_ready={!!(timer_activity && timer_duration)} timer_status={timer_status}
+                startTimer={startTimer} stopTimer={stopTimer} pauseTimer={pauseTimer} resumeTimer={resumeTimer}/>
+            <SelectionControls
+                timer_status={timer_status}
+                timer_activity={timer_activity} setTimerActivity={setTimerActivity}
+                timer_duration={timer_duration} setTimerDuration={setTimerDuration}/>
+        </YStack>
     )
 }

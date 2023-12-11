@@ -101,9 +101,6 @@ function AppScreens() {
     return (
         <SafeAreaProvider>
             <NavigationContainer>
-                <StatusBar
-                    backgroundColor={background_color}
-                    barStyle={theme_name === 'dark' ? 'light-content' : 'dark-content'}/>
                 <HomePage/>
             </NavigationContainer>
         </SafeAreaProvider>

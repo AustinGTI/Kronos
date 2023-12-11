@@ -101,7 +101,7 @@ export default function StatisticsTab() {
 
     return (
         <KronosPage>
-            <YStack w={'100%'} h={'100%'} alignItems={'center'}>
+            <YStack w={'100%'} f={1} alignItems={'center'}>
                 <YStack paddingVertical={5} alignItems={'center'} w={'100%'} h={'40%'}>
                     <XStack w={'100%'} justifyContent={'center'} alignItems={'center'} h={'50%'}>
                         <StatsCard label={'Hours Focused'} value={hours_focused}/>
