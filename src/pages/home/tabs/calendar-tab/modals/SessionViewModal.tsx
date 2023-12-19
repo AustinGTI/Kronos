@@ -4,6 +4,7 @@ import {Paragraph, ScrollView, View, XStack, YStack} from "tamagui";
 import {useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
 import SegmentsBarView from "../../../../../globals/components/duration/SegmentsBarView";
+import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
 
 interface SessionViewModalProps {
     session: Session | null
@@ -66,39 +67,36 @@ function TimeRangeView({start_time, end_time, time_font_size, am_pm_font_size}: 
 
 function SegmentsView({start_time, segments}: SegmentsViewProps) {
     return (
-        <YStack w={'100%'} h={'77%'}>
-            <ScrollView w={'100%'}>
-                {segments.map((segment, index) => {
-                    // if this is not the first index, add the start time to the previous segment increment
-                    if (index > 0) {
-                        start_time = new Date(start_time.getTime() + segments[index - 1].duration * 60 * 1000)
-                    }
-                    const end_time = new Date(start_time.getTime() + segment.duration * 60 * 1000)
-                    return (
-                        <XStack key={index} padding={10} w={'100%'} justifyContent={'space-between'}
-                                alignItems={'center'}>
-                            <XStack alignItems={'center'} w={'30%'}>
-                                <Paragraph textTransform={'uppercase'} fontSize={17}
-                                           paddingHorizontal={5}>{segment.type.name}</Paragraph>
-                            </XStack>
-                            <XStack w={'40%'} justifyContent={'center'}>
-                                <TimeRangeView start_time={start_time} end_time={end_time} time_font_size={15}
-                                               am_pm_font_size={13}/>
-                            </XStack>
-                            <XStack justifyContent={'flex-end'} w={'30%'}>
-                                <YStack alignItems={'center'}>
-                                    <Paragraph fontSize={20} lineHeight={20}>{Math.round(segment.duration)}</Paragraph>
-                                    <Paragraph fontSize={10} lineHeight={10} color={'#999'}>MINS</Paragraph>
-                                </YStack>
-                                <View w={30} h={30} backgroundColor={segment.type.color} borderRadius={5} marginLeft={10}/>
-                            </XStack>
+        <YStack w={'100%'}>
+            {segments.map((segment, index) => {
+                // if this is not the first index, add the start time to the previous segment increment
+                if (index > 0) {
+                    start_time = new Date(start_time.getTime() + segments[index - 1].duration * 60 * 1000)
+                }
+                const end_time = new Date(start_time.getTime() + segment.duration * 60 * 1000)
+                return (
+                    <XStack key={index} padding={10} w={'100%'} justifyContent={'space-between'}
+                            alignItems={'center'}>
+                        <XStack alignItems={'center'} w={'30%'}>
+                            <Paragraph textTransform={'uppercase'} fontSize={17}
+                                       paddingHorizontal={5}>{segment.type.name}</Paragraph>
                         </XStack>
-                    );
-                })}
-            </ScrollView>
-            <XStack w={'100%'} padding={10}>
-                <SegmentsBarView segments={segments}/>
-            </XStack>
+                        <XStack w={'40%'} justifyContent={'center'}>
+                            <TimeRangeView start_time={start_time} end_time={end_time} time_font_size={15}
+                                           am_pm_font_size={13}/>
+                        </XStack>
+                        <XStack justifyContent={'flex-end'} w={'30%'}>
+                            <YStack alignItems={'center'}>
+                                <Paragraph fontSize={20} lineHeight={20}>{Math.round(segment.duration)}</Paragraph>
+                                <Paragraph fontSize={10} lineHeight={10} color={'#999'}>MINS</Paragraph>
+                            </YStack>
+                            <View w={30} h={30} backgroundColor={segment.type.color} borderRadius={5}
+                                  marginLeft={10}/>
+                        </XStack>
+                    </XStack>
+                );
+            })}
+            <SegmentsBarView segments={segments}/>
         </YStack>
     )
 }
@@ -113,19 +111,23 @@ export default function SessionViewModal({session}: SessionViewModalProps) {
 
     if (!session) return null
     return (
-        <YStack w={'100%'} h={'100%'}>
-            <XStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingTop={10}>
-                <TimeRangeView start_time={new Date(session.start_time)}
-                               end_time={session.end_time ? new Date(session.end_time) : null}/>
-            </XStack>
-            <XStack w={"100%"} alignItems={'center'} justifyContent={'center'} paddingVertical={10}
-                    paddingHorizontal={10}>
-                <View w={30} h={30} backgroundColor={session_activity?.color ?? '#ddd'} borderRadius={10}/>
-                <Paragraph textTransform={'uppercase'} paddingHorizontal={10}
-                           fontSize={17}>{session_activity?.name ?? 'Custom Activity'}</Paragraph>
-                <View w={30} h={30} backgroundColor={session_activity?.color ?? '#ddd'} borderRadius={10}/>
-            </XStack>
-            <SegmentsView start_time={new Date(session.start_time)} segments={session.segments}/>
+        <YStack w={'100%'} h={'80%'} alignItems={'center'}>
+            <KronosContainer w={'60%'}>
+                <XStack w={"100%"} alignItems={'center'} justifyContent={'center'}
+                        paddingHorizontal={10}>
+                    <View w={30} h={30} backgroundColor={session_activity?.color ?? '#ddd'} borderRadius={10}/>
+                    <Paragraph textTransform={'uppercase'} paddingHorizontal={10}
+                               fontSize={17}>{session_activity?.name ?? 'Custom Activity'}</Paragraph>
+                    <View w={30} h={30} backgroundColor={session_activity?.color ?? '#ddd'} borderRadius={10}/>
+                </XStack>
+                <XStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingTop={10}>
+                    <TimeRangeView start_time={new Date(session.start_time)}
+                                   end_time={session.end_time ? new Date(session.end_time) : null}/>
+                </XStack>
+            </KronosContainer>
+            <KronosContainer w={'100%'} marginBottom={10}>
+                <SegmentsView start_time={new Date(session.start_time)} segments={session.segments}/>
+            </KronosContainer>
         </YStack>
     )
 }

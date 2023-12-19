@@ -3,7 +3,7 @@ import {AlertDialog, Sheet, useTheme, useThemeName, View, YStack} from "tamagui"
 import SessionViewModal from "../../../pages/home/tabs/calendar-tab/modals/SessionViewModal";
 import CalendarPicker from "react-native-calendar-picker";
 import {dateToDDMMYYYY} from "../../helpers/datetime_functions";
-import {Keyboard, StatusBar, TouchableWithoutFeedback} from "react-native";
+import {Keyboard, KeyboardAvoidingView, StatusBar, TouchableWithoutFeedback} from "react-native";
 
 export enum ModalType {
     ALERT = 'ALERT',
@@ -16,13 +16,28 @@ export interface GenericModalComponentProps extends Object {
 
 export interface ModalProps {
     height?: number
+    /**
+     * is true by default
+     */
+    scrollable?: boolean
 }
 
-export interface PageModalProps<ModalComponentProps extends GenericModalComponentProps> {
+export type PageModalProps<ModalComponentProps extends GenericModalComponentProps> = ({
     /**
      * the type of modal, at the moment there are 2 types, ALERT and SHEET
      */
-    type: ModalType
+    type: ModalType.SHEET,
+    /**
+     * the props passed to the actual sheet modal itself rather than the component rendered inside the modal
+     */
+    modal_props?: ModalProps
+} | {
+    /**
+     * the type of modal, at the moment there are 2 types, ALERT and SHEET
+     */
+    type: ModalType.ALERT,
+    modal_props?: never
+}) & {
     /**
      * the component rendered inside the modal, should take closeModal as a prop, any other props it takes
      * should be passed in the component_props prop below
@@ -32,10 +47,6 @@ export interface PageModalProps<ModalComponentProps extends GenericModalComponen
      * the props passed to the component rendered inside the modal
      */
     component_props?: Omit<ModalComponentProps, "closeModal">
-    /**
-     * the props passed to the actual sheet modal itself rather than the component rendered inside the modal
-     */
-    modal_props?: ModalProps
 }
 
 interface KronosPageProps {
@@ -92,6 +103,23 @@ export default function KronosPage({children}: KronosPageProps) {
 
     const theme_name = useThemeName()
 
+    const {
+        foreground: {val: foreground},
+    } = useTheme()
+    const sheet_modal_content = React.useMemo(() => {
+        return (
+            sheet_modal_open && modal_data ? (
+                React.createElement(modal_data.component, {
+                    ...modal_data.component_props,
+                    closeModal: () => {
+                        setSheetModalOpen(false)
+                        setModalData(null)
+                    }
+                })
+            ) : null
+        )
+    }, [sheet_modal_open, modal_data, setSheetModalOpen, setModalData]);
+
     return (
         <KronosPageContext.Provider value={page_context}>
             <View w={'100%'} h={'100%'} backgroundColor={'$background'} padding={KRONOS_PAGE_PADDING}>
@@ -117,6 +145,7 @@ export default function KronosPage({children}: KronosPageProps) {
                            }
                        }}
                        dismissOnSnapToBottom
+                       moveOnKeyboardChange
                        disableDrag>
                     <Sheet.Overlay
                         key="sheet-overlay"
@@ -131,21 +160,17 @@ export default function KronosPage({children}: KronosPageProps) {
                         // ! This is a fix that sets the background color of the frame to transparent so the glitch can't be seen
                         // ! then creates a View in the sheet with max dimensions and bg white
                     }
-                    <Sheet.Frame height={400} backgroundColor={"transparent"} borderWidth={0}>
+                    <Sheet.Frame height={'100%'} backgroundColor={"transparent"} borderWidth={0}>
                         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                            <Sheet.ScrollView w={"100%"} h={"100%"} backgroundColor={"$background"}>
-                                {
-                                    sheet_modal_open && modal_data && (
-                                        React.createElement(modal_data.component, {
-                                            ...modal_data.component_props,
-                                            closeModal: () => {
-                                                setSheetModalOpen(false)
-                                                setModalData(null)
-                                            }
-                                        })
-                                    )
-                                }
-                            </Sheet.ScrollView>
+                            {
+                                modal_data?.modal_props?.scrollable === false ?
+                                    <Sheet.Frame w={"100%"} h={"100%"} backgroundColor={"$background"}>
+                                        {sheet_modal_content}
+                                    </Sheet.Frame> :
+                                    <Sheet.ScrollView w={"100%"} h={"100%"} backgroundColor={"$background"}>
+                                        {sheet_modal_content}
+                                    </Sheet.ScrollView>
+                            }
                         </TouchableWithoutFeedback>
                     </Sheet.Frame>
                 </Sheet>
@@ -161,25 +186,37 @@ export default function KronosPage({children}: KronosPageProps) {
                     <AlertDialog.Portal>
                         <AlertDialog.Overlay
                             key="alert-overlay"
-                            animation="quick"
+                            // animation={null}
+                            // animation={['quick', {
+                            //     opacity: {
+                            //         overshootClamping: true,
+                            //     },
+                            // }]}
+                            animation={['fast', {}]}
+                            onPress={() => setAlertModalOpen(false)}
                             opacity={0.5}
                             enterStyle={{opacity: 0}}
                             exitStyle={{opacity: 0}}
                         />
                         <AlertDialog.Content
+                            backgroundColor={foreground}
                             bordered
                             elevate
                             key="content"
-                            animation={[
-                                'quick',
-                                {
-                                    opacity: {
-                                        overshootClamping: true,
-                                    },
-                                },
-                            ]}
-                            enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
-                            exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+                            // animation={null}
+                            // animation={['quick', {
+                            //     opacity: {
+                            //         overshootClamping: true,
+                            //     },
+                            //     scale: {
+                            //         overshootClamping: true
+                            //     }
+                            // }]}
+                            animation={['fast', {}]}
+                            enterStyle={{opacity: 0}}
+                            exitStyle={{opacity: 0}}
+                            // enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+                            // exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
                             x={0}
                             scale={1}
                             opacity={1}

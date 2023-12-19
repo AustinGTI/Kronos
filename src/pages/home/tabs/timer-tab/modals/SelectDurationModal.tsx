@@ -4,8 +4,10 @@ import {useSelector} from "react-redux";
 import selectDurationState from "../../../../../globals/redux/selectors/base_selectors/durationsSelector";
 import {Button, Circle, Heading, Paragraph, ScrollView, Separator, XStack, YStack} from "tamagui";
 import SegmentsBarView from "../../../../../globals/components/duration/SegmentsBarView";
-import {ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
+import {ChevronDown, ChevronUp, X} from "@tamagui/lucide-icons";
 import SegmentPicker from "../../../../../globals/components/form/pickers/SegmentPicker";
+import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
+import KronosButton from "../../../../../globals/components/wrappers/KronosButton";
 
 interface SelectDurationModalProps {
     current_duration: Duration | null
@@ -54,10 +56,10 @@ function SelectCustomDurationPane({duration, is_selected, setToTimerDuration}: S
     }, [error])
 
     return (
-        <React.Fragment>
+        <KronosContainer w={'95%'} paddingVertical={3}>
             <YStack
-                w={'92%'}
-                h={90} backgroundColor={'$background'}
+                w={'100%'}
+                h={90}
                 borderRadius={10}
                 // borderWidth={2} borderColor={is_selected ? 'black' : '#f3f3f3'}
                 marginVertical={5}
@@ -84,14 +86,10 @@ function SelectCustomDurationPane({duration, is_selected, setToTimerDuration}: S
                     </YStack>
                 </XStack>
             </YStack>
-            <XStack w={'100%'} h={20} justifyContent={'center'} alignItems={'center'}>
-                <Button backgroundColor={'transparent'}
-                        onPress={() => setSegmentPickerOpen(!segment_picker_open)}>
-                    {!segment_picker_open ?
-                        <ChevronDown size={20}/> :
-                        <ChevronUp size={20}/>
-                    }
-                </Button>
+            <XStack w={'100%'} h={20} justifyContent={'center'} alignItems={'center'} paddingBottom={5}>
+                <KronosButton
+                    onPress={() => setSegmentPickerOpen(!segment_picker_open)}
+                    icon={!segment_picker_open ? ChevronDown : ChevronUp}/>
             </XStack>
             {segment_picker_open &&
                 <YStack w={'85%'} alignItems={'center'}>
@@ -102,7 +100,7 @@ function SelectCustomDurationPane({duration, is_selected, setToTimerDuration}: S
                     </Button>
                 </YStack>
             }
-        </React.Fragment>
+        </KronosContainer>
     )
 
 
@@ -111,36 +109,38 @@ function SelectCustomDurationPane({duration, is_selected, setToTimerDuration}: S
 
 function SelectExistingDurationPane({duration, is_selected, setToTimerDuration}: SelectExistingDurationPaneProps) {
     return (
-        <YStack
-            onPress={() => setToTimerDuration(duration)}
-            w={'92%'}
-            h={90} backgroundColor={'$background'}
-            borderRadius={10}
-            // borderWidth={2} borderColor={is_selected ? 'black' : '#f3f3f3'}
-            marginVertical={5}
-            paddingHorizontal={15} paddingVertical={7}>
-            <XStack w={'100%'} h={'100%'}>
-                <YStack w={'80%'} h={'100%'} flexShrink={0}>
-                    <XStack w={'100%'} alignItems={'center'} justifyContent={'flex-start'} paddingTop={5}
-                            paddingBottom={1}>
-                        <Circle size={5} backgroundColor={'$color'} marginRight={10}/>
-                        <Paragraph textTransform={'uppercase'}
-                                   textDecorationLine={is_selected ? 'underline' : 'none'}>{duration.name}</Paragraph>
-                    </XStack>
-                    <XStack alignItems={'center'} flexGrow={1}>
-                        <SegmentsBarView segments={duration.segments} h={15} borderRadius={5}/>
-                    </XStack>
-                </YStack>
-                <YStack alignItems={'center'} justifyContent={'center'} flexGrow={1}>
-                    <Paragraph fontSize={35} height={35} lineHeight={35}>
-                        {duration.segments.reduce((total, segment) => total + segment.duration, 0)}
-                    </Paragraph>
-                    <Paragraph fontSize={8} height={10} lineHeight={10}>
-                        MINUTES
-                    </Paragraph>
-                </YStack>
-            </XStack>
-        </YStack>
+        <KronosContainer w={'95%'} paddingVertical={3}>
+            <YStack
+                onPress={() => setToTimerDuration(duration)}
+                w={'100%'}
+                h={90}
+                borderRadius={10}
+                // borderWidth={2} borderColor={is_selected ? 'black' : '#f3f3f3'}
+                marginVertical={5}
+                paddingHorizontal={15} paddingVertical={7}>
+                <XStack w={'100%'} h={'100%'}>
+                    <YStack w={'80%'} h={'100%'} flexShrink={0}>
+                        <XStack w={'100%'} alignItems={'center'} justifyContent={'flex-start'} paddingTop={5}
+                                paddingBottom={1}>
+                            <Circle size={5} backgroundColor={'$color'} marginRight={10}/>
+                            <Paragraph textTransform={'uppercase'}
+                                       textDecorationLine={is_selected ? 'underline' : 'none'}>{duration.name}</Paragraph>
+                        </XStack>
+                        <XStack alignItems={'center'} flexGrow={1}>
+                            <SegmentsBarView segments={duration.segments} h={15} borderRadius={5}/>
+                        </XStack>
+                    </YStack>
+                    <YStack alignItems={'center'} justifyContent={'center'} flexGrow={1}>
+                        <Paragraph fontSize={35} height={35} lineHeight={35}>
+                            {duration.segments.reduce((total, segment) => total + segment.duration, 0)}
+                        </Paragraph>
+                        <Paragraph fontSize={8} height={10} lineHeight={10}>
+                            MINUTES
+                        </Paragraph>
+                    </YStack>
+                </XStack>
+            </YStack>
+        </KronosContainer>
     )
 
 }
@@ -159,34 +159,37 @@ export default function SelectDurationModal({
 
     return (
         <YStack w={'100%'} alignItems={'center'}>
-            <XStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>
-                <Heading
-                    fontSize={20}
-                    textTransform={'uppercase'}
-                    textDecorationLine={'underline'}>
-                    Select Duration
-                </Heading>
+            {/*<XStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingVertical={10}>*/}
+            {/*    <Heading*/}
+            {/*        fontSize={20}*/}
+            {/*        textTransform={'uppercase'}*/}
+            {/*        textDecorationLine={'underline'}>*/}
+            {/*        Select Duration*/}
+            {/*    </Heading>*/}
+            {/*</XStack>*/}
+            <XStack w={'95%'} alignItems={'center'} justifyContent={'space-between'} paddingVertical={10}>
+                <KronosContainer alignItems={'center'} padding={10}>
+                    <Paragraph textTransform={'uppercase'} fontSize={18}>Select Duration</Paragraph>
+                </KronosContainer>
+                <KronosContainer>
+                    <KronosButton icon={X} onPress={closeModal}/>
+                </KronosContainer>
             </XStack>
-            <ScrollView w={'95%'} paddingVertical={10} backgroundColor={'$foreground'}
-                        borderRadius={10} height={'90%'}>
-                <YStack w={'100%'} alignItems={'center'} paddingBottom={20}>
-                    <SelectCustomDurationPane is_selected={
-                        current_duration?.id === CUSTOM_DURATION.id
-                    } setToTimerDuration={
-                        setTimerDurationAndCloseModal
-                    }/>
-                    <Separator width={'90%'} marginVertical={10}/>
-                    {
-                        Object.values(durations).map((duration) => {
-                            return (
-                                <SelectExistingDurationPane key={duration.id} duration={duration}
-                                                            is_selected={current_duration?.id === duration.id}
-                                                            setToTimerDuration={setTimerDurationAndCloseModal}/>
-                            )
-                        })
-                    }
-                </YStack>
-            </ScrollView>
+            <SelectCustomDurationPane is_selected={
+                current_duration?.id === CUSTOM_DURATION.id
+            } setToTimerDuration={
+                setTimerDurationAndCloseModal
+            }/>
+            <Separator width={'90%'} marginVertical={10}/>
+            {
+                Object.values(durations).map((duration) => {
+                    return (
+                        <SelectExistingDurationPane key={duration.id} duration={duration}
+                                                    is_selected={current_duration?.id === duration.id}
+                                                    setToTimerDuration={setTimerDurationAndCloseModal}/>
+                    )
+                })
+            }
         </YStack>
     )
 }

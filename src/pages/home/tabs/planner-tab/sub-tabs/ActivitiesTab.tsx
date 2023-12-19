@@ -158,7 +158,7 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
     }, [activity.stats_data.total_time, activity.stats_data.total_sessions]);
 
     return (
-        <KronosContainer width={'100%'} padding={0}>
+        <KronosContainer width={'100%'} paddingVertical={9}>
             <YStack width={'100%'}>
                 <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'}
                         onPress={handleOnClickPane}

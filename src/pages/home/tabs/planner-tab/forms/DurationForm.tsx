@@ -13,6 +13,7 @@ import SegmentsBarView from "../../../../../globals/components/duration/Segments
 import FormError from "../../../../../globals/components/form/text/FormError";
 import FormTitle from "../../../../../globals/components/form/text/FormTitle";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
+import {KeyboardAvoidingView} from "react-native";
 
 function DurationFormFields() {
     const {errors, values, touched, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
@@ -63,7 +64,9 @@ export default function DurationForm({title, initial_values, onSubmit, submit_te
                     <SubmitButton<Duration> text={submit_text}/>
                 </XStack>
                 <FormError error={global_error}/>
-                <DurationFormFields/>
+                <KeyboardAvoidingView behavior={'padding'}>
+                    <DurationFormFields/>
+                </KeyboardAvoidingView>
             </YStack>
         </Formik>
     )

@@ -8,9 +8,13 @@ interface KronosContainerProps extends StackProps {
 export default function KronosContainer({children, width, height, w, h, ...stack_props}: KronosContainerProps) {
     return (
         <View padding={5} width={width} height={height} w={w} h={h}>
-            <View borderRadius={10} backgroundColor={'$foreground'} shadowColor={'$shadowColor'}
+            <View borderRadius={10} backgroundColor={'$foreground'}
+                  shadowOpacity={0.5}
+                  shadowRadius={15}
+                  shadowColor={'$shadowColor'}
                   // @ts-ignore
-                  elevation={5} shadowOpacity={0.5} shadowRadius={15} padding={10} {...stack_props}>
+                  elevation={5}
+                  padding={10} {...stack_props}>
                 {children}
             </View>
         </View>

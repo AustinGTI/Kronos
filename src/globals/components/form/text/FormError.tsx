@@ -8,8 +8,8 @@ interface ErrorTextProps {
 export default function FormError({error}: ErrorTextProps) {
     if (!error) return null
     return (
-        <YStack w={'100%'} paddingVertical={5} alignItems={'center'} justifyContent={'center'}>
+        <XStack w={'100%'} paddingVertical={5} alignItems={'center'} justifyContent={'flex-start'}>
             <Paragraph color={'$error'} fontSize={12} textAlign={'center'}>{`*${error}`}</Paragraph>
-        </YStack>
+        </XStack>
     );
 }

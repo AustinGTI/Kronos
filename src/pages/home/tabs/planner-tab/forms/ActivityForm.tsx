@@ -12,6 +12,7 @@ import SubmitButton from "../../../../../globals/components/form/SubmitButton";
 import Accordion from "../../../../../globals/components/wrappers/Accordion";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
 import FormTitle from "../../../../../globals/components/form/text/FormTitle";
+import {KeyboardAvoidingView} from "react-native";
 
 function ActivityFormFields() {
     const {
@@ -56,7 +57,9 @@ export default function ActivityForm({title, initial_values, onSubmit, submit_te
                     <SubmitButton<Activity> text={submit_text}/>
                 </XStack>
                 {global_error && <Paragraph>{global_error}</Paragraph>}
-                <ActivityFormFields/>
+                <KeyboardAvoidingView behavior={'padding'}>
+                    <ActivityFormFields/>
+                </KeyboardAvoidingView>
             </YStack>
         </Formik>
     )

@@ -1,15 +1,13 @@
 import React from 'react'
 import {Activity, Day, SegmentType, Session, UNTITLED_ACTIVITY} from "../../../../globals/types/main";
 import {Paragraph, View, XStack, XStackProps, YStack} from "tamagui";
-import {ActivitiesState} from "../../../../globals/redux/reducers/activitiesReducer";
-import {useDispatch, useSelector} from "react-redux";
+import {useSelector} from "react-redux";
 import {AppState} from "../../../../globals/redux/reducers";
-import {TouchableOpacity, useWindowDimensions} from "react-native";
-import {useHeaderHeight} from "react-native-screens/native-stack";
+import {TouchableOpacity} from "react-native";
 import {CalendarTabContext} from "./context";
-import {dateToDDMMYYYY, DDMMYYYYToDate} from "../../../../globals/helpers/datetime_functions";
-import {endSession, SessionsState} from "../../../../globals/redux/reducers/sessionsReducer";
-import calendarTabSelector from "../../../../globals/redux/selectors/calendarTabSelector";
+import {dateToDDMMYYYY} from "../../../../globals/helpers/datetime_functions";
+import {KronosPageContext, ModalType} from "../../../../globals/components/wrappers/KronosPage";
+import SessionViewModal from "./modals/SessionViewModal";
 
 interface DayPaneProps {
     day: Day
@@ -40,7 +38,6 @@ interface TimelineSession {
 }
 
 
-
 function TimelineMarker({hour, ...stack_props}: TimelineMarkerProps) {
     // convert the hour to a 12 hour formatted string
     const hour_string = React.useMemo(() => {
@@ -67,8 +64,9 @@ function TimelineMarker({hour, ...stack_props}: TimelineMarkerProps) {
 function Timeline({sessions}: TimelineProps) {
     const {
         dimensions_data: {calendar_height},
-        modal_data: {setModalVisibility, setSessionInModal}
     } = React.useContext(CalendarTabContext)
+
+    const {modal_props: {openModal}} = React.useContext(KronosPageContext)
 
     const activities = useSelector((state: AppState) => state.activities)
     // convert sessions to timeline sessions
@@ -100,9 +98,20 @@ function Timeline({sessions}: TimelineProps) {
 
     const showSessionDetailsInModal = React.useCallback((timeline_session: TimelineSession) => {
         const session = sessions[timeline_session.id]
-        setSessionInModal(session)
-        setModalVisibility(true)
-    }, [sessions, setSessionInModal, setModalVisibility])
+        // setSessionInModal(session)
+        // setModalVisibility(true)
+        openModal({
+            type: ModalType.SHEET,
+            component: SessionViewModal,
+            component_props: {
+                session
+            },
+            modal_props: {
+                height: 50,
+                // scrollable: false
+            }
+        })
+    }, [sessions, openModal])
 
     return (
         <YStack position={'relative'} flexGrow={1} h={'100%'} alignItems={'center'} backgroundColor={'$foreground'}>
@@ -174,7 +183,7 @@ export default function DayPane({day}: DayPaneProps) {
 
         const date = dateToDDMMYYYY(new Date(day.date_as_iso))
 
-        console.log('current date is',date,'and the date iso is',day.date_as_iso,'and the date is ',new Date(day.date_as_iso),'and the ddmmyyyy is',dateToDDMMYYYY(new Date(day.date_as_iso)),'and the day is',day)
+        console.log('current date is', date, 'and the date iso is', day.date_as_iso, 'and the date is ', new Date(day.date_as_iso), 'and the ddmmyyyy is', dateToDDMMYYYY(new Date(day.date_as_iso)), 'and the day is', day)
 
         return date === yesterday || date === today || date === tomorrow
     }, [active_date, day.date_as_iso])

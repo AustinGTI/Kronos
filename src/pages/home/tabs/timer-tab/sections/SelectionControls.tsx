@@ -27,7 +27,7 @@ export default function SelectionControls({timer_status,setTimerActivity, setTim
                 current_activity: timer_activity,
                 setCurrentActivity: setTimerActivity,
                 setCurrentDuration: setTimerDuration,
-            }
+            },
         })
     }, [openModal, timer_activity, setTimerActivity, setTimerDuration]);
 
@@ -49,12 +49,14 @@ export default function SelectionControls({timer_status,setTimerActivity, setTim
                 <XStack w={'100%'} paddingVertical={10} justifyContent={'center'}>
                     {/* if there is an activity selected, display its name, else display 'Select Activity...' */}
                     <KronosButton
+                        marginVertical={8}
                         label={timer_activity ? timer_activity.name : 'Select Activity...'}
                         onPress={openSelectActivityModal} disabled={timer_status !== TimerStatus.OFF}/>
                 </XStack>
                 <XStack w={'100%'} paddingVertical={10} justifyContent={'center'}>
                     {/* if there is a duration selected, display its name, else display 'Select Duration...' */}
                     <KronosButton
+                        marginVertical={8}
                         label={timer_duration ? timer_duration.name : 'Select Duration...'}
                         onPress={openSelectDurationModal} disabled={timer_status !== TimerStatus.OFF}/>
                 </XStack>

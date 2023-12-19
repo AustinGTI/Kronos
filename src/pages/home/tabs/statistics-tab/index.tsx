@@ -113,7 +113,7 @@ export default function StatisticsTab() {
                     </XStack>
                 </YStack>
                 <KronosContainer w={'70%'} h={'7%'} padding={0}>
-                    <XStack w={'100%'} h={'100%'} justifyContent={'space-around'}>
+                    <XStack w={'100%'} h={'100%'} justifyContent={'space-around'} alignItems={'center'}>
                         <ToggleItem value={BarChart.DAILY} active_value={bar_chart}
                                     setValue={(value: string) => setBarChart(value as BarChart)}/>
                         <ToggleItem value={BarChart.WEEKLY} active_value={bar_chart}

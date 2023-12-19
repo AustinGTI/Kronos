@@ -23,7 +23,20 @@ const animations = createAnimations({
         mass: 1.2,
         stiffness: 250,
     },
+    fast: {
+        type: 'timing',
+        duration: 200,
+        easing: (t: number) => {
+            // Adjust the values of these constants to control the curve
+            const k = 10; // Controls the steepness of the curve
+            const midPoint = 0.5; // The midpoint of the curve (0 to 1)
+
+            // Apply the sigmoid formula to interpolate the value
+            return 1 / (1 + Math.exp(-k * (t - midPoint)));
+        }
+    }
 })
+
 const headingFont = createInterFont()
 
 const alatsiFont = createFont({
@@ -89,7 +102,7 @@ const rubikFont = createFont({
 
 const bodyFont = createInterFont()
 
-const common_theme  = {
+const common_theme = {
     backgroundPress: 'transparent'
 }
 
