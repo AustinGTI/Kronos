@@ -15,7 +15,7 @@ import {
     XStack,
     YStack
 } from "tamagui";
-import DialogContainer from "../DialogContainer";
+import DialogContainer from "../containers/DialogContainer";
 import {Check, ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
 import plannerTabSelector from "../../../redux/selectors/plannerTabSelector";
 import {AccordionContext} from "../../wrappers/Accordion";

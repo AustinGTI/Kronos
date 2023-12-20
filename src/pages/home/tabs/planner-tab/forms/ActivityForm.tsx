@@ -3,12 +3,12 @@ import {Formik, FormikHelpers, useFormikContext} from "formik";
 import {Activity, EMPTY_ACTIVITY} from "../../../../../globals/types/main";
 import ActivityValidation from "./ActivityFormValidation";
 import {Heading, Input, Paragraph, XStack, YStack} from "tamagui";
-import InputContainer from "../../../../../globals/components/form/InputContainer";
+import InputContainer from "../../../../../globals/components/form/containers/InputContainer";
 import DurationPicker from "../../../../../globals/components/form/pickers/DurationPicker";
 import {generateFormikOnSubmit} from "../../../../../globals/helpers/form_functions";
 import {FormProps} from "../../../../../globals/types/form";
 import SwatchColorPicker from "../../../../../globals/components/form/pickers/SwatchColorPicker";
-import SubmitButton from "../../../../../globals/components/form/SubmitButton";
+import SubmitButton from "../../../../../globals/components/form/buttons/SubmitButton";
 import Accordion from "../../../../../globals/components/wrappers/Accordion";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
 import FormTitle from "../../../../../globals/components/form/text/FormTitle";
@@ -43,7 +43,7 @@ function ActivityFormFields() {
     )
 }
 
-export default function ActivityForm({title, initial_values, onSubmit, submit_text}: FormProps<Activity>) {
+export default function ActivityForm({title, initial_values, onSubmit, submit_text, form_header}: FormProps<Activity>) {
     const [global_error, setGlobalError] = React.useState<string | undefined>(undefined)
     const formikOnSubmit = React.useCallback(generateFormikOnSubmit(onSubmit, setGlobalError), [onSubmit])
 
@@ -54,7 +54,10 @@ export default function ActivityForm({title, initial_values, onSubmit, submit_te
             <YStack w={'100%'} paddingHorizontal={10}>
                 <XStack w={'100%'} alignItems={'center'} justifyContent={'space-between'} paddingVertical={10}>
                     <FormTitle title={title}/>
-                    <SubmitButton<Activity> text={submit_text}/>
+                    <XStack>
+                        <SubmitButton<Activity> text={submit_text}/>
+                        {form_header}
+                    </XStack>
                 </XStack>
                 {global_error && <Paragraph>{global_error}</Paragraph>}
                 <KeyboardAvoidingView behavior={'padding'}>

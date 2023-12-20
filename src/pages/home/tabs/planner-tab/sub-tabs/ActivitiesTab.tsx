@@ -1,6 +1,7 @@
 import React, {useMemo} from 'react'
-import {Button, Circle, Paragraph, Separator, XStack, YStack} from "tamagui";
+import {Button, Circle, Paragraph, ScrollView, Separator, TamaguiElement, XStack, YStack} from "tamagui";
 import {useDispatch, useSelector} from "react-redux";
+import Animated, {useAnimatedStyle, Easing} from "react-native-reanimated";
 import {AppState} from "../../../../../globals/redux/reducers";
 import {Activity} from "../../../../../globals/types/main";
 // import {ArrowDown, Delete, Edit, Play} from "@tamagui/lucide-icons";
@@ -19,6 +20,10 @@ import KronosButton from "../../../../../globals/components/wrappers/KronosButto
 import {KronosPageContext, ModalType} from "../../../../../globals/components/wrappers/KronosPage";
 import ActivityForm from "../forms/ActivityForm";
 import KronosAlert from "../../../../../globals/components/wrappers/KronosAlert";
+import DeleteButton from "../../../../../globals/components/form/buttons/DeleteButton";
+import {boolean, number} from "yup";
+import {useSharedValue, withTiming} from "react-native-reanimated";
+import {heightPercentageToDP} from "react-native-responsive-screen";
 
 interface ActivityPaneProps {
     app_state: AppState
@@ -42,9 +47,20 @@ export function ActivityStat({value, label}: ActivityStatProps) {
 }
 
 function ActivityPane({app_state, activity, open_activity, setOpenActivity}: ActivityPaneProps) {
+    const default_pane_height = React.useMemo(() => {
+        return heightPercentageToDP('7%')
+    }, []);
+
+    const first_render = React.useRef<boolean>(true);
+
+    const [dropdown_height, setDropdownHeight] = React.useState<number>(default_pane_height)
+
+    const dropdown_wrapper_height = useSharedValue<number>(default_pane_height)
+
     const {modal_props: {openModal}} = React.useContext(KronosPageContext)
 
     const dispatch = useDispatch()
+
 
     // Region CALLBACKS
     // ? ........................
@@ -109,18 +125,6 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
         })
     }, [app_state, activity.id, dispatch, openModal]);
 
-    const handleOnClickEditButton = React.useCallback(() => {
-        openModal({
-            type: ModalType.SHEET,
-            component: ActivityForm,
-            component_props: {
-                title: 'Edit Activity',
-                submit_text: 'Save',
-                initial_values: activity,
-                onSubmit: updateCurrentActivity
-            },
-        })
-    }, [activity, openModal, updateCurrentActivity])
 
     const handleOnClickDeleteButton = React.useCallback(() => {
         openModal({
@@ -145,6 +149,20 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
         })
     }, [openModal, deleteCurrentActivity])
 
+    const handleOnClickEditButton = React.useCallback(() => {
+        openModal({
+            type: ModalType.SHEET,
+            component: ActivityForm,
+            component_props: {
+                title: 'Edit Activity',
+                submit_text: 'Save',
+                initial_values: activity,
+                onSubmit: updateCurrentActivity,
+                form_header: <DeleteButton onPress={handleOnClickDeleteButton}/>
+            },
+        })
+    }, [activity, openModal, updateCurrentActivity, handleOnClickDeleteButton])
+
     // ? ........................
     // End ........................
 
@@ -157,52 +175,59 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
         return [activity.stats_data.total_sessions, activity.stats_data.total_time]
     }, [activity.stats_data.total_time, activity.stats_data.total_sessions]);
 
+    React.useEffect(() => {
+        if (first_render.current) {
+            first_render.current = false;
+            dropdown_wrapper_height.value = dropdown_height;
+            return;
+        }
+        dropdown_wrapper_height.value = withTiming(dropdown_height, {duration: 200, easing: Easing.inOut(Easing.cubic)})
+    }, [dropdown_height]);
+
+    const dropdown_wrapper_styles = useAnimatedStyle(() => {
+        return {
+            height: dropdown_wrapper_height.value
+        }
+    })
+
     return (
         <KronosContainer width={'100%'} paddingVertical={9}>
-            <YStack width={'100%'}>
-                <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'}
-                        onPress={handleOnClickPane}
-                        padding={15}>
-                    <Circle size={20} backgroundColor={activity.color}/>
-                    <Paragraph color={'$color'} textTransform={'uppercase'} fontSize={14}>{activity.name}</Paragraph>
-                    {/*{is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}*/}
-                    <XStack justifyContent={'space-between'}>
-                        <KronosButton
-                            onPress={handleOnClickEditButton} icon={Edit2}/>
-                        {/*<KronosButton*/}
-                        {/*    onPress={handleOnClickDeleteButton} icon={Trash}/>*/}
-                    </XStack>
-                </XStack>
-                {
-                    is_open && (
-                        <React.Fragment>
-                            <Separator width={'90%'} marginHorizontal={'5%'}/>
-                            <YStack width={'100%'} backgroundColor={'transparent'} padding={10}>
-                                <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={15}>
-                                    <ActivityStat label={'sessions'} value={sessions}/>
-                                    {/*<Separator vertical borderColor={'#ccc'}/>*/}
-                                    {/*<ActivityStat label={'hours'} value={hours}/>*/}
-                                    <ActivityStat label={'minutes'} value={minutes}/>
-                                </XStack>
-                                <XStack justifyContent={'space-around'} width={'100%'} paddingTop={10}>
-                                    <Button
-                                        onPress={handleOnClickEditButton} flexGrow={1} paddingVertical={5} margin={0}
-                                        backgroundColor={'transparent'} borderTopRightRadius={0}
-                                        borderBottomRightRadius={0}>
-                                        <Edit size={20} color={'$color'}/>
-                                    </Button>
-                                    {/*<Play size={20} color={'$color'}/>*/}
-                                    <Button
-                                        onPress={handleOnClickDeleteButton} flexGrow={1} paddingVertical={5} margin={0}
-                                        backgroundColor={'transparent'} borderTopLeftRadius={0} borderBottomLeftRadius={0}>
-                                        <Trash size={20} color={'$color'}/>
-                                    </Button>
-                                </XStack>
-                            </YStack>
-                        </React.Fragment>
-                    )
-                }
-            </YStack>
+            <Animated.View style={dropdown_wrapper_styles}>
+                <ScrollView w={'100%'} showsVerticalScrollIndicator={false}>
+                    <YStack width={'100%'} onLayout={(event) => setDropdownHeight(event.nativeEvent.layout.height)}>
+                        <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'}
+                                onPress={handleOnClickPane}
+                                padding={15} height={default_pane_height}>
+                            <Circle size={20} backgroundColor={activity.color}/>
+                            <Paragraph color={'$color'} textTransform={'uppercase'}
+                                       fontSize={14}>{activity.name}</Paragraph>
+                            {/*{is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}*/}
+                            <XStack justifyContent={'space-between'}>
+                                <KronosButton
+                                    onPress={handleOnClickEditButton} icon={Edit2}/>
+                                {/*<KronosButton*/}
+                                {/*    onPress={handleOnClickDeleteButton} icon={Trash}/>*/}
+                            </XStack>
+                        </XStack>
+                        {
+                            is_open && (
+                                <React.Fragment>
+                                    <Separator width={'90%'} marginHorizontal={'5%'}/>
+                                    <YStack
+                                        width={'100%'} backgroundColor={'transparent'} padding={10}>
+                                        <XStack justifyContent={'space-around'} width={'100%'} paddingVertical={15}>
+                                            <ActivityStat label={'sessions'} value={sessions}/>
+                                            {/*<Separator vertical borderColor={'#ccc'}/>*/}
+                                            {/*<ActivityStat label={'hours'} value={hours}/>*/}
+                                            <ActivityStat label={'minutes'} value={minutes}/>
+                                        </XStack>
+                                    </YStack>
+                                </React.Fragment>
+                            )
+                        }
+                    </YStack>
+                </ScrollView>
+            </Animated.View>
         </KronosContainer>
     )
 }

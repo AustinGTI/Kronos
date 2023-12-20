@@ -1,8 +1,10 @@
 import {ValidationResponse, ValidationStatus} from "../redux/types";
+import React from "react";
 
 export interface FormProps<Record extends Object> {
     title: string
     submit_text?: string
+    form_header?: React.ReactElement
     initial_values: Record | null
     onSubmit: (values: Record) => ValidationResponse
 }

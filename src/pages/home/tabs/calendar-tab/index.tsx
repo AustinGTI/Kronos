@@ -227,6 +227,7 @@ export default function CalendarTab() {
                                         extendDateStrings()
                                     }
                                 }}
+                                showsVerticalScrollIndicator={false}
                                 snapToInterval={flatlist_dimensions.height}
                                 decelerationRate={'fast'}
                                 disableIntervalMomentum={true}

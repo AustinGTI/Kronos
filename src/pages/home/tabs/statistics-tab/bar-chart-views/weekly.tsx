@@ -223,6 +223,7 @@ export default function WeeklyStackedBarChart({
                     inverted={true}
                     initialNumToRender={3}
                     windowSize={2}
+                    showsHorizontalScrollIndicator={false}
                     removeClippedSubviews={true}
                     snapToInterval={flatlist_dimensions.width}
                     decelerationRate={'fast'}

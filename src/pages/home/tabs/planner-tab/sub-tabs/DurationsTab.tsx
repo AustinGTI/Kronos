@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo} from 'react'
-import {Button, Paragraph, Separator, Stack, XStack, YStack} from "tamagui";
+import {Button, Paragraph, ScrollView, Separator, Stack, XStack, YStack} from "tamagui";
 import {Duration, Segment} from "../../../../../globals/types/main";
 import {Edit, Edit2, Trash} from "@tamagui/lucide-icons";
 import {useDispatch, useSelector} from "react-redux";
@@ -18,6 +18,10 @@ import KronosButton from "../../../../../globals/components/wrappers/KronosButto
 import {KronosPageContext, ModalType} from "../../../../../globals/components/wrappers/KronosPage";
 import KronosAlert from "../../../../../globals/components/wrappers/KronosAlert";
 import DurationForm from "../forms/DurationForm";
+import DeleteButton from "../../../../../globals/components/form/buttons/DeleteButton";
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {heightPercentageToDP} from "react-native-responsive-screen";
+import {boolean, number} from "yup";
 
 interface DurationPaneProps {
     app_state: AppState,
@@ -82,6 +86,16 @@ function DurationSegmentTimeline({duration}: DurationSegmentTimelineProps) {
 }
 
 function DurationPane({app_state, duration, open_duration, setOpenDuration}: DurationPaneProps) {
+    const default_pane_height = React.useMemo(() => {
+        return heightPercentageToDP('9%')
+    }, []);
+
+    const first_render = React.useRef<boolean>(true);
+
+    const [dropdown_height, setDropdownHeight] = React.useState<number>(default_pane_height)
+
+    const dropdown_wrapper_height = useSharedValue<number>(default_pane_height)
+
     const {modal_props: {openModal}} = React.useContext(KronosPageContext)
 
     const dispatch = useDispatch()
@@ -146,19 +160,6 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
         })
     }, [app_state, duration.id, dispatch, openModal]);
 
-    const handleOnClickEditButton = React.useCallback(() => {
-        openModal({
-            type: ModalType.SHEET,
-            component: DurationForm,
-            component_props: {
-                title: 'Edit Duration',
-                submit_text: 'Save',
-                initial_values: duration,
-                onSubmit: updateCurrentDuration
-            }
-        })
-    }, [duration, openModal, updateCurrentDuration])
-
     const handleOnClickDeleteButton = React.useCallback(() => {
         openModal({
             type: ModalType.ALERT,
@@ -180,6 +181,20 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
         })
     }, [openModal, deleteCurrentDuration])
 
+    const handleOnClickEditButton = React.useCallback(() => {
+        openModal({
+            type: ModalType.SHEET,
+            component: DurationForm,
+            component_props: {
+                title: 'Edit Duration',
+                submit_text: 'Save',
+                initial_values: duration,
+                onSubmit: updateCurrentDuration,
+                form_header: <DeleteButton onPress={handleOnClickDeleteButton}/>
+            }
+        })
+    }, [duration, openModal, updateCurrentDuration, handleOnClickDeleteButton])
+
 
     const is_open = useMemo(() => {
         return open_duration?.id === duration.id
@@ -197,57 +212,61 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
         }, 0)
     }, [duration.segments]);
 
+    React.useEffect(() => {
+        if (first_render.current) {
+            first_render.current = false;
+            dropdown_wrapper_height.value = dropdown_height;
+            return;
+        }
+        dropdown_wrapper_height.value = withTiming(dropdown_height, {duration: 200, easing: Easing.inOut(Easing.cubic)})
+    }, [dropdown_height]);
+
+    const dropdown_wrapper_styles = useAnimatedStyle(() => {
+        return {
+            height: dropdown_wrapper_height.value
+        }
+    })
 
     return (
         <KronosContainer width={'100%'} padding={0}>
-            <YStack width={'100%'}>
-                <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'}
-                        onPress={handleOnClickPane}
-                        padding={15}>
-                    <YStack alignItems={'center'}>
-                        <Paragraph fontSize={24} color={'$color'} lineHeight={28}>{total_duration}</Paragraph>
-                        <Paragraph fontSize={14} color={'$color'} lineHeight={16}>MINS</Paragraph>
-                    </YStack>
-                    <Paragraph textTransform={'uppercase'}>{duration.name}</Paragraph>
-                    {/*{is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}*/}
-                    <XStack justifyContent={'space-between'}>
-                        <KronosButton
-                            onPress={handleOnClickEditButton} icon={Edit2}/>
-                        {/*<KronosButton*/}
-                        {/*    onPress={handleOnClickDeleteButton} icon={Trash}/>*/}
-                    </XStack>
-                </XStack>
-                {
-                    is_open && (
-                        <React.Fragment>
-                            <Separator width={'90%'} marginHorizontal={'5%'}/>
-                            <YStack width={'100%'} backgroundColor={'transparent'} padding={10}>
-                                <YStack width={'100%'} backgroundColor={'transparent'} paddingHorizontal={20}>
-                                    <DurationSegmentTimeline duration={duration}/>
-                                    {duration.segments.map((segment, idx) => (
-                                        <DurationSegmentPane key={idx} segment={segment}
-                                                             max_segment_duration={max_segment_duration}/>
-                                    ))}
-                                </YStack>
-                                <XStack justifyContent={'space-around'} width={'100%'} paddingTop={10}>
-                                    <Button
-                                        onPress={handleOnClickEditButton} flexGrow={1} paddingVertical={5} margin={0}
-                                        backgroundColor={'transparent'} borderTopRightRadius={0}
-                                        borderBottomRightRadius={0}>
-                                        <Edit size={20} color={'$color'}/>
-                                    </Button>
-                                    {/*<Play size={20} color={'$color'}/>*/}
-                                    <Button
-                                        onPress={handleOnClickDeleteButton} flexGrow={1} paddingVertical={5} margin={0}
-                                        backgroundColor={'transparent'} borderTopLeftRadius={0} borderBottomLeftRadius={0}>
-                                        <Trash size={20} color={'$color'}/>
-                                    </Button>
-                                </XStack>
+            <Animated.View style={dropdown_wrapper_styles}>
+                <ScrollView w={'100%'} showsVerticalScrollIndicator={false}>
+                    <YStack width={'100%'} onLayout={(event) => setDropdownHeight(event.nativeEvent.layout.height)}>
+                        <XStack justifyContent={'space-between'} alignItems={'center'} width={'100%'}
+                                onPress={handleOnClickPane}
+                                padding={15} height={default_pane_height}>
+                            <YStack alignItems={'center'}>
+                                <Paragraph fontSize={24} color={'$color'} lineHeight={28}>{total_duration}</Paragraph>
+                                <Paragraph fontSize={14} color={'$color'} lineHeight={16}>MINS</Paragraph>
                             </YStack>
-                        </React.Fragment>
-                    )
-                }
-            </YStack>
+                            <Paragraph textTransform={'uppercase'}>{duration.name}</Paragraph>
+                            {/*{is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}*/}
+                            <XStack justifyContent={'space-between'}>
+                                <KronosButton
+                                    onPress={handleOnClickEditButton} icon={Edit2}/>
+                                {/*<KronosButton*/}
+                                {/*    onPress={handleOnClickDeleteButton} icon={Trash}/>*/}
+                            </XStack>
+                        </XStack>
+                        {
+                            is_open && (
+                                <React.Fragment>
+                                    <Separator width={'90%'} marginHorizontal={'5%'}/>
+                                    <YStack width={'100%'} backgroundColor={'transparent'} padding={10}>
+                                        <YStack width={'100%'} backgroundColor={'transparent'} paddingHorizontal={20}>
+                                            <DurationSegmentTimeline duration={duration}/>
+                                            {duration.segments.map((segment, idx) => (
+                                                <DurationSegmentPane key={idx} segment={segment}
+                                                                     max_segment_duration={max_segment_duration}/>
+                                            ))}
+                                        </YStack>
+                                    </YStack>
+                                </React.Fragment>
+                            )
+                        }
+                    </YStack>
+                </ScrollView>
+            </Animated.View>
         </KronosContainer>
     );
 }

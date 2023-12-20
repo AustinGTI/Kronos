@@ -191,6 +191,7 @@ export default function DailyStackedBarChart({
                     removeClippedSubviews={true}
                     snapToInterval={flatlist_dimensions.width}
                     decelerationRate={'fast'}
+                    showsHorizontalScrollIndicator={false}
                     disableIntervalMomentum={true}
                     keyExtractor={(item) => item}
                     renderItem={

@@ -1,7 +1,7 @@
 import React from 'react'
 import {Button, Stack, View, XStack} from "tamagui";
 import ColorPicker, {Swatches} from "reanimated-color-picker";
-import DialogContainer from "../DialogContainer";
+import DialogContainer from "../containers/DialogContainer";
 import {ChevronDown, ChevronUp} from "@tamagui/lucide-icons";
 import {AccordionContext} from "../../wrappers/Accordion";
 

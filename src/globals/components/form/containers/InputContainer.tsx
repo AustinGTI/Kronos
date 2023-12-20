@@ -1,6 +1,6 @@
 import React from 'react'
 import {Label, Paragraph, YStack, YStackProps} from "tamagui";
-import FormError from "./text/FormError";
+import FormError from "../text/FormError";
 
 interface InputContainerProps extends YStackProps {
     field_key: string
