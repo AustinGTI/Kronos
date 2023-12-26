@@ -61,6 +61,7 @@ export const {
     updateActivity,
     deleteActivity,
     incrementActivitySessions,
-    incrementActivityTime
+    incrementActivityTime,
+    clearActivities,
 } = activitiesSlice.actions
 export default activitiesSlice.reducer
