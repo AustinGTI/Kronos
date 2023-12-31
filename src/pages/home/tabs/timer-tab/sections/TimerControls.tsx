@@ -5,6 +5,7 @@ import {Pause, Play, Square} from "@tamagui/lucide-icons";
 import {IconProps} from "@tamagui/helpers-icon";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
 import KronosButton from "../../../../../globals/components/wrappers/KronosButton";
+import {heightPercentageToDP} from "react-native-responsive-screen";
 
 
 interface TimerControlsProps {
@@ -45,9 +46,9 @@ export default function TimerControls({
         throw new Error('Timer is not ready but timer status is ON')
     }
     return (
-        <XStack w={'100%'} justifyContent={'center'} paddingBottom={2}>
+        <XStack w={'100%'} justifyContent={'center'} paddingBottom={2} height={heightPercentageToDP('10%')}>
             {/* if the timer status is OFF, show a play button with startTimer onClick */}
-            {(timer_status === TimerStatus.OFF || timer_status === TimerStatus.DONE) &&
+            {timer_status === TimerStatus.OFF &&
                 <ControlButton icon={Play} onClick={startTimer} disabled={!timer_ready}/>}
             {/* if the timer status is PAUSED show a play button and a stop button */}
             {timer_status === TimerStatus.PAUSED && (

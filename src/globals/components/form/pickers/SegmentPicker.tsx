@@ -47,18 +47,19 @@ function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegmen
     return (
         <XStack w={'60%'} justifyContent={'center'} paddingHorizontal={10} h={60}>
             <YStack h={'100%'} w={'auto'} alignItems={'center'} justifyContent={'center'}>
-                <Input fontSize={20} height={40} paddingHorizontal={10} keyboardType={'numeric'}
-                       value={duration_hours.toString().padStart(2, '0')}
-                       onChangeText={(text) => {
-                           let hours = parseInt(text)
-                           if (isNaN(hours) || hours < 0) {
-                               hours = 0
-                           } else if (hours > 24) {
-                               hours = 24
-                           }
-                           setDurationHours(hours)
-                           setDuration(hours * 60 + duration_minutes)
-                       }}/>
+                <Input
+                    fontSize={20} height={40} paddingHorizontal={10} keyboardType={'numeric'}
+                    value={duration_hours.toString().padStart(2, '0')}
+                    onChangeText={(text) => {
+                        let hours = parseInt(text)
+                        if (isNaN(hours) || hours < 0) {
+                            hours = 0
+                        } else if (hours > 24) {
+                            hours = 24
+                        }
+                        setDurationHours(hours)
+                        setDuration(hours * 60 + duration_minutes)
+                    }}/>
                 {/*<Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>HOURS</Paragraph>*/}
             </YStack>
             <XStack h={'100%'} paddingBottom={12} alignItems={'center'} justifyContent={'center'}>
@@ -167,7 +168,7 @@ function InputSegmentPane({segment, segments, setSegments}: InputSegmentPaneProp
     )
 }
 
-export default function SegmentPicker({active_segments: segments, setSegments,setTouched}: SegmentPickerProps) {
+export default function SegmentPicker({active_segments: segments, setSegments, setTouched}: SegmentPickerProps) {
     const onClickAddButton = React.useCallback(() => {
         setTouched?.() // call the setTouched function if it exists
         // add a single segment to the end of the list with type of (focus if the last segment is break or there are no segments, break if the last segment is focus)
@@ -196,7 +197,8 @@ export default function SegmentPicker({active_segments: segments, setSegments,se
             <XStack w={'100%'} justifyContent={'space-between'}>
                 <Button onPress={onClickAddButton} icon={<Plus size={'4$'}/>}/>
                 <YStack alignItems={'center'} height={'100%'}>
-                    <Paragraph fontSize={30} lineHeight={30} color={'$color'}>{(segments ?? []).reduce((total, segment) => {
+                    <Paragraph fontSize={30} lineHeight={30}
+                               color={'$color'}>{(segments ?? []).reduce((total, segment) => {
                         return total + segment.duration
                     }, 0)}</Paragraph>
                     <Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>MINUTES</Paragraph>

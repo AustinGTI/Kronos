@@ -53,7 +53,7 @@ export function createDurationValidation(app_state: AppState, new_duration: Dura
             status: ValidationStatus.ERROR,
             error: {
                 field: 'name',
-                message: 'A increment with this name already exists'
+                message: 'A duration with this name already exists'
             }
         }
     }
@@ -67,19 +67,19 @@ export function updateDurationValidation(app_state: AppState, duration: Duration
             status: ValidationStatus.ERROR,
             error: {
                 field: SpecialField.GLOBAL,
-                message: 'This increment does not exist'
+                message: 'This duration does not exist'
             }
         }
     }
 
-    // check that the increment name is unique, excluding the current increment
+    // check that the duration name is unique, excluding the current duration
     const has_duplicate = Object.values(app_state.durations).some(other_duration => compareStrings(other_duration.name, duration.name) && other_duration.id !== duration.id)
     if (has_duplicate) {
         return {
             status: ValidationStatus.ERROR,
             error: {
                 field: 'name',
-                message: 'A increment with this name already exists'
+                message: 'A duration with this name already exists'
             }
         }
     }
@@ -88,13 +88,13 @@ export function updateDurationValidation(app_state: AppState, duration: Duration
 }
 
 export function deleteDurationValidation(app_state: AppState, duration_id: number): ValidationResponse {
-    // check that the increment exists
+    // check that the duration exists
     if (!app_state.durations[duration_id]) {
         return {
             status: ValidationStatus.ERROR,
             error: {
                 field: SpecialField.GLOBAL,
-                message: 'This increment does not exist'
+                message: 'This duration does not exist'
             }
         }
     }

@@ -167,7 +167,9 @@ const sessionsSlice = createSlice({
             delete state[date_key].sessions[payload]
         },
         clearSessions: (state) => {
-            state = {} as SessionsState
+            // delete every key in state
+            Object.keys(state).forEach(key => delete state[key])
+            console.log('sessions are now', state)
         },
 
         // ! These functions are only used for testing, they should not be used in production

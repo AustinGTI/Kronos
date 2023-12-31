@@ -23,6 +23,7 @@ export default function KronosButton({
                                          icon_position = 'left',
                                          onPress,
                                          width, w, height, h,
+                                         disabled,
                                          ...props
                                      }: KronosButtonProps) {
     const [is_pressed, setIsPressed] = React.useState<boolean>(false)
@@ -35,10 +36,10 @@ export default function KronosButton({
                 height: height || h,
             }}
             onPress={(e) => {
-                if (onPress) {
+                if (onPress && !disabled) {
                     onPress(e)
                 }
-            }} onPressIn={() => setIsPressed(true)} onPressOut={() => setIsPressed(false)}>
+            }} disabled={disabled} onPressIn={() => setIsPressed(true)} onPressOut={() => setIsPressed(false)}>
             {/*<Button margin={0} padding={0} backgroundColor={'transparent'} {...props}>*/}
             <XStack alignItems={'center'} justifyContent={'center'} width={w || width} height={h || height} {...props}>
                 {Icon && icon_position === 'left' &&

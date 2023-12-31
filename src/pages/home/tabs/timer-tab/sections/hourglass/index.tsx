@@ -110,7 +110,7 @@ export default function HourGlassAnimation({
                     <Path
                         path={container_path}
                         style="fill"
-                        color={foreground}
+                        color={foreground || 'white'}
                         strokeCap="round">
                         <Shadow dx={0} dy={0} blur={10} color={chroma(shadowColor).alpha(0.3).hex()}/>
                     </Path>

@@ -3,7 +3,7 @@ import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import CalendarTab from "./tabs/calendar-tab";
 import TimerTab from "./tabs/timer-tab";
 import PlannerTab from "./tabs/planner-tab";
-import {BarChart, Calendar, Clipboard, Settings, Timer} from "@tamagui/lucide-icons";
+import {BarChart3, Calendar, Clipboard, Settings, Timer} from "@tamagui/lucide-icons";
 import {useTheme} from "tamagui";
 import {SECONDARY_COLOR} from "../../globals/types/main";
 import StatisticsTab from "./tabs/statistics-tab";
@@ -33,7 +33,7 @@ export default function HomePage() {
             }}>
             <Tab.Screen name={'Statistics'} component={StatisticsTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <BarChart size={25} color={focused ? SECONDARY_COLOR : color?.val}/>
+                    <BarChart3 size={25} color={focused ? SECONDARY_COLOR : color?.val}/>
                 )
             }}/>
             <Tab.Screen name={'Calendar'} component={CalendarTab} options={{

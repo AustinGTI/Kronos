@@ -44,13 +44,18 @@ const activitiesSlice = createSlice({
             delete state[payload]
         },
         resetActivities: (state) => {
-            state = DEFAULT_ACTIVITIES_STATE
+            // remove all keys in state and set the ones in default state
+            Object.keys(state).forEach(key => delete state[key as unknown as number])
+            Object.keys(DEFAULT_ACTIVITIES_STATE).forEach(key => state[key as unknown as number] = DEFAULT_ACTIVITIES_STATE[key as unknown as number])
+            console.log('reset activities', state)
         },
 
         // ! These functions are purely for testing purposes, should not be used in production
 
         clearActivities: (state) => {
-            state = {} as ActivitiesState
+            // delete every activity in state
+            Object.keys(state).forEach(key => delete state[key as unknown as number])
+            console.log('activities are now', state)
         }
     }
 })

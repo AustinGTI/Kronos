@@ -16,7 +16,7 @@ import KronosContainer from "../../../../../globals/components/wrappers/KronosCo
 import {KeyboardAvoidingView} from "react-native";
 
 function DurationFormFields() {
-    const {errors, values, touched, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
+    const {errors, values, touched,submitCount, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
     const [segments_touched, setSegmentsTouched] = React.useState<boolean>(false)
     const segment_error = React.useMemo(() => {
         if (!errors['segments']) {
@@ -34,7 +34,8 @@ function DurationFormFields() {
                 return getFirstError(errors['segments'])
             }
         }
-    }, [errors['segments']])
+    }, [errors])
+
     return (
         <KronosContainer>
             <YStack w={'100%'} alignItems={'center'}>
@@ -42,7 +43,7 @@ function DurationFormFields() {
                     <Input value={values['name']} onChangeText={handleChange('name')} onBlur={handleBlur('name')}/>
                 </InputContainer>
                 <InputContainer field_key={'segments'} label={'Segments'}
-                                error={segments_touched ? segment_error : undefined}>
+                                error={segments_touched || submitCount ? segment_error : undefined}>
                     <SegmentPicker setSegments={(segments) => setValues({...values, segments})}
                                    active_segments={values['segments']} setTouched={() => setSegmentsTouched(true)}/>
                     <SegmentsBarView segments={values['segments']} marginTop={10}/>
@@ -54,7 +55,8 @@ function DurationFormFields() {
 
 export default function DurationForm({title, initial_values, form_header, onSubmit, submit_text}: FormProps<Duration>) {
     const [global_error, setGlobalError] = React.useState<string | undefined>(undefined)
-    const formikOnSubmit = React.useCallback(generateFormikOnSubmit(onSubmit, setGlobalError), [onSubmit])
+    const formikOnSubmit = React.useCallback(generateFormikOnSubmit(onSubmit, setGlobalError), [onSubmit, setGlobalError])
+    console.log('global error is', global_error)
     return (
         <Formik initialValues={initial_values ?? EMPTY_DURATION} onSubmit={formikOnSubmit}
                 validationSchema={DurationFormValidation} enableReinitialize>

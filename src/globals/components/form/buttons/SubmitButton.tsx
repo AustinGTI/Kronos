@@ -14,8 +14,9 @@ export default function SubmitButton<Record extends FormikValues>({text}: Submit
     const {handleSubmit} = useFormikContext<Record>()
 
     return (
-        <KronosContainer onPress={() => handleSubmit()}>
-            <KronosButton label={(text ?? 'Submit').toUpperCase()} icon={Save} icon_position={'right'}/>
+        <KronosContainer>
+            <KronosButton label={(text ?? 'Submit').toUpperCase()} icon={Save} icon_position={'right'}
+                          onPress={() => handleSubmit()}/>
             {/*<XStack alignItems={'center'} justifyContent={'space-around'}>*/}
             {/*    <Paragraph textTransform={'uppercase'}>{text ?? 'Submit'}</Paragraph>*/}
             {/*    <Save size={20}/>*/}

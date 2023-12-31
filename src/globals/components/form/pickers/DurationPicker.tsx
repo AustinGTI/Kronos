@@ -36,11 +36,12 @@ interface DurationPickerProps {
 function DurationPickerPane({duration, onClick, is_active}: DurationPickerPaneProps) {
     return (
         <XStack justifyContent={'space-between'} alignItems={'center'}
+                onPress={onClick}
                 marginVertical={5} paddingVertical={5} paddingHorizontal={10}
                 borderRadius={10} borderColor={'$color'} width={'95%'}>
             <Paragraph color={'$color'}>{duration.name}</Paragraph>
             {/*<Button onPress={onClick}>Select</Button>*/}
-            <Checkbox checked={is_active} onPress={onClick}>
+            <Checkbox checked={is_active}>
                 <Checkbox.Indicator>
                     <Check strokeWidth={4}/>
                 </Checkbox.Indicator>

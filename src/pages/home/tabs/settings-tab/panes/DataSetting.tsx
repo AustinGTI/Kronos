@@ -31,11 +31,12 @@ export default function DataSetting() {
                     },
                     {
                         label: 'Reset',
-                        onPress: () => {
-                            dispatch(clearActivities)
-                            dispatch(clearDurations)
-                            dispatch(resetDurations)
-                            dispatch(resetActivities)
+                        onPress: (closeAlert) => {
+                            dispatch(clearActivities())
+                            dispatch(clearDurations())
+                            dispatch(resetDurations())
+                            dispatch(resetActivities())
+                            closeAlert()
                         }
                     }
                 ]
@@ -48,7 +49,7 @@ export default function DataSetting() {
             type: ModalType.ALERT,
             component: KronosAlert,
             component_props: {
-                title: 'Delete Data',
+                title: 'Delete Session Data',
                 description: 'Are you sure you want to delete all session data? This action cannot be undone.',
                 buttons: [
                     {
@@ -59,10 +60,11 @@ export default function DataSetting() {
                     },
                     {
                         label: 'Delete',
-                        onPress: () => {
+                        onPress: (closeAlert) => {
                             // dispatch(clearActivities)
                             // dispatch(clearDurations)
-                            dispatch(clearSessions)
+                            dispatch(clearSessions())
+                            closeAlert()
                         }
                     }
                 ]
@@ -86,10 +88,11 @@ export default function DataSetting() {
                     },
                     {
                         label: 'Delete',
-                        onPress: () => {
-                            dispatch(clearActivities)
-                            dispatch(clearDurations)
-                            dispatch(clearSessions)
+                        onPress: (closeAlert) => {
+                            dispatch(clearActivities())
+                            dispatch(clearDurations())
+                            dispatch(clearSessions())
+                            closeAlert()
                         }
                     }
                 ]
@@ -109,22 +112,25 @@ export default function DataSetting() {
                         width={'100%'}
                         label_props={{fontSize: 16}}
                         onPress={resetToDefaults}
-                        justifyContent={'space-between'} label={'RESET TO DEFAULTS'} icon={RotateCcw} icon_position={'right'}/>
+                        justifyContent={'space-between'} label={'RESET TO DEFAULTS'} icon={RotateCcw}
+                        icon_position={'right'}/>
                 </XStack>
                 <XStack w={'100%'} paddingVertical={15} paddingHorizontal={5}>
                     <KronosButton
                         width={'100%'}
                         label_props={{fontSize: 16}}
                         onPress={onClickDeleteSessionData}
-                        justifyContent={'space-between'} label={'DELETE SESSION DATA'} icon={Trash} icon_position={'right'}/>
+                        justifyContent={'space-between'} label={'DELETE SESSION DATA'} icon={Trash}
+                        icon_position={'right'}/>
                 </XStack>
                 <XStack w={'100%'} paddingVertical={15} paddingHorizontal={5}>
                     <KronosButton
                         width={'100%'}
-                        label_props={{fontSize: 16,color:'red'}}
-                        icon_props={{color:'red'}}
+                        label_props={{fontSize: 16, color: 'red'}}
+                        icon_props={{color: 'red'}}
                         onPress={onClickDeleteAllData}
-                        justifyContent={'space-between'} label={'DELETE ALL DATA'} icon={Trash2} icon_position={'right'}/>
+                        justifyContent={'space-between'} label={'DELETE ALL DATA'} icon={Trash2}
+                        icon_position={'right'}/>
                 </XStack>
             </YStack>
         </KronosContainer>

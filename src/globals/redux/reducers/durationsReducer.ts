@@ -25,12 +25,15 @@ const durationsSlice = createSlice({
         },
 
         clearDurations: (state) => {
-            state = {} as DurationsState
+            // delete every duration in state
+            Object.keys(state).forEach(key => delete state[key as unknown as number])
         },
 
         // ! These functions are purely for testing purposes, should not be used in production
         resetDurations: (state) => {
-            state = DEFAULT_DURATION_STATE
+            // remove all keys in state and set the ones in default state
+            Object.keys(state).forEach(key => delete state[key as unknown as number])
+            Object.keys(DEFAULT_DURATION_STATE).forEach(key => state[key as unknown as number] = DEFAULT_DURATION_STATE[key as unknown as number])
         },
 
     }

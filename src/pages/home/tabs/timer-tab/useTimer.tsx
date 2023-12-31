@@ -257,12 +257,11 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
                 }]
             };
             // play a bell sound then open the modal
-            (is_last_segment ? playSoundOnSessionDone() : playSoundOnSegmentDone()).then(() => {
-                openModal({
-                    type: ModalType.ALERT,
-                    component: KronosAlert,
-                    component_props: alert_props
-                })
+            (is_last_segment ? playSoundOnSessionDone() : playSoundOnSegmentDone()).then()
+            openModal({
+                type: ModalType.ALERT,
+                component: KronosAlert,
+                component_props: alert_props
             })
         }
     }, [active_segment?.on_complete_alert_props.is_open])
