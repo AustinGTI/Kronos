@@ -99,7 +99,7 @@ export default function KronosPage({children}: KronosPageProps) {
         },
     }), [setSheetModalOpen, setAlertModalOpen, setModalData]);
 
-    console.log('status bar height is ', StatusBar.currentHeight)
+    // console.log('status bar height is ', StatusBar.currentHeight)
 
     const theme_name = useThemeName()
 

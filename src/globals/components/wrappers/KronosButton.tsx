@@ -40,7 +40,7 @@ export default function KronosButton({
                 }
             }} onPressIn={() => setIsPressed(true)} onPressOut={() => setIsPressed(false)}>
             {/*<Button margin={0} padding={0} backgroundColor={'transparent'} {...props}>*/}
-            <XStack alignItems={'center'} justifyContent={'center'} width={'100%'} {...props}>
+            <XStack alignItems={'center'} justifyContent={'center'} width={w || width} height={h || height} {...props}>
                 {Icon && icon_position === 'left' &&
                     <Icon size={22} color={is_pressed ? '$active_color' : '$color'} {...icon_props}/>}
                 {label && (

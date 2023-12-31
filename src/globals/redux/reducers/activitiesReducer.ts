@@ -43,11 +43,11 @@ const activitiesSlice = createSlice({
             console.log('deleting activity', payload)
             delete state[payload]
         },
-
-        // ! These functions are purely for testing purposes, should not be used in production
         resetActivities: (state) => {
             state = DEFAULT_ACTIVITIES_STATE
         },
+
+        // ! These functions are purely for testing purposes, should not be used in production
 
         clearActivities: (state) => {
             state = {} as ActivitiesState
@@ -63,5 +63,7 @@ export const {
     incrementActivitySessions,
     incrementActivityTime,
     clearActivities,
+    resetActivities
 } = activitiesSlice.actions
-export default activitiesSlice.reducer
+
+export default activitiesSlice.reducer;

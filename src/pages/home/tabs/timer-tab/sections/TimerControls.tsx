@@ -47,7 +47,7 @@ export default function TimerControls({
     return (
         <XStack w={'100%'} justifyContent={'center'} paddingBottom={2}>
             {/* if the timer status is OFF, show a play button with startTimer onClick */}
-            {timer_status === TimerStatus.OFF &&
+            {(timer_status === TimerStatus.OFF || timer_status === TimerStatus.DONE) &&
                 <ControlButton icon={Play} onClick={startTimer} disabled={!timer_ready}/>}
             {/* if the timer status is PAUSED show a play button and a stop button */}
             {timer_status === TimerStatus.PAUSED && (

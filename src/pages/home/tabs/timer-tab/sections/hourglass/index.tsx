@@ -89,13 +89,13 @@ export default function HourGlassAnimation({
 
     const {
         foreground: {val: foreground},
-        background: {val: background},
-        color: {val: color},
-        borderColor: {val: borderColor},
+        // background: {val: background},
+        // color: {val: color},
+        // borderColor: {val: borderColor},
         shadowColor: {val: shadowColor}
     } = useTheme()
 
-    console.log('at the moment there are', completed_segments.length, 'completed segments', remaining_segments.length, 'remaining segments')
+    // console.log('at the moment there are', completed_segments.length, 'completed segments', remaining_segments.length, 'remaining segments')
 
 
     return (

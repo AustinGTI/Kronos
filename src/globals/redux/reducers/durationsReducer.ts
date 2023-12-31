@@ -2,7 +2,7 @@ import {Duration} from "../../types/main";
 import {createSlice} from "@reduxjs/toolkit";
 import DEFAULT_DURATION_STATE from "../defaults/default_durations";
 
-export type DurationsState = {[id:number]: Duration}
+export type DurationsState = { [id: number]: Duration }
 
 const initial_state: DurationsState = DEFAULT_DURATION_STATE
 
@@ -24,17 +24,23 @@ const durationsSlice = createSlice({
             delete state[payload]
         },
 
+        clearDurations: (state) => {
+            state = {} as DurationsState
+        },
+
         // ! These functions are purely for testing purposes, should not be used in production
         resetDurations: (state) => {
             state = DEFAULT_DURATION_STATE
         },
 
-        clearDurations: (state) => {
-            state = {} as DurationsState
-        }
-
     }
 })
 
-export const {createDuration, updateDuration, deleteDuration} = durationsSlice.actions
+export const {
+    createDuration,
+    updateDuration,
+    deleteDuration,
+    resetDurations,
+    clearDurations
+} = durationsSlice.actions
 export default durationsSlice.reducer

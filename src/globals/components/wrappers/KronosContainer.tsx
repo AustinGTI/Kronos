@@ -11,8 +11,11 @@ export default function KronosContainer({children, width, height, w, h, ...stack
             <View borderRadius={10} backgroundColor={'$foreground'}
                   shadowOpacity={0.5}
                   shadowRadius={15}
+                  alignItems={'center'}
+                  justifyContent={'center'}
+                  display={'flex'}
                   shadowColor={'$shadowColor'}
-                  // @ts-ignore
+                // @ts-ignore
                   elevation={5}
                   padding={10} {...stack_props}>
                 {children}

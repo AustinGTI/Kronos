@@ -28,7 +28,7 @@ const sessionsSlice = createSlice({
             else {
                 state[today] = {
                     // the date_as_iso should be 00:00:00 of today
-                    date_as_iso : getStartOfDay(start_time).toISOString(),
+                    date_as_iso: getStartOfDay(start_time).toISOString(),
                     sessions: {[new_session.id]: new_session}
                 }
             }
@@ -166,6 +166,9 @@ const sessionsSlice = createSlice({
             // delete the session from the state
             delete state[date_key].sessions[payload]
         },
+        clearSessions: (state) => {
+            state = {} as SessionsState
+        },
 
         // ! These functions are only used for testing, they should not be used in production
         generateDummySessions: (state, {payload}: { type: string, payload: { start_date: Date, end_date?: Date } }) => {
@@ -182,10 +185,6 @@ const sessionsSlice = createSlice({
                 }
             }
         },
-
-        clearSessions: (state) => {
-            state = {} as SessionsState
-        }
     }
 })
 

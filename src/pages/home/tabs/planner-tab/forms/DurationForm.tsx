@@ -37,7 +37,7 @@ function DurationFormFields() {
     }, [errors['segments']])
     return (
         <KronosContainer>
-            <YStack alignItems={'center'}>
+            <YStack w={'100%'} alignItems={'center'}>
                 <InputContainer field_key={'name'} label={'Name'} error={touched['name'] ? errors['name'] : undefined}>
                     <Input value={values['name']} onChangeText={handleChange('name')} onBlur={handleBlur('name')}/>
                 </InputContainer>

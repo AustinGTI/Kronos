@@ -186,7 +186,8 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
 
     const dropdown_wrapper_styles = useAnimatedStyle(() => {
         return {
-            height: dropdown_wrapper_height.value
+            height: dropdown_wrapper_height.value,
+            width: '100%'
         }
     })
 

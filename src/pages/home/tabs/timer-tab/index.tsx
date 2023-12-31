@@ -63,7 +63,7 @@ function TimeDisplay({duration, segment_type}: TimeDisplayProps) {
         )
     }, [])
 
-    console.log('displaying on the time display ', hours, minutes, seconds)
+    // console.log('displaying on the time display ', hours, minutes, seconds)
 
     return (
         <KronosContainer w={'90%'} paddingVertical={5}>

@@ -9,6 +9,8 @@ import {useDispatch, useSelector} from "react-redux";
 import timerTabSelector from "../../../../globals/redux/selectors/timerTabSelector";
 import {KronosPageContext, ModalType} from "../../../../globals/components/wrappers/KronosPage";
 import KronosAlert, {AlertModalProps} from "../../../../globals/components/wrappers/KronosAlert";
+import {Audio} from 'expo-av'
+
 
 export enum TimerStatus {
     OFF = 'OFF',
@@ -28,6 +30,9 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
 
     const app_state = useSelector(timerTabSelector)
     const [timer_state, updateTimerState] = React.useReducer(timerStateReducer, null)
+
+    const on_segment_done_sound = React.useRef<Audio.Sound | null>(null);
+    const on_session_done_sound = React.useRef<Audio.Sound | null>(null);
 
     const [session_id, setSessionId] = React.useState<number | null>(null)
 
@@ -125,7 +130,6 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
         // get the difference between the estimated time and the actual time to determine the elapsed time since the timer state update
         const time_difference = Math.round((new Date().getTime() - timer_state.timing_state.estimated_time.getTime()) / 1000)
 
-        console.log('The exact time difference between the current time and the previous time is', (new Date().getTime() - timer_state.timing_state.estimated_time.getTime()) / 1000, 'time difference is', time_difference)
 
         updateTimerState({
             type: TimerStateActionTypes.INCREMENT_TIMER, payload: time_difference
@@ -161,6 +165,23 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
         // if the active segment elapsed time, is higher than the initial time, then the segment is complete, set modal is open to true
     }, [session_id, timer_state, dispatch, updateTimerState])
 
+    const playSoundOnSegmentDone = React.useCallback(async () => {
+        const {sound} = await Audio.Sound.createAsync(require('../../../../../assets/sounds/on_segment_complete.wav'))
+        if (!on_segment_done_sound.current) {
+            on_segment_done_sound.current = sound
+        }
+        await sound.playAsync()
+    }, []);
+
+    const playSoundOnSessionDone = React.useCallback(async () => {
+        const {sound} = await Audio.Sound.createAsync(require('../../../../../assets/sounds/on_session_complete.wav'))
+        if (!on_session_done_sound.current) {
+            on_session_done_sound.current = sound
+        }
+        await sound.playAsync()
+    }, []);
+
+
     // Region MEMOS
     // ? ........................
 
@@ -178,6 +199,14 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
 
     // Region EFFECTS
     // ? ........................
+
+    // unload sounds on unmount
+    React.useEffect(() => {
+        return () => {
+            on_segment_done_sound.current?.unloadAsync()
+            on_session_done_sound.current?.unloadAsync()
+        }
+    }, []);
 
     React.useEffect(() => {
         if (timer_state) {
@@ -203,7 +232,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
                 with_cancel_button: false,
                 // the button runs a function that closes the alert modal and completes the active segment
                 buttons: [{
-                    label: is_last_segment ? 'Complete Session' : 'Proceed',
+                    label: is_last_segment ? 'Ok' : 'Proceed',
                     onPress: (closeAlert) => {
                         // if this is the last segment, stop the timer else complete the segment
                         if (is_last_segment) {
@@ -226,11 +255,14 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
                         }
                     }
                 }]
-            }
-            openModal({
-                type: ModalType.ALERT,
-                component: KronosAlert,
-                component_props: alert_props
+            };
+            // play a bell sound then open the modal
+            (is_last_segment ? playSoundOnSessionDone() : playSoundOnSegmentDone()).then(() => {
+                openModal({
+                    type: ModalType.ALERT,
+                    component: KronosAlert,
+                    component_props: alert_props
+                })
             })
         }
     }, [active_segment?.on_complete_alert_props.is_open])
@@ -238,7 +270,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
     // ? ........................
     // End
 
-    console.log('remaining segments length is', timer_state?.segments_state.segments_remaining.length, 'and active segment is', active_segment)
+    // console.log('remaining segments length is', timer_state?.segments_state.segments_remaining.length, 'and active segment is', active_segment)
 
     return {
         timer_state: {

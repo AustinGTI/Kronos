@@ -69,20 +69,20 @@ export function durationToTimerState(duration: Duration): TimerState {
         // if the segment is the last segment, then the user needs to be informed that the entire increment has been completed
         if (index === duration.segments.length - 1) {
             on_complete_alert_props.title = 'Pomodoro Session Completed'
-            on_complete_alert_props.description = 'Congratulations, this pomodoro session has been successfully completed! Click OK to record this session.'
+            on_complete_alert_props.description = "Congratulations, this pomodoro session has been successfully completed! Click OK to record this session."
         } else {
             // if the segment is a focus segment, then the user needs to be informed that it is time for a break
             if (segment.type.name === SegmentTypes.FOCUS.name) {
                 on_complete_alert_props.title = 'Time for a break!'
                 // get the increment of the next segment (which is a break segment)
                 const break_duration = duration.segments[index + 1].duration
-                on_complete_alert_props.description = `Take a ${break_duration} minute break to get some rest. Click OK to start the break.`
+                on_complete_alert_props.description = `Take a ${break_duration} minute break to get some rest. Click Proceed to start the break.`
             } else if (segment.type.name === SegmentTypes.BREAK.name) {
                 // if the segment is a break segment, then the user needs to be informed that it is time to focus
                 on_complete_alert_props.title = 'Break is over!'
                 // get the increment of the next segment (which is a focus segment)
                 const focus_duration = duration.segments[index + 1].duration
-                on_complete_alert_props.description = `Time to focus again for ${focus_duration} minutes. Click OK to start focusing.`
+                on_complete_alert_props.description = `Time to focus again for ${focus_duration} minutes. Click Proceed to start focusing.`
             } else {
                 throw new Error(`Invalid segment type ${segment.type.name}`)
             }
@@ -207,7 +207,7 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
             }
         case TimerStateActionTypes.INCREMENT_TIMER:
             const increment = (payload as number)
-            console.log('the increment on this run of increment timer is',increment)
+            // console.log('the increment on this run of increment timer is',increment)
             const active_segment_type = state.segments_state.segments_remaining[state.segments_state.segments_remaining.length - 1].segment_type
             // if the timer is running, elapsed time,active time and the segment time should be incremented
             // if not, only the elapsed time should be incremented
@@ -226,7 +226,7 @@ export function timerStateReducer(state: TimerState | null, action: TimerStateAc
                         segments_remaining: state.segments_state.segments_remaining.map((segment, index) => {
                             state = state as TimerState // ! without this line for some reason, the compiler will complain that state might be null though it has been casted to TimerState
                             if (index === state.segments_state.segments_remaining.length - 1) {
-                                console.log('incrementing segment', segment, 'at index', index)
+                                // console.log('incrementing segment', segment, 'at index', index)
                                 // increase the elapsed increment, if the elapsed increment is more than the initial increment, set the alert modal open state to true
                                 return {
                                     ...segment,

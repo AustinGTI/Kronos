@@ -223,7 +223,8 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
 
     const dropdown_wrapper_styles = useAnimatedStyle(() => {
         return {
-            height: dropdown_wrapper_height.value
+            height: dropdown_wrapper_height.value,
+            width: '100%'
         }
     })
 
