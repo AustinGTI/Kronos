@@ -20,7 +20,26 @@ import SettingsTab from "./src/pages/home/tabs/settings-tab";
 import {AppTheme} from "./src/globals/redux/reducers/settingsReducer";
 import {AppState} from "./src/globals/redux/reducers"
 import {SECONDARY_COLOR} from "./src/globals/types/main";
-import {StatusBar} from "react-native";
+import * as TaskManager from "expo-task-manager";
+import * as BackgroundFetch from "expo-background-fetch";
+import {BackgroundTasks} from "./src/globals/types/tasks";
+import {Audio} from "expo-av";
+
+// Region TASKS
+// ? ........................
+
+TaskManager.defineTask(BackgroundTasks.BACKGROUND_SEGMENT_TIMEOUT_CHECK_TASK, async () => {
+    // const now = Date.now();
+    //
+    const {sound} = await Audio.Sound.createAsync(require('./assets/sounds/on_session_complete.wav'))
+    await sound.playAsync()
+    console.log('running in the background...');
+    // const now = new Date()
+    return BackgroundFetch.BackgroundFetchResult.NewData
+})
+
+// ? ........................
+// End ........................
 
 
 const Drawer = createDrawerNavigator()

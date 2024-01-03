@@ -10,6 +10,8 @@ import timerTabSelector from "../../../../globals/redux/selectors/timerTabSelect
 import {KronosPageContext, ModalType} from "../../../../globals/components/wrappers/KronosPage";
 import KronosAlert, {AlertModalProps} from "../../../../globals/components/wrappers/KronosAlert";
 import {Audio} from 'expo-av'
+import useTimerNotifications from "./useBackgroundTimer";
+import {AppState} from "react-native";
 
 
 export enum TimerStatus {
@@ -34,6 +36,8 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
     const on_segment_done_sound = React.useRef<Audio.Sound | null>(null);
     const on_session_done_sound = React.useRef<Audio.Sound | null>(null);
 
+    const active_notification_id = React.useRef<string | null>(null);
+
     const [session_id, setSessionId] = React.useState<number | null>(null)
 
     const {
@@ -42,6 +46,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
         }
     } = React.useContext(KronosPageContext)
 
+    const {scheduleNotification, cancelNotification} = useTimerNotifications()
 
     // Region TIMER CALLBACKS
     // ? ........................
@@ -207,6 +212,52 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
             on_session_done_sound.current?.unloadAsync()
         }
     }, []);
+
+    // when app is running in the background, schedule a notification for the end of the current segment or session
+    React.useEffect(() => {
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            if (nextAppState === 'background') {
+                console.log('app is in the background')
+                // check that the timer is running and that the timer state is set
+                if (timer_state?.timing_state.is_running) {
+                    // the notification should be scheduled for the end of the active segment which would be the current datetime + (initial_duration - elapsed_duration)
+                    const end_time = new Date()
+                    end_time.setSeconds(end_time.getSeconds() + (active_segment!.initial_duration - active_segment!.elapsed_duration))
+                    // if the active segment is the last segment left, schedule a notification for the end of the session
+                    if (timer_state.segments_state.segments_remaining.length === 1) {
+                        console.log('about to set notification for session end')
+                        scheduleNotification('Session is done!', '', end_time).then((id: string) => {
+                            active_notification_id.current = id
+                        })
+                    } else {
+                        // otherwise, schedule a notification for the end of the active segment
+                        // if it is a focus segment, the title should be 'Time for a break!'
+                        // else  'Focus time!'
+                        const title = active_segment!.segment_type === SegmentTypes.FOCUS ? 'Time for a break!' : 'Focus time!'
+                        console.log('about to set notification for segment end')
+                        scheduleNotification(title, 'Return to the app to start the timer', end_time).then((id) => {
+                            active_notification_id.current = id
+                        })
+                    }
+                } else {
+                    console.log('timer is not running, no need to schedule notification')
+                }
+            } else {
+                console.log('app is in the foreground')
+                // if the app is not in the background, cancel the notification if it is set
+                if (active_notification_id.current) {
+                    cancelNotification(active_notification_id.current).then(() => {
+                        console.log('cancelled notification with id ', active_notification_id.current)
+                        active_notification_id.current = null
+                    })
+                }
+            }
+        })
+
+        return () => {
+            subscription.remove()
+        }
+    }, [timer_state?.timing_state.is_running, active_segment, timer_state?.segments_state.segments_remaining.length, scheduleNotification, cancelNotification]);
 
     React.useEffect(() => {
         if (timer_state) {

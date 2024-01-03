@@ -46,10 +46,13 @@ export default function TimerControls({
         throw new Error('Timer is not ready but timer status is ON')
     }
     return (
-        <XStack w={'100%'} justifyContent={'center'} paddingBottom={2} height={heightPercentageToDP('10%')}>
+        <XStack w={'100%'} justifyContent={'center'} paddingBottom={2}>
             {/* if the timer status is OFF, show a play button with startTimer onClick */}
             {timer_status === TimerStatus.OFF &&
                 <ControlButton icon={Play} onClick={startTimer} disabled={!timer_ready}/>}
+            {/* if the timer status is DONE, show a stop button with stopTimer onClick */}
+            {timer_status === TimerStatus.DONE &&
+                <ControlButton icon={Square} onClick={stopTimer}/>}
             {/* if the timer status is PAUSED show a play button and a stop button */}
             {timer_status === TimerStatus.PAUSED && (
                 <React.Fragment>
