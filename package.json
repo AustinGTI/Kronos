@@ -2,18 +2,18 @@
   "name": "kronos",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start --localhost",
+    "start": "expo start --dev-client",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/config-plugins": "6.0.2",
     "@react-native-async-storage/async-storage": "1.17.11",
     "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/drawer": "^6.6.3",
     "@react-navigation/native": "^6.1.7",
     "@reduxjs/toolkit": "^1.9.5",
-    "@shopify/flash-list": "^1.5.0",
     "@shopify/react-native-skia": "0.1.172",
     "@tamagui/animations-react-native": "^1.43.13",
     "@tamagui/babel-plugin": "^1.43.13",
@@ -28,11 +28,14 @@
     "babel-plugin-transform-inline-environment-variables": "^0.4.4",
     "chroma-js": "^2.4.2",
     "expo": "~48.0.21",
-    "expo-av": "13.4.1",
+    "expo-av": "13.2.1",
     "expo-background-fetch": "11.1.1",
+    "expo-document-picker": "~11.2.2",
+    "expo-file-system": "~15.2.2",
     "expo-font": "~11.1.1",
-    "expo-notifications": "0.18.1",
-    "expo-splash-screen": "^0.22.0",
+    "expo-notifications": "~0.18.1",
+    "expo-sharing": "~11.2.2",
+    "expo-splash-screen": "~0.18.2",
     "expo-status-bar": "~1.4.4",
     "expo-task-manager": "11.1.1",
     "formik": "^2.4.2",
@@ -51,7 +54,7 @@
     "react-native-select-dropdown": "^3.4.0",
     "react-native-svg": "13.4.0",
     "react-native-svg-charts": "^5.4.0",
-    "react-native-web": "^0.19.6",
+    "react-native-web": "0.18.10",
     "react-redux": "^8.1.2",
     "reanimated-color-picker": "^2.3.2",
     "redux": "^4.2.1",
@@ -64,6 +67,9 @@
     "@types/react": "~18.0.14",
     "@types/react-native": "^0.72.2",
     "typescript": "^4.9.4"
+  },
+  "resolutions": {
+    "@expo/config-plugins": "6.0.2"
   },
   "private": true
 }

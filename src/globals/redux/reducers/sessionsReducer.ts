@@ -1,11 +1,92 @@
 import {Day, SegmentType, SegmentTypes, Session} from "../../types/main";
 import {createSlice} from "@reduxjs/toolkit";
-import {dateToDDMMYYYY, getStartOfDay} from "../../helpers/datetime_functions";
+import {dateToDDMMYYYY, DDMMYYYYToDate, getStartOfDay} from "../../helpers/datetime_functions";
 import generateDummyDay from "../dummies/dummy_sessions";
+import * as yup from 'yup'
+import {segmentSchema} from "./durationsReducer";
 
 export type SessionsState = { [date_key: string]: Day }
 
 const initial_state: SessionsState = {}
+
+// Region SESSION VALIDATION SCHEMAS
+// ? ........................
+
+const sessionSchema = yup.object().shape({
+    id: yup.number().required('ID is required'),
+    activity_id: yup.number().required('Activity ID is required'),
+    duration_id: yup.number().required('Duration ID is required'),
+
+    // should be a valid ISO string
+    start_time: yup.string().required('Start time is required')
+        .test({
+            name: 'isISO',
+            message: 'Start time should be a valid ISO string',
+            test: (value) => {
+                return new Date(value).toISOString() === value
+            }
+        }),
+    segments: yup.array().of(segmentSchema).required('Segments are required'),
+    // if is_ongoing is true, end_time should be null else it should be a valid ISO string
+    is_ongoing: yup.boolean().required('is_ongoing is required'),
+    // end_time: yup.string().when('is_ongoing', {
+    //     // @ts-ignore
+    //     is: true,
+    //     then: yup.string().nullable(),
+    //     otherwise: yup.string().required('End time is required')
+    //         .test({
+    //             name: 'isISO',
+    //             message: 'End time should be a valid ISO string',
+    //             test: (value) => {
+    //                 return new Date(value).toISOString() === value
+    //             }
+    //         })
+    // })
+    end_time: yup.string().nullable()
+        .test({
+            name: 'isISO',
+            message: 'End time should be a valid ISO string',
+            test: (value) => {
+                return !value || new Date(value).toISOString() === value
+            }
+        })
+})
+
+const daySchema = yup.object().shape({
+    date_as_iso: yup.string().required('Date is required')
+        .test({
+            name: 'isISO',
+            message: 'Date should be a valid ISO string',
+            test: (value) => {
+                return new Date(value).toISOString() === value
+            }
+        }),
+    sessions: yup.object().test({
+        name: 'has_numeric_keys',
+        test: (obj) => Object.keys(obj).every(key => !isNaN(parseInt(key))),
+        message: 'Keys must be numbers'
+    }).test({
+        name: 'has_valid_session_schema',
+        test: (obj) => Object.values(obj).every(value => sessionSchema.isValidSync(value)),
+        message: 'Values must be valid session objects'
+    }),
+})
+
+export const SessionsStateSchema = yup.object()
+    // the keys must be valid dates
+    .test({
+        name: 'has_valid_date_keys',
+        test: (obj) => Object.keys(obj).every(key => dateToDDMMYYYY(DDMMYYYYToDate(key)) === key),
+        message: 'Keys must be valid dates'
+    })
+    .test({
+        name: 'has_valid_day_schema',
+        test: (obj) => Object.values(obj).every(value => daySchema.isValidSync(value)),
+        message: 'Values must be valid day objects'
+    })
+
+// ? ........................
+// End ........................
 
 
 const sessionsSlice = createSlice({
@@ -172,6 +253,12 @@ const sessionsSlice = createSlice({
             console.log('sessions are now', state)
         },
 
+        restoreSessions: (state, {payload}: { type: string, payload: SessionsState }) => {
+            // remove all keys in state and set the ones in payload
+            Object.keys(state).forEach(key => delete state[key as unknown as number])
+            Object.keys(payload).forEach(key => state[key as unknown as number] = payload[key as unknown as number])
+        },
+
         // ! These functions are only used for testing, they should not be used in production
         generateDummySessions: (state, {payload}: { type: string, payload: { start_date: Date, end_date?: Date } }) => {
             // if end date_as_iso is not defined it is assumed to be yesterday
@@ -197,6 +284,7 @@ export const {
     startSessionSegment,
     deleteSession,
     generateDummySessions,
-    clearSessions
+    clearSessions,
+    restoreSessions
 } = sessionsSlice.actions
 export default sessionsSlice.reducer

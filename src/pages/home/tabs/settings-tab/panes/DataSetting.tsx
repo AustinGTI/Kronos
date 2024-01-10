@@ -101,7 +101,7 @@ export default function DataSetting() {
     }, [openModal, dispatch]);
 
     return (
-        <KronosContainer w={'100%'} my={10}>
+        <KronosContainer w={'100%'} my={10} pb={0}>
             <YStack w={'100%'} paddingVertical={10}>
                 <Paragraph fontSize={20}>
                     DATA

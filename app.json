@@ -4,10 +4,27 @@
     "slug": "Kronos",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/kronos_logo_v2.png",
     "userInterfaceStyle": "light",
+    "notification": {
+      "icon": "./assets/images/kronos_icon_v2.png",
+      "color": "#e3c9f2"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/kronos_icon_v2.png",
+          "color": "#e3c9f2",
+          "sounds": [
+            "./assets/sounds/on_segment_complete.wav",
+            "./assets/sounds/on_session_complete.wav"
+          ]
+        }
+      ]
+    ],
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/images/kronos_splash_screen_v2.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,8 +36,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/kronos_logo_v2.png",
+        "backgroundColor": "#F0D2FF"
       },
       "softwareKeyboardLayoutMode": "pan",
       "package": "com.aught.Kronos"

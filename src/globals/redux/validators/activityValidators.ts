@@ -17,7 +17,7 @@ function genericActivityValidation(app_state:AppState,activity: Activity): Valid
     }
 
     // check that the default increment id given is valid
-    if (!app_state.durations[activity.default_duration_id]) {
+    if (activity.default_duration_id === null || !app_state.durations[activity.default_duration_id]) {
         return {
             status: ValidationStatus.ERROR,
             error: {

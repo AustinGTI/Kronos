@@ -1,6 +1,5 @@
 import React from 'react'
 import * as BackgroundFetch from 'expo-background-fetch'
-import {BackgroundTasks} from "../../../../globals/types/tasks";
 import {AppState, Platform} from "react-native";
 import * as Notifications from 'expo-notifications'
 import Constants from 'expo-constants'
@@ -13,6 +12,11 @@ Notifications.setNotificationHandler({
         shouldSetBadge: false
     })
 })
+
+export enum TimerNotificationType {
+    SEGMENT_END = 'SEGMENT_END',
+    SESSION_END = 'SESSION_END',
+}
 
 async function registerPushNotificationsAsync() {
     let token;
@@ -42,13 +46,13 @@ async function registerPushNotificationsAsync() {
     }
 }
 
-async function schedulePushNotification(title: string, message: string, datetime: Date) {
+async function schedulePushNotification(title: string, message: string, type: TimerNotificationType, datetime: Date) {
     console.log('scheduling notification for ', datetime, 'with title ', title, 'and message ', message)
     return await Notifications.scheduleNotificationAsync({
         content: {
             title: title,
             body: message,
-            sound: true,
+            sound: type === TimerNotificationType.SEGMENT_END ? 'on_segment_complete.wav' : 'on_session_complete.wav',
             vibrate: [250, 500, 250]
             // data: {data: 'goes here'},
         },

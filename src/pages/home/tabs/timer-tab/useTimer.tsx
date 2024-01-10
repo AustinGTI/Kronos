@@ -10,7 +10,7 @@ import timerTabSelector from "../../../../globals/redux/selectors/timerTabSelect
 import {KronosPageContext, ModalType} from "../../../../globals/components/wrappers/KronosPage";
 import KronosAlert, {AlertModalProps} from "../../../../globals/components/wrappers/KronosAlert";
 import {Audio} from 'expo-av'
-import useTimerNotifications from "./useBackgroundTimer";
+import useTimerNotifications, {TimerNotificationType} from "./useBackgroundTimer";
 import {AppState} from "react-native";
 
 
@@ -226,7 +226,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
                     // if the active segment is the last segment left, schedule a notification for the end of the session
                     if (timer_state.segments_state.segments_remaining.length === 1) {
                         console.log('about to set notification for session end')
-                        scheduleNotification('Session is done!', '', end_time).then((id: string) => {
+                        scheduleNotification('Session is done!', '', TimerNotificationType.SESSION_END, end_time).then((id: string) => {
                             active_notification_id.current = id
                         })
                     } else {
@@ -235,7 +235,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
                         // else  'Focus time!'
                         const title = active_segment!.segment_type === SegmentTypes.FOCUS ? 'Time for a break!' : 'Focus time!'
                         console.log('about to set notification for segment end')
-                        scheduleNotification(title, 'Return to the app to start the timer', end_time).then((id) => {
+                        scheduleNotification(title, 'Return to the app to start the timer', TimerNotificationType.SEGMENT_END, end_time).then((id) => {
                             active_notification_id.current = id
                         })
                     }
