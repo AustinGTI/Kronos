@@ -1,7 +1,7 @@
 import React, {useCallback, useMemo} from 'react'
-import {Button, Paragraph, ScrollView, Separator, Stack, XStack, YStack} from "tamagui";
+import {Button, Paragraph, ScrollView, Separator, Stack, View, XStack, YStack} from "tamagui";
 import {Duration, Segment} from "../../../../../globals/types/main";
-import {Edit, Edit2, Trash} from "@tamagui/lucide-icons";
+import {ArrowUpFromDot, Edit, Edit2, PackageOpen, Trash} from "@tamagui/lucide-icons";
 import {useDispatch, useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
 import {FlatList} from "react-native";
@@ -277,6 +277,24 @@ export default function DurationsTab() {
 
     // only one increment can be open at a time to simulate an accordion
     const [open_duration, setOpenDuration] = React.useState<Duration | null>(null)
+
+    const durations = React.useMemo(() => {
+        return Object.values(planner_app_state.durations)
+    }, [planner_app_state.durations]);
+
+    if (!durations.length) {
+        return (
+            <View w={'100%'} h={'100%'}>
+                <YStack paddingTop={'70%'} alignItems={'center'}>
+                    <View paddingVertical={15}>
+                        <PackageOpen size={50} color={'$color'}/>
+                    </View>
+                    <Paragraph fontSize={20} color={'$color'} paddingVertical={5}>No durations yet</Paragraph>
+                    <Paragraph color={'$color'} paddingVertical={10}>Click + to add</Paragraph>
+                </YStack>
+            </View>
+        )
+    }
 
     return (
         <FlatList

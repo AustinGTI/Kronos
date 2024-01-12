@@ -29,7 +29,7 @@ function ActivityFormFields() {
                 </InputContainer>
                 <InputContainer field_key={'default_duration_id'} label={'Default Duration'}
                                 error={touched['default_duration_id'] ? errors['default_duration_id'] : undefined}>
-                    <DurationPicker setDuration={(duration) => setValues({...values, default_duration_id: duration.id})}
+                    <DurationPicker setDuration={(duration) => setValues({...values, default_duration_id: duration?.id ?? null})}
                                     accordion_id={'duration_picker'}
                                     active_duration_id={values['default_duration_id'] ?? undefined}/>
                 </InputContainer>

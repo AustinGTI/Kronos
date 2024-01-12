@@ -1,12 +1,12 @@
 import React, {useMemo} from 'react'
-import {Button, Circle, Paragraph, ScrollView, Separator, TamaguiElement, XStack, YStack} from "tamagui";
+import {Button, Circle, Paragraph, ScrollView, Separator, TamaguiElement, View, XStack, YStack} from "tamagui";
 import {useDispatch, useSelector} from "react-redux";
 import Animated, {useAnimatedStyle, Easing} from "react-native-reanimated";
 import {AppState} from "../../../../../globals/redux/reducers";
 import {Activity} from "../../../../../globals/types/main";
 // import {ArrowDown, Delete, Edit, Play} from "@tamagui/lucide-icons";
 import {FlatList} from "react-native";
-import {Edit, Edit2, Trash} from "@tamagui/lucide-icons";
+import {ArrowUpFromDot, ArrowUpRight, Edit, Edit2, PackageOpen, Trash} from "@tamagui/lucide-icons";
 import usePlannerTabContext from "../context";
 import {
     deleteActivityValidation,
@@ -238,10 +238,29 @@ export default function ActivitiesTab() {
 
     // only one activity can be expanded at a time, the list simulates an accordion
     const [open_activity, setOpenActivity] = React.useState<Activity | null>(null)
+
+    const activities: Activity[] = React.useMemo(() => {
+        return Object.values(planner_app_state.activities)
+    }, [planner_app_state.activities]);
+
+    if (!activities.length) {
+        return (
+            <View w={'100%'} h={'100%'}>
+                <YStack paddingTop={'70%'} alignItems={'center'}>
+                    <View paddingVertical={15}>
+                        <PackageOpen size={50} color={'$color'}/>
+                    </View>
+                    <Paragraph fontSize={20} color={'$color'} paddingVertical={5}>No activities yet</Paragraph>
+                    <Paragraph color={'$color'} paddingVertical={10}>Click + to add</Paragraph>
+                </YStack>
+            </View>
+        )
+    }
+
     return (
         <FlatList
             style={{width: '100%'}}
-            data={Object.values(planner_app_state.activities)}
+            data={activities}
             renderItem={({item}) => (
                 <ActivityPane app_state={planner_app_state} activity={item} open_activity={open_activity}
                               setOpenActivity={setOpenActivity}/>

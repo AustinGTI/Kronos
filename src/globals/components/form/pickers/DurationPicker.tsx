@@ -27,7 +27,7 @@ interface DurationPickerPaneProps {
 }
 
 interface DurationPickerProps {
-    setDuration: (duration: Duration) => void
+    setDuration: (duration: Duration | null) => void
     active_duration_id?: number
     accordion_id?: string
     close_on_select?: boolean
@@ -41,7 +41,7 @@ function DurationPickerPane({duration, onClick, is_active}: DurationPickerPanePr
                 borderRadius={10} borderColor={'$color'} width={'95%'}>
             <Paragraph color={'$color'}>{duration.name}</Paragraph>
             {/*<Button onPress={onClick}>Select</Button>*/}
-            <Checkbox checked={is_active}>
+            <Checkbox onPress={onClick} checked={is_active}>
                 <Checkbox.Indicator>
                     <Check strokeWidth={4}/>
                 </Checkbox.Indicator>
@@ -66,11 +66,15 @@ export default function DurationPicker({
     ), [active_duration_id, durations])
 
     const handleClickDuration = React.useCallback((duration: Duration) => {
-        setDuration(duration)
+        if (active_duration_id !== duration.id) {
+            setDuration(duration)
+        } else {
+            setDuration(null)
+        }
         if (close_on_select) {
             setDialogOpen(false)
         }
-    }, [setDuration, setDialogOpen, close_on_select])
+    }, [setDuration, setDialogOpen, close_on_select, active_duration_id])
 
     // when the dialog_open state changes, add or remove dialog from context if accordion id is set
     React.useEffect(() => {
@@ -103,7 +107,7 @@ export default function DurationPicker({
                 }
             </XStack>
             {dialog_open &&
-                <DialogContainer onClose={() => setDialogOpen(false)} maxHeight={200}>
+                <DialogContainer onClose={() => setDialogOpen(false)}>
                     <YStack width={'100%'} alignItems={'center'} paddingVertical={5}>
                         {Object.values(durations).map((duration, index) => (
                             <React.Fragment key={duration.id}>

@@ -11,10 +11,10 @@ export default function AppBanner() {
     return (
         <React.Fragment>
             <Image
-                source={require('../../../../../../assets/images/KronosLogo.png')}
+                source={require('../../../../../../assets/images/kronos_logo_v2.png')}
                 style={{
-                    width: 300,
-                    height: 300
+                    width: 350,
+                    height: 220
                 }}
             />
             <KronosContainer w={'75%'}>
