@@ -20,6 +20,9 @@ import KronosContainer from "../../../../globals/components/wrappers/KronosConta
 import KronosPage, {KronosPageContext, ModalType} from "../../../../globals/components/wrappers/KronosPage";
 import KronosButton from "../../../../globals/components/wrappers/KronosButton";
 import KronosAlert from "../../../../globals/components/wrappers/KronosAlert";
+import selectActivityState from "../../../../globals/redux/selectors/base_selectors/activitiesSelector";
+import selectDurationState from "../../../../globals/redux/selectors/base_selectors/durationsSelector";
+import {MAX_NO_OF_ACTIVITIES_NON_PREMIUM, MAX_NO_OF_DURATIONS_NON_PREMIUM} from "../../../../globals/config";
 
 
 interface SubTab {
@@ -43,14 +46,15 @@ const PLANNER_SUB_TABS: SubTab[] = [
 ]
 
 function PlannerTabContents() {
-    // Region : CONTEXTS AND STORES
+    // region : CONTEXTS AND STORES
     const dispatch = useDispatch()
 
-    const {modal_props: {openModal}} = React.useContext(KronosPageContext)
+    const app_state = useSelector(selectPlannerState)
 
-    const planner_app_state = useSelector(selectPlannerState)
-    // EndRegion
-    // Region : STATES
+    const {modal_props: {openModal}} = React.useContext(KronosPageContext)
+    // endregion
+
+    // region : STATES
     const [active_sub_tab, setActiveSubTab] = React.useState<SubTab>(PLANNER_SUB_TABS[0])
 
     const [form_is_open, setFormIsOpen] = React.useState<boolean>(false)
@@ -58,11 +62,12 @@ function PlannerTabContents() {
 
     const [alert_is_open, setAlertIsOpen] = React.useState<boolean>(false)
     const [alert_props, setAlertProps] = React.useState<AlertProps | null>(null)
-    // EndRegion
-    // Region : CALLBACKS
+    // endregion
+
+    // region : CALLBACKS
     const addActivity = React.useCallback((activity: Activity) => {
         // perform validation
-        const validation = createActivityValidation(planner_app_state, activity)
+        const validation = createActivityValidation(activity)
         if (validation.status === ValidationStatus.ERROR) {
             return validation
         }
@@ -79,11 +84,11 @@ function PlannerTabContents() {
             }
         })
         return validation
-    }, [planner_app_state, dispatch, openModal])
+    }, [dispatch, openModal])
 
     const addDuration = React.useCallback((duration: Duration) => {
         // perform validation
-        const validation = createDurationValidation(planner_app_state, duration)
+        const validation = createDurationValidation(duration)
         if (validation.status === ValidationStatus.ERROR) {
             return validation
         }
@@ -100,10 +105,24 @@ function PlannerTabContents() {
         })
         // setAlertIsOpen(true)
         return validation
-    }, [planner_app_state, dispatch, openModal])
+    }, [dispatch, openModal])
 
     const onClickAddButton = React.useCallback(() => {
         if (active_sub_tab.key === 'activities') {
+            // if the number of activities is more than the max under the current plan, show an alert
+            if (!app_state.settings.is_premium && Object.keys(app_state.activities).length >= MAX_NO_OF_ACTIVITIES_NON_PREMIUM) {
+                openModal({
+                    type: ModalType.ALERT,
+                    component: KronosAlert,
+                    component_props: {
+                        title: 'Activities Limit Reached',
+                        description: `You can only add up to ${MAX_NO_OF_ACTIVITIES_NON_PREMIUM} activities under the free plan. Upgrade to Kronos Premium at a one-time cost to add unlimited activities`,
+                        buttons: [],
+                        with_cancel_button: true,
+                    }
+                })
+                return
+            }
             openModal({
                 type: ModalType.SHEET,
                 component: ActivityForm,
@@ -115,6 +134,20 @@ function PlannerTabContents() {
                 }
             })
         } else {
+            // if the number of durations is more than the max under the current plan, show an alert
+            if (!app_state.settings.is_premium && Object.keys(app_state.durations).length >= MAX_NO_OF_DURATIONS_NON_PREMIUM) {
+                openModal({
+                    type: ModalType.ALERT,
+                    component: KronosAlert,
+                    component_props: {
+                        title: 'Durations Limit Reached',
+                        description: `You can only add up to ${MAX_NO_OF_DURATIONS_NON_PREMIUM} durations under the free plan. Upgrade to Kronos Premium at a one-time cost to add unlimited durations`,
+                        buttons: [],
+                        with_cancel_button: true,
+                    }
+                })
+                return
+            }
             openModal({
                 type: ModalType.SHEET,
                 component: DurationForm,
@@ -126,8 +159,8 @@ function PlannerTabContents() {
                 }
             })
         }
-    }, [active_sub_tab.key, openModal, addActivity, addDuration])
-    // EndRegion
+    }, [active_sub_tab.key, openModal, addActivity, addDuration, app_state.settings.is_premium, app_state.activities])
+    // endregion
 
     const planner_tab_context: PlannerTabContextProps = useMemo(() => ({
         form_data: {

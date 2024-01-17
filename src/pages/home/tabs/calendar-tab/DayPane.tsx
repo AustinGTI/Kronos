@@ -24,10 +24,15 @@ interface TimelineMarkerProps extends XStackProps {
     hour: number // the hour of the day between 0 and 23
 }
 
+interface DailyTimelineProps {
+    calendar_height: number
+}
+
 interface TimelineSegment {
     size: number // a float between 0 and 1
     type: SegmentType
 }
+
 
 interface TimelineSession {
     id: number
@@ -58,6 +63,25 @@ function TimelineMarker({hour, ...stack_props}: TimelineMarkerProps) {
             <Paragraph fontSize={10} lineHeight={10} color={'$color'} paddingRight={5}>{hour_string}</Paragraph>
             <View flexGrow={1} h={1} borderTopColor={'$color'} borderTopWidth={1}/>
         </XStack>
+    )
+}
+
+function DailyTimeline({calendar_height}: DailyTimelineProps) {
+    return (
+        // add timeline markers for every 2nd hour from 0 to 23
+        <React.Fragment>
+            {
+                [...Array(24).keys()].filter(hour => hour % 2).map((hour) => {
+                    const top = (hour / 24 * calendar_height - 5)
+                    return (
+                        <TimelineMarker
+                            key={hour} hour={hour}
+                            paddingRight={5} w={'100%'}
+                            zIndex={-1} top={top} position={'absolute'} h={10}/>
+                    )
+                })
+            }
+        </React.Fragment>
     )
 }
 
@@ -140,18 +164,7 @@ function Timeline({sessions}: TimelineProps) {
                     }
                 )
             }
-            {
-                // add timeline markers for every 2nd hour from 0 to 23
-                [...Array(24).keys()].filter(hour => hour % 2).map((hour) => {
-                    const top = (hour / 24 * calendar_height - 5)
-                    return (
-                        <TimelineMarker
-                            key={hour} hour={hour}
-                            paddingRight={5} w={'100%'}
-                            zIndex={-1} top={top} position={'absolute'} h={10}/>
-                    )
-                })
-            }
+            <DailyTimeline calendar_height={calendar_height}/>
         </YStack>
     )
 }
@@ -163,19 +176,6 @@ export default function DayPane({day}: DayPaneProps) {
         date_data: {active_date}
     } = React.useContext(CalendarTabContext)
 
-    // const day: Day = React.useMemo(() => {
-    //     // if there are no sessions for the day, return a day object with an empty sessions object
-    //     if (!sessions[date_as_iso]) {
-    //         return {
-    //             date_as_iso: DDMMYYYYToDate(date_as_iso).toISOString(),
-    //             sessions: {}
-    //         }
-    //     } else {
-    //         return sessions[date_as_iso]
-    //     }
-    // }, [sessions, date_as_iso])
-
-    // the pane is rendered only if it is one day before or after the active date_as_iso
     const render_page = React.useMemo(() => {
         const yesterday = dateToDDMMYYYY(new Date(active_date.getTime() - 24 * 60 * 60 * 1000))
         const today = dateToDDMMYYYY(active_date)
@@ -193,7 +193,12 @@ export default function DayPane({day}: DayPaneProps) {
             {render_page ? <React.Fragment>
                 {/*<SideBar date_as_iso={new Date(day.date_as_iso)} sessions={Object.values(day.sessions)}/>*/}
                 <Timeline sessions={day.sessions}/>
-            </React.Fragment> : <Paragraph>Blank {dateToDDMMYYYY(new Date(day.date_as_iso))}</Paragraph>}
+            </React.Fragment> : (
+                // <Paragraph>Blank {dateToDDMMYYYY(new Date(day.date_as_iso))}</Paragraph>
+                <YStack h={'100%'} w={'100%'}>
+                    <DailyTimeline calendar_height={calendar_height}/>
+                </YStack>
+            )}
         </XStack>
     )
 }

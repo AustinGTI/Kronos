@@ -44,9 +44,15 @@ const activitiesSlice = createSlice({
         createActivity: (state, {payload}: { type: string, payload: Activity }) => {
             // a new activity will have an id of -1, so generate a valid one
             const id = Math.max(...Object.keys(state).map(key => parseInt(key))) + 1
+            // ? pre-processing
+            // trim the name string
+            payload.name = payload.name.trim()
             state[id] = {...payload, id}
         },
         updateActivity: (state, {payload}: { type: string, payload: Activity }) => {
+            // ? pre-processing
+            // trim the name string
+            payload.name = payload.name.trim()
             state[payload.id] = payload
         },
 

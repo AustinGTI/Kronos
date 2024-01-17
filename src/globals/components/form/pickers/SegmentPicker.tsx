@@ -195,7 +195,9 @@ export default function SegmentPicker({active_segments: segments, setSegments, s
         // if there are segments, display them else display the rules for adding segments
         <React.Fragment>
             <XStack w={'100%'} justifyContent={'space-between'}>
-                <Button onPress={onClickAddButton} icon={<Plus size={'4$'}/>}/>
+                <Button
+                    onPress={onClickAddButton}
+                    icon={<Plus size={'4$'}/>}/>
                 <YStack alignItems={'center'} height={'100%'}>
                     <Paragraph fontSize={30} lineHeight={30}
                                color={'$color'}>{(segments ?? []).reduce((total, segment) => {
@@ -212,8 +214,7 @@ export default function SegmentPicker({active_segments: segments, setSegments, s
                             segment.
                         </Paragraph>
                         <Paragraph textAlign={'center'} fontSize={10} color={'#aaa'}>
-                            2. A Pomodoro Duration's segments should be alternating between focus and break segments,
-                            consecutive segments of the same type will be merged into one segment.
+                            2. A Pomodoro Duration should alternate between focus  and break segments
                         </Paragraph>
                         <Paragraph textAlign={'center'} fontSize={10} color={'#aaa'}>
                             3. The recommended duration for a focus segment is 25 minutes to an hour, and for a break

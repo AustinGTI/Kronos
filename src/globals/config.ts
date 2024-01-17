@@ -1,0 +1,2 @@
+export const MAX_NO_OF_DURATIONS_NON_PREMIUM = 5;
+export const MAX_NO_OF_ACTIVITIES_NON_PREMIUM = 5;

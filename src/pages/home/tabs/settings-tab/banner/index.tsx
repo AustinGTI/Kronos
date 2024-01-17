@@ -5,6 +5,8 @@ import {Timer} from "@tamagui/lucide-icons";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
 import ThemeButton from "./ThemeButton";
 import {Image} from "react-native";
+import useAppSettings from "../../../../../globals/redux/hooks/useAppSettings";
+import AppPremiumStatusConfiguration from "./AppPremiumStatusConfiguration";
 
 
 export default function AppBanner() {
@@ -19,9 +21,6 @@ export default function AppBanner() {
             />
             <KronosContainer w={'75%'}>
                 <YStack w={'100%'} justifyContent={'space-between'}>
-                    {/*<YStack alignItems={'center'} justifyContent={'center'} paddingVertical={15}>*/}
-                    {/*    <ThemeButton/>*/}
-                    {/*</YStack>*/}
                     <YStack alignItems={'center'} paddingTop={10}>
                         <Paragraph fontSize={30} lineHeight={30}>
                             KRONOS
@@ -30,6 +29,9 @@ export default function AppBanner() {
                             By Aught.
                         </Paragraph>
                     </YStack>
+                    <XStack alignItems={'center'} justifyContent={'center'} paddingVertical={3}>
+                        <AppPremiumStatusConfiguration/>
+                    </XStack>
                 </YStack>
             </KronosContainer>
         </React.Fragment>

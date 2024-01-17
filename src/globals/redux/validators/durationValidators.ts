@@ -2,8 +2,9 @@ import {AppState} from "../reducers";
 import {SpecialField, ValidationStatus, ValidationResponse} from "../types";
 import {Duration, SegmentTypes} from "../../types/main";
 import {compareStrings} from "../../helpers/string_functions";
+import {store} from "../index";
 
-function genericDurationValidation(app_state: AppState, duration: Duration): ValidationResponse {
+function genericDurationValidation(duration: Duration): ValidationResponse {
     // check that the segments follow a set of rules
     // ? 1. there must be at least one segment
     if (duration.segments.length === 0) {
@@ -45,7 +46,8 @@ function genericDurationValidation(app_state: AppState, duration: Duration): Val
     }
 }
 
-export function createDurationValidation(app_state: AppState, new_duration: Duration): ValidationResponse {
+export function createDurationValidation(new_duration: Duration): ValidationResponse {
+    const app_state = store.getState()
     // check that the increment name is unique
     const has_duplicate = Object.values(app_state.durations).some(duration => compareStrings(duration.name, new_duration.name))
     if (has_duplicate) {
@@ -57,10 +59,11 @@ export function createDurationValidation(app_state: AppState, new_duration: Dura
             }
         }
     }
-    return genericDurationValidation(app_state, new_duration)
+    return genericDurationValidation(new_duration)
 }
 
-export function updateDurationValidation(app_state: AppState, duration: Duration): ValidationResponse {
+export function updateDurationValidation(duration: Duration): ValidationResponse {
+    const app_state = store.getState()
     // check that the increment exists
     if (!app_state.durations[duration.id]) {
         return {
@@ -84,10 +87,11 @@ export function updateDurationValidation(app_state: AppState, duration: Duration
         }
     }
 
-    return genericDurationValidation(app_state, duration)
+    return genericDurationValidation(duration)
 }
 
-export function deleteDurationValidation(app_state: AppState, duration_id: number): ValidationResponse {
+export function deleteDurationValidation(duration_id: number): ValidationResponse {
+    const app_state = store.getState()
     // check that the duration exists
     if (!app_state.durations[duration_id]) {
         return {

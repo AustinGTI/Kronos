@@ -92,7 +92,7 @@ function SelectCustomDurationPane({duration, is_selected, setToTimerDuration}: S
                     icon={!segment_picker_open ? ChevronDown : ChevronUp}/>
             </XStack>
             {segment_picker_open &&
-                <YStack w={'85%'} alignItems={'center'}>
+                <YStack w={'85%'} alignItems={'center'} paddingBottom={10}>
                     <Paragraph color={'red'} fontSize={10}>{error ?? ''}</Paragraph>
                     <SegmentPicker setSegments={setCustomSegments} active_segments={custom_segments}/>
                     <Button onPress={handleSetToTimerDuration}>

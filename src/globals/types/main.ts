@@ -1,5 +1,6 @@
 export const EMPTY_RECORD_ID = -1;
 export const UNTITLED_RECORD_ID = -2;
+export const DELETED_RECORD_ID = -3;
 
 export type SegmentType = {
     key: number,
@@ -57,7 +58,7 @@ export interface Activity {
 export const EMPTY_ACTIVITY: Activity = {
     id: EMPTY_RECORD_ID,
     name: '',
-    color: '#fff',
+    color: '#f44336',
     default_duration_id: null,
     stats_data: {
         total_time: 0,
@@ -68,6 +69,17 @@ export const EMPTY_ACTIVITY: Activity = {
 export const UNTITLED_ACTIVITY: Activity = {
     id: UNTITLED_RECORD_ID,
     name: 'Untitled Activity',
+    color: '#ccc',
+    default_duration_id: null,
+    stats_data: {
+        total_time: 0,
+        total_sessions: 0
+    }
+}
+
+export const DELETED_ACTIVITY: Activity = {
+    id: DELETED_RECORD_ID,
+    name: 'Deleted Activity',
     color: '#ccc',
     default_duration_id: null,
     stats_data: {

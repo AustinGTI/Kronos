@@ -13,8 +13,13 @@ import Accordion from "../../../../../globals/components/wrappers/Accordion";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
 import FormTitle from "../../../../../globals/components/form/text/FormTitle";
 import {KeyboardAvoidingView} from "react-native";
+import FormError from "../../../../../globals/components/form/text/FormError";
 
-function ActivityFormFields() {
+interface ActivityFormProps {
+    global_error?: string
+}
+
+function ActivityFormFields({global_error}: ActivityFormProps) {
     const {
         touched, errors, values,
         handleChange, handleBlur,
@@ -29,15 +34,19 @@ function ActivityFormFields() {
                 </InputContainer>
                 <InputContainer field_key={'default_duration_id'} label={'Default Duration'}
                                 error={touched['default_duration_id'] ? errors['default_duration_id'] : undefined}>
-                    <DurationPicker setDuration={(duration) => setValues({...values, default_duration_id: duration?.id ?? null})}
-                                    accordion_id={'duration_picker'}
-                                    active_duration_id={values['default_duration_id'] ?? undefined}/>
+                    <DurationPicker
+                        setDuration={(duration) => setValues({...values, default_duration_id: duration?.id ?? null})}
+                        accordion_id={'duration_picker'}
+                        active_duration_id={values['default_duration_id'] ?? undefined}/>
                 </InputContainer>
                 <InputContainer field_key={'color'} label={'Color'}
                                 error={touched['color'] ? errors['color'] : undefined}>
                     <SwatchColorPicker active_color={values['color']} accordion_id={'color_picker'}
                                        setColor={(color) => setValues({...values, color})} close_on_select={false}/>
                 </InputContainer>
+                <XStack w={'100%'} paddingHorizontal={10} alignItems={'center'} justifyContent={'center'}>
+                    <FormError error={global_error} textAlign={'center'}/>
+                </XStack>
             </Accordion>
         </KronosContainer>
     )
@@ -59,9 +68,8 @@ export default function ActivityForm({title, initial_values, onSubmit, submit_te
                         {form_header}
                     </XStack>
                 </XStack>
-                {global_error && <Paragraph>{global_error}</Paragraph>}
                 <KeyboardAvoidingView behavior={'padding'}>
-                    <ActivityFormFields/>
+                    <ActivityFormFields global_error={global_error}/>
                 </KeyboardAvoidingView>
             </YStack>
         </Formik>

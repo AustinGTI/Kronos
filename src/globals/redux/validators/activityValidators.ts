@@ -2,9 +2,10 @@ import {SpecialField, ValidationStatus, ValidationResponse} from "../types";
 import {AppState} from "../reducers";
 import {Activity} from "../../types/main";
 import {compareStrings, isValidHexColor} from "../../helpers/string_functions";
+import {store} from "../index";
 
 
-function genericActivityValidation(app_state:AppState,activity: Activity): ValidationResponse {
+function genericActivityValidation(app_state: AppState, activity: Activity): ValidationResponse {
     // check that the color is a valid hex color
     if (!isValidHexColor(activity.color)) {
         return {
@@ -33,7 +34,9 @@ function genericActivityValidation(app_state:AppState,activity: Activity): Valid
 }
 
 
-export function createActivityValidation(app_state: AppState, new_activity: Activity): ValidationResponse {
+export function createActivityValidation(new_activity: Activity): ValidationResponse {
+    const app_state = store.getState()
+
     // check that the activity name is unique
     const has_duplicate = Object.values(app_state.activities).some(activity => compareStrings(activity.name, new_activity.name))
     if (has_duplicate) {
@@ -59,7 +62,8 @@ export function createActivityValidation(app_state: AppState, new_activity: Acti
     return genericActivityValidation(app_state, new_activity)
 }
 
-export function updateActivityValidation(app_state: AppState, updated_activity: Activity): ValidationResponse {
+export function updateActivityValidation(updated_activity: Activity): ValidationResponse {
+    const app_state = store.getState()
     // check that the activity exists
     if (!app_state.activities[updated_activity.id]) {
         return {
@@ -89,7 +93,8 @@ export function updateActivityValidation(app_state: AppState, updated_activity: 
     return genericActivityValidation(app_state, updated_activity)
 }
 
-export function incrementActivityStatsValidation(app_state: AppState, activity_id: number): ValidationResponse {
+export function incrementActivityStatsValidation(activity_id: number): ValidationResponse {
+    const app_state = store.getState()
     // check that the activity exists
     if (!app_state.activities[activity_id]) {
         return {
@@ -105,7 +110,8 @@ export function incrementActivityStatsValidation(app_state: AppState, activity_i
     }
 }
 
-export function deleteActivityValidation(app_state: AppState, activity_id: number): ValidationResponse {
+export function deleteActivityValidation(activity_id: number): ValidationResponse {
+    const app_state = store.getState()
     // check that the activity exists
     if (!app_state.activities[activity_id]) {
         return {

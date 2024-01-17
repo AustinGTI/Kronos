@@ -34,17 +34,6 @@ export default function SettingsTab() {
         <KronosPage>
             <ScrollView w={'100%'} f={1} showsVerticalScrollIndicator={false}>
                 <YStack w={'100%'} backgroundColor={'$background'} alignItems={'center'}>
-                    {/*<PaneWrapper label={'Theme'}>*/}
-                    {/*    <ThemeSetting active_theme={theme} setTheme={(theme: AppTheme) => dispatch(setTheme(theme))}/>*/}
-                    {/*</PaneWrapper>*/}
-                    {/*<PaneWrapper label={'Focus Color'}>*/}
-                    {/*    <SwatchColorPicker active_color={focus_color} accordion_id={'focus_color_picker'}*/}
-                    {/*                       setColor={(color: string) => dispatch(setFocusColor(color))}/>*/}
-                    {/*</PaneWrapper>*/}
-                    {/*<PaneWrapper label={'Break Color'}>*/}
-                    {/*    <SwatchColorPicker active_color={break_color} accordion_id={'break_color_picker'}*/}
-                    {/*                       setColor={(color: string) => dispatch(setBreakColor(color))}/>*/}
-                    {/*</PaneWrapper>*/}
                     <AppBanner/>
                     <DataSetting/>
                     <BackupSetting/>

@@ -30,7 +30,6 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
     const dispatch = useDispatch()
     const timer_interval_ref = React.useRef<number | null>(null)
 
-    const app_state = useSelector(timerTabSelector)
     const [timer_state, updateTimerState] = React.useReducer(timerStateReducer, null)
 
     const on_segment_done_sound = React.useRef<Audio.Sound | null>(null);
@@ -70,10 +69,10 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
         setSessionId(session.id)
         dispatch(startSession(session))
         // increment the activity stats
-        if (incrementActivityStatsValidation(app_state, timer_activity!.id).status === ValidationStatus.SUCCESS) {
+        if (incrementActivityStatsValidation(timer_activity!.id).status === ValidationStatus.SUCCESS) {
             dispatch(incrementActivitySessions({activity_id: timer_activity!.id}))
         }
-    }, [timer_duration, timer_activity, dispatch, updateTimerState, setSessionId, app_state])
+    }, [timer_duration, timer_activity, dispatch, updateTimerState, setSessionId])
 
     const pauseTimer = React.useCallback(() => {
         if (!timer_state?.timing_state.is_running) {
@@ -155,7 +154,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
                     increment: session_increments
                 }))
                 // the activity also records the session stats (number of sessions, duration)
-                if (incrementActivityStatsValidation(app_state, timer_activity!.id).status === ValidationStatus.SUCCESS) {
+                if (incrementActivityStatsValidation(timer_activity!.id).status === ValidationStatus.SUCCESS) {
                     dispatch(incrementActivityTime({activity_id: timer_activity!.id, increment: session_increments}))
                 }
             } else {

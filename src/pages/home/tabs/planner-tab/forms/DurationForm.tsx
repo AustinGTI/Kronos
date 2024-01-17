@@ -15,8 +15,12 @@ import FormTitle from "../../../../../globals/components/form/text/FormTitle";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
 import {KeyboardAvoidingView} from "react-native";
 
-function DurationFormFields() {
-    const {errors, values, touched,submitCount, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
+interface DurationFormProps {
+    global_error?: string
+}
+
+function DurationFormFields({global_error}: DurationFormProps) {
+    const {errors, values, touched, submitCount, handleChange, setValues, handleBlur} = useFormikContext<Duration>()
     const [segments_touched, setSegmentsTouched] = React.useState<boolean>(false)
     const segment_error = React.useMemo(() => {
         if (!errors['segments']) {
@@ -48,6 +52,9 @@ function DurationFormFields() {
                                    active_segments={values['segments']} setTouched={() => setSegmentsTouched(true)}/>
                     <SegmentsBarView segments={values['segments']} marginTop={10}/>
                 </InputContainer>
+                <XStack w={'100%'} paddingHorizontal={10} alignItems={'center'} justifyContent={'center'}>
+                    <FormError error={global_error} textAlign={'center'}/>
+                </XStack>
             </YStack>
         </KronosContainer>
     )
@@ -68,9 +75,8 @@ export default function DurationForm({title, initial_values, form_header, onSubm
                         {form_header}
                     </XStack>
                 </XStack>
-                <FormError error={global_error}/>
                 <KeyboardAvoidingView behavior={'padding'}>
-                    <DurationFormFields/>
+                    <DurationFormFields global_error={global_error}/>
                 </KeyboardAvoidingView>
             </YStack>
         </Formik>

@@ -1,5 +1,5 @@
 import React from 'react'
-import {Activity, Segment, Session} from "../../../../../globals/types/main";
+import {Activity, DELETED_ACTIVITY, Segment, Session} from "../../../../../globals/types/main";
 import {Paragraph, ScrollView, View, XStack, YStack} from "tamagui";
 import {useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
@@ -106,21 +106,21 @@ export default function SessionViewModal({session}: SessionViewModalProps) {
     const activities = useSelector((state: AppState) => state.activities)
     const session_activity: Activity | null = React.useMemo(() => {
         if (!session) return null
-        return activities[session.activity_id]
+        return activities[session.activity_id] ?? DELETED_ACTIVITY
     }, [activities, session])
 
     if (!session) return null
     return (
         <YStack w={'100%'} h={'80%'} alignItems={'center'}>
-            <KronosContainer w={'60%'}>
-                <XStack w={"100%"} alignItems={'center'} justifyContent={'center'}
+            <KronosContainer>
+                <XStack alignItems={'center'} justifyContent={'center'}
                         paddingHorizontal={10}>
                     <View w={30} h={30} backgroundColor={session_activity?.color ?? '#ddd'} borderRadius={10}/>
                     <Paragraph textTransform={'uppercase'} paddingHorizontal={10}
                                fontSize={17}>{session_activity?.name ?? 'Custom Activity'}</Paragraph>
                     <View w={30} h={30} backgroundColor={session_activity?.color ?? '#ddd'} borderRadius={10}/>
                 </XStack>
-                <XStack w={'100%'} alignItems={'center'} justifyContent={'center'} paddingTop={10}>
+                <XStack alignItems={'center'} justifyContent={'center'} paddingTop={10}>
                     <TimeRangeView start_time={new Date(session.start_time)}
                                    end_time={session.end_time ? new Date(session.end_time) : null}/>
                 </XStack>

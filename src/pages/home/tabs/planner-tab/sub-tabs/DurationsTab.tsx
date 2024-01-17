@@ -22,9 +22,9 @@ import DeleteButton from "../../../../../globals/components/form/buttons/DeleteB
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {heightPercentageToDP} from "react-native-responsive-screen";
 import {boolean, number} from "yup";
+import selectDurationState from "../../../../../globals/redux/selectors/base_selectors/durationsSelector";
 
 interface DurationPaneProps {
-    app_state: AppState,
     duration: Duration
     open_duration: Duration | null
     setOpenDuration: React.Dispatch<React.SetStateAction<Duration | null>>
@@ -85,7 +85,7 @@ function DurationSegmentTimeline({duration}: DurationSegmentTimelineProps) {
 
 }
 
-function DurationPane({app_state, duration, open_duration, setOpenDuration}: DurationPaneProps) {
+function DurationPane({duration, open_duration, setOpenDuration}: DurationPaneProps) {
     const default_pane_height = React.useMemo(() => {
         return heightPercentageToDP('9%')
     }, []);
@@ -109,7 +109,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
     }, [open_duration, duration, setOpenDuration]);
 
     const updateCurrentDuration = React.useCallback((updated_duration: Duration) => {
-        const validation = updateDurationValidation(app_state, updated_duration)
+        const validation = updateDurationValidation(updated_duration)
         if (validation.status === ValidationStatus.ERROR) {
             return validation
         }
@@ -125,11 +125,11 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
             }
         })
         return validation
-    }, [app_state, dispatch, openModal]);
+    }, [dispatch, openModal]);
 
     const deleteCurrentDuration = React.useCallback(() => {
         // validate the crud request
-        const validation = deleteDurationValidation(app_state, duration.id)
+        const validation = deleteDurationValidation(duration.id)
         // if validation fails, display the error description after a short delay
         if (validation.status === ValidationStatus.ERROR) {
             openModal({
@@ -158,7 +158,7 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
                 timeout_in_ms: 2000
             }
         })
-    }, [app_state, duration.id, dispatch, openModal]);
+    }, [duration.id, dispatch, openModal]);
 
     const handleOnClickDeleteButton = React.useCallback(() => {
         openModal({
@@ -273,14 +273,14 @@ function DurationPane({app_state, duration, open_duration, setOpenDuration}: Dur
 }
 
 export default function DurationsTab() {
-    const planner_app_state = useSelector(selectPlannerState)
+    const duration_state = useSelector(selectDurationState)
 
     // only one increment can be open at a time to simulate an accordion
     const [open_duration, setOpenDuration] = React.useState<Duration | null>(null)
 
     const durations = React.useMemo(() => {
-        return Object.values(planner_app_state.durations)
-    }, [planner_app_state.durations]);
+        return Object.values(duration_state)
+    }, [duration_state]);
 
     if (!durations.length) {
         return (
@@ -299,9 +299,9 @@ export default function DurationsTab() {
     return (
         <FlatList
             style={{width: '100%'}}
-            data={Object.values(planner_app_state.durations)}
+            data={durations}
             renderItem={({item}) => (
-                <DurationPane app_state={planner_app_state} duration={item} open_duration={open_duration}
+                <DurationPane duration={item} open_duration={open_duration}
                               setOpenDuration={setOpenDuration}/>
             )}/>
     )

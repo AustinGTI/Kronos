@@ -24,9 +24,9 @@ import DeleteButton from "../../../../../globals/components/form/buttons/DeleteB
 import {boolean, number} from "yup";
 import {useSharedValue, withTiming} from "react-native-reanimated";
 import {heightPercentageToDP} from "react-native-responsive-screen";
+import selectActivityState from "../../../../../globals/redux/selectors/base_selectors/activitiesSelector";
 
 interface ActivityPaneProps {
-    app_state: AppState
     activity: Activity
     open_activity: Activity | null
     setOpenActivity: React.Dispatch<React.SetStateAction<Activity | null>>
@@ -46,7 +46,7 @@ export function ActivityStat({value, label}: ActivityStatProps) {
     );
 }
 
-function ActivityPane({app_state, activity, open_activity, setOpenActivity}: ActivityPaneProps) {
+function ActivityPane({activity, open_activity, setOpenActivity}: ActivityPaneProps) {
     const default_pane_height = React.useMemo(() => {
         return heightPercentageToDP('7%')
     }, []);
@@ -74,7 +74,7 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
     }, [open_activity, setOpenActivity, activity])
 
     const updateCurrentActivity = React.useCallback((updated_activity: Activity) => {
-        const validation = updateActivityValidation(app_state, updated_activity)
+        const validation = updateActivityValidation(updated_activity)
         if (validation.status === ValidationStatus.ERROR) {
             return validation
         }
@@ -90,11 +90,11 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
             },
         })
         return validation
-    }, [app_state, dispatch, openModal]);
+    }, [dispatch, openModal]);
 
     const deleteCurrentActivity = React.useCallback(() => {
         // validate the crud request
-        const validation = deleteActivityValidation(app_state, activity.id)
+        const validation = deleteActivityValidation(activity.id)
         // if validation fails, display the error description after a short delay
         if (validation.status === ValidationStatus.ERROR) {
             openModal({
@@ -123,7 +123,7 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
                 timeout_in_ms: 2000
             },
         })
-    }, [app_state, activity.id, dispatch, openModal]);
+    }, [activity.id, dispatch, openModal]);
 
 
     const handleOnClickDeleteButton = React.useCallback(() => {
@@ -234,14 +234,14 @@ function ActivityPane({app_state, activity, open_activity, setOpenActivity}: Act
 }
 
 export default function ActivitiesTab() {
-    const planner_app_state = useSelector(selectPlannerState)
+    const activities_state = useSelector(selectActivityState)
 
     // only one activity can be expanded at a time, the list simulates an accordion
     const [open_activity, setOpenActivity] = React.useState<Activity | null>(null)
 
     const activities: Activity[] = React.useMemo(() => {
-        return Object.values(planner_app_state.activities)
-    }, [planner_app_state.activities]);
+        return Object.values(activities_state)
+    }, [activities_state]);
 
     if (!activities.length) {
         return (
@@ -262,7 +262,7 @@ export default function ActivitiesTab() {
             style={{width: '100%'}}
             data={activities}
             renderItem={({item}) => (
-                <ActivityPane app_state={planner_app_state} activity={item} open_activity={open_activity}
+                <ActivityPane activity={item} open_activity={open_activity}
                               setOpenActivity={setOpenActivity}/>
             )}/>
     )

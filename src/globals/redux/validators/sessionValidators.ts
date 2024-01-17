@@ -3,8 +3,10 @@ import {SpecialField, ValidationResponse, ValidationStatus} from "../types";
 import {extractSessionDateKey} from "../../helpers/session_functions";
 import {Session} from "../../types/main";
 import {dateToDDMMYYYY} from "../../helpers/datetime_functions";
+import {store} from "../index";
 
-export function startSessionValidation(app_state: AppState, new_session: Session): ValidationResponse {
+export function startSessionValidation(new_session: Session): ValidationResponse {
+    const app_state = store.getState()
     // check that the activity exists if given
     if (new_session.activity_id && !app_state.activities[new_session.activity_id]) {
         return {
@@ -30,7 +32,8 @@ export function startSessionValidation(app_state: AppState, new_session: Session
     }
 }
 
-export function updateSessionValidation(app_state: AppState, session_id: number): ValidationResponse {
+export function updateSessionValidation(session_id: number): ValidationResponse {
+    const app_state = store.getState()
     // check that the day exists
     const date_key = dateToDDMMYYYY(new Date(session_id))
     if (!app_state.sessions[date_key]) {
@@ -57,7 +60,8 @@ export function updateSessionValidation(app_state: AppState, session_id: number)
     }
 }
 
-export function deleteSessionValidation(app_state: AppState, session_id: number): ValidationResponse {
+export function deleteSessionValidation(session_id: number): ValidationResponse {
+    const app_state = store.getState()
     // for now this is the same as updateSessionValidation
-    return updateSessionValidation(app_state, session_id)
+    return updateSessionValidation(session_id)
 }
