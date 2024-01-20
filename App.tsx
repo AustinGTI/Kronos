@@ -8,7 +8,7 @@ import {NavigationContainer} from "@react-navigation/native";
 import {Provider, useSelector} from "react-redux";
 import {persistor, store} from "./src/globals/redux";
 import {PersistGate} from "redux-persist/integration/react";
-import {AppTheme} from "./src/globals/redux/reducers/settingsReducer";
+import {KronosTheme} from "./src/globals/redux/reducers/settingsReducer";
 import {AppState} from "./src/globals/redux/reducers"
 import * as SplashScreen from 'expo-splash-screen'
 import {Animated} from "react-native";

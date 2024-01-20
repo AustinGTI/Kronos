@@ -37,6 +37,9 @@ const animations = createAnimations({
     }
 })
 
+// region FONTS
+// ? ........................
+
 const headingFont = createInterFont()
 
 const alatsiFont = createFont({
@@ -70,45 +73,62 @@ const alatsiFont = createFont({
 })
 
 const rubikFont = createFont({
-    family: 'Rubik',
-    size: {
-        1: 11,
-        2: 14,
-        3: 32,
-        4: 48,
-        true: 14,
-    },
-    lineHeight: {
-        // 1 will be 22
-        1: 22,
-        2: 24,
-        3: 42,
-        4: 56,
-        true: 24,
-    },
-    weight: {
-        1: '500',
-        2: '600',
-        3: '800',
-        true: '500',
-    },
-    letterSpacing: {
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-    },
-})
+        family: 'Rubik',
+        size: {
+            1: 11,
+            2: 14,
+            3: 32,
+            4: 48,
+            true: 14,
+        },
+        lineHeight: {
+            // 1 will be 22
+            1: 22,
+            2: 24,
+            3: 42,
+            4: 56,
+            true: 24,
+        },
+        weight: {
+            1: '500',
+            2: '600',
+            3: '800',
+            true: '500',
+        },
+        letterSpacing: {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+        },
+    }
+)
+// ? ........................
+// endregion ........................
 
-const bodyFont = createInterFont()
+
+// region THEMING
+// ? ........................
 
 const common_theme = {
     backgroundPress: 'transparent'
 }
 
+export enum KronosTheme {
+    POMODORO_PURPLE = 'pomodoro_purple',
+    CHRONOGRAPH_CHERRY = 'chronograph_cherry',
+    HOURGLASS_HAZEL = 'hourglass_hazel',
+    TEMPORAL_TEAL = 'temporal_teal',
+    OCLOCK_ONYX = 'oclock_onyx',
+}
+
+// ? ........................
+// endregion ........................
+
+
 const config = createTamagui({
     animations,
-    defaultTheme: 'dark',
+    defaultTheme: KronosTheme.POMODORO_PURPLE,
     shouldAddPrefersColorThemes: false,
     themeClassNameOnRoot: false,
     shorthands,
@@ -118,8 +138,8 @@ const config = createTamagui({
     },
     themes: {
         ...themes,
-        dark: {
-            ...themes.dark,
+        [KronosTheme.POMODORO_PURPLE]: {
+            // ...themes.dark,
             ...common_theme,
             background: '#1c002a',
             foreground: '#000',
@@ -129,8 +149,8 @@ const config = createTamagui({
             active_color: '#a900fe',
             shadowColor: '#7b00b8',
         },
-        light: {
-            ...themes.light,
+        [KronosTheme.POMODORO_PURPLE]: {
+            // ...themes.light,
             ...common_theme,
             background: '#f0d2ff',
             foreground: '#fff',

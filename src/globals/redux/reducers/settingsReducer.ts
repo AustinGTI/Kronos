@@ -1,21 +1,17 @@
 import {createSlice} from "@reduxjs/toolkit";
 import chroma from "chroma-js";
+import {KronosTheme} from "../../../../tamagui.config";
 
-export enum AppTheme {
-    DARK = 'dark',
-    LIGHT = 'light',
-    // SYSTEM = 'system'
-}
 
 export type SettingsState = {
-    theme: AppTheme;
+    theme: KronosTheme;
     focus_color: string;
     break_color: string;
     is_premium: boolean;
 }
 
 const initial_state: SettingsState = {
-    theme: AppTheme.LIGHT,
+    theme: KronosTheme.POMODORO_PURPLE,
     focus_color: '#db9cff',
     break_color: '#ffe169',
     is_premium: false
@@ -26,7 +22,7 @@ const settingsSlice = createSlice({
     name: 'settings',
     initialState: initial_state,
     reducers: {
-        setTheme: (state, {payload}: { type: string, payload: AppTheme }) => {
+        setTheme: (state, {payload}: { type: string, payload: KronosTheme }) => {
             state.theme = payload;
         },
         setFocusColor: (state, {payload}: { type: string, payload: string }) => {
