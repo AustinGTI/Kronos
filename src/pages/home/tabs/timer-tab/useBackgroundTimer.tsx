@@ -37,11 +37,19 @@ async function registerPushNotificationsAsync() {
     }
 
     if (Platform.OS === 'android') {
-        Notifications.setNotificationChannelAsync('default', {
-            name: 'default',
+        Notifications.setNotificationChannelAsync('segment_complete', {
+            name: 'segment_complete',
             importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#FF231F7C'
+            vibrationPattern: [0, 250],
+            sound: 'on_segment_complete.wav',
+            lightColor: '#f0d2ff'
+        }).then();
+        Notifications.setNotificationChannelAsync('session_complete', {
+            name: 'session_complete',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 500],
+            sound: 'on_session_complete.wav',
+            lightColor: '#f0d2ff'
         }).then();
     }
 }
@@ -52,12 +60,12 @@ async function schedulePushNotification(title: string, message: string, type: Ti
         content: {
             title: title,
             body: message,
-            sound: type === TimerNotificationType.SEGMENT_END ? 'on_segment_complete.wav' : 'on_session_complete.wav',
-            vibrate: [250, 500, 250]
+            sound: true,
             // data: {data: 'goes here'},
         },
         trigger: {
             date: datetime,
+            channelId: type === TimerNotificationType.SEGMENT_END ? 'segment_complete' : 'session_complete'
         },
     });
 }

@@ -85,8 +85,8 @@ export default function App() {
 
         try {
             await SplashScreen.hideAsync()
-            // wait 2 seconds before showing the app
-            await new Promise(resolve => setTimeout(resolve, 2000))
+            // wait 1 seconds before showing the app
+            await new Promise(resolve => setTimeout(resolve, 1000))
         } catch (e) {
             console.warn(e)
         } finally {
