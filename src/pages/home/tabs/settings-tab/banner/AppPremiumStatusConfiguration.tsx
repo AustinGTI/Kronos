@@ -70,7 +70,15 @@ function PremiumStatusModal({is_premium, closeModal}: PremiumStatusModalProps) {
             <XStack>
                 <KronosContainer marginVertical={5}>
                     {is_premium ? (
-                        <Paragraph>Thank you for your support!</Paragraph>
+                        // <Paragraph>Thank you for your support!</Paragraph>
+                        // todo: remove the downgrade button before release
+                        <KronosButton
+                            label_props={{
+                                fontSize: 18,
+                                lineHeight: 20
+                            }}
+                            onPress={downgradeAppOnClick}
+                            label={'Thank you for your support'}/>
                     ) : (
                         <KronosButton
                             label_props={{

@@ -111,8 +111,10 @@ const rubikFont = createFont({
 // ? ........................
 
 const common_theme = {
-    backgroundPress: 'transparent'
+    backgroundPress: 'transparent',
+    error: '#f00'
 }
+
 
 export enum KronosTheme {
     POMODORO_PURPLE = 'pomodoro_purple',
@@ -122,13 +124,19 @@ export enum KronosTheme {
     OCLOCK_ONYX = 'oclock_onyx',
 }
 
+export const DARK_THEMES = [
+    'dark',
+    KronosTheme.TEMPORAL_TEAL,
+    KronosTheme.OCLOCK_ONYX,
+]
+
 // ? ........................
 // endregion ........................
 
 
 const config = createTamagui({
     animations,
-    defaultTheme: KronosTheme.POMODORO_PURPLE,
+    defaultTheme: 'dark',
     shouldAddPrefersColorThemes: false,
     themeClassNameOnRoot: false,
     shorthands,
@@ -138,28 +146,76 @@ const config = createTamagui({
     },
     themes: {
         ...themes,
-        [KronosTheme.POMODORO_PURPLE]: {
-            // ...themes.dark,
+        dark: {
+            ...themes.dark,
             ...common_theme,
             background: '#1c002a',
             foreground: '#000',
             border: '#fff',
-            error: '#ff0000',
             color: '#e9bcff',
             active_color: '#a900fe',
             shadowColor: '#7b00b8',
         },
-        [KronosTheme.POMODORO_PURPLE]: {
-            // ...themes.light,
+        light: {
+            ...themes.light,
             ...common_theme,
             background: '#f0d2ff',
             foreground: '#fff',
             border: '#aaa',
-            error: '#ff0000',
             color: '#3d005b',
             active_color: '#a900fe',
             shadowColor: '#6b00a1'
-        }
+        },
+        [KronosTheme.POMODORO_PURPLE]: {
+            ...themes.light,
+            ...common_theme,
+            background: '#f0d2ff',
+            foreground: '#fff',
+            border: '#aaa',
+            color: '#3d005b',
+            active_color: '#a900fe',
+            shadowColor: '#6b00a1'
+        },
+        [KronosTheme.CHRONOGRAPH_CHERRY]: {
+            ...themes.light,
+            ...common_theme,
+            background: '#ff7d7d',
+            foreground: '#fff',
+            border: '#aaa',
+            color: '#570000',
+            active_color: '#ef0000',
+            shadowColor: '#d40000'
+        },
+        [KronosTheme.HOURGLASS_HAZEL]: {
+            ...themes.light,
+            ...common_theme,
+            background: '#feed95',
+            foreground: '#fff',
+            border: '#aaa',
+            color: '#524000',
+            active_color: '#ffb800',
+            shadowColor: '#654f00'
+        },
+        [KronosTheme.TEMPORAL_TEAL]: {
+            ...themes.dark,
+            ...common_theme,
+            background: '#174e57',
+            foreground: '#002C34',
+            border: '#fff',
+            color: '#b7f4ff',
+            active_color: '#00d9ff',
+            shadowColor: '#000'
+        },
+        [KronosTheme.OCLOCK_ONYX]: {
+            ...themes.dark,
+            ...common_theme,
+            background: '#000',
+            foreground: '#1d1d1d',
+            border: '#fff',
+            color: '#b5b5b5',
+            active_color: '#fff',
+            shadowColor: '#000',
+        },
     },
     tokens: {
         ...tokens,

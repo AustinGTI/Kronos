@@ -1,5 +1,16 @@
 import React from "react";
-import {Paragraph, ScrollView, TamaguiProvider, Theme, useTheme, useThemeName, View, XStack, YStack} from "tamagui";
+import {
+    Paragraph,
+    ScrollView,
+    TamaguiProvider,
+    Theme,
+    ThemeName,
+    useTheme,
+    useThemeName,
+    View,
+    XStack,
+    YStack
+} from "tamagui";
 import config from "./tamagui.config";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 import {useFonts} from "expo-font";
@@ -8,27 +19,18 @@ import {NavigationContainer} from "@react-navigation/native";
 import {Provider, useSelector} from "react-redux";
 import {persistor, store} from "./src/globals/redux";
 import {PersistGate} from "redux-persist/integration/react";
-import {KronosTheme} from "./src/globals/redux/reducers/settingsReducer";
 import {AppState} from "./src/globals/redux/reducers"
 import * as SplashScreen from 'expo-splash-screen'
 import {Animated} from "react-native";
+import useAppSettings from "./src/globals/redux/hooks/useAppSettings";
 
 
 function ThemeWrapper({children}: { children: React.ReactNode }) {
     // get the theme from redux
-    const theme: AppTheme = useSelector((state: AppState) => state.settings.theme)
-
-    const active_theme: 'dark' | 'light' = React.useMemo(() => {
-        switch (theme) {
-            case AppTheme.DARK:
-                return 'dark'
-            case AppTheme.LIGHT:
-                return 'light'
-        }
-    }, [theme]);
+    const {theme} = useAppSettings()
 
     return (
-        <Theme name={active_theme}>
+        <Theme name={theme}>
             {children}
         </Theme>
     )
@@ -98,7 +100,10 @@ export default function App() {
             <PersistGate persistor={persistor}>
                 <TamaguiProvider config={config}>
                     <ThemeWrapper>
-                        <AppScreens/>
+                        {
+                            fonts_loaded &&
+                            <AppScreens/>
+                        }
                         {!splash_animation_complete && (
                             <Animated.View
                                 pointerEvents={'none'}

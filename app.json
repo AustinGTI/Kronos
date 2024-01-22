@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Kronos",
-    "slug": "Kronos",
+    "slug": "kronos",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/kronos_logo_v2.png",
@@ -47,8 +47,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "b2b2b2b2-2b2b-2b2b-2b2b-2b2b2b2b2b2b"
+        "projectId": "49d55d06-2209-4ea2-93be-baf365f421b9"
       }
-    }
+    },
+    "owner": "austinmclrn"
   }
 }

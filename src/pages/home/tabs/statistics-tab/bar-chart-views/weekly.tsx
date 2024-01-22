@@ -12,6 +12,7 @@ import {Day, UNTITLED_ACTIVITY} from "../../../../../globals/types/main";
 import {ChevronLeft, ChevronRight} from "@tamagui/lucide-icons";
 import {ActivitiesState} from "../../../../../globals/redux/reducers/activitiesReducer";
 import {SessionsState} from "../../../../../globals/redux/reducers/sessionsReducer";
+import KronosButton from "../../../../../globals/components/wrappers/KronosButton";
 
 
 interface WeeklyStackedBarChartProps {
@@ -187,39 +188,33 @@ export default function WeeklyStackedBarChart({
 
 
     return (
-        <YStack w={'100%'}>
-            <XStack w={'100%'} h={'20%'} justifyContent={'center'} alignItems={'center'}>
-                <Button
-                    backgroundColor={'transparent'}
+        <YStack w={'100%'} h={'90%'}>
+            <XStack w={'100%'} h={50} justifyContent={'space-around'} alignItems={'center'}>
+                <KronosButton
                     onPress={() => {
                         flatlist_ref.current?.scrollToIndex({
                             index: data.findIndex((date) => date === getIntervalDateFromDateString(active_date)) + 1,
                             animated: true
                         })
-                    }}>
-                    <ChevronLeft/>
-                </Button>
+                    }} icon={ChevronLeft}/>
                 <Paragraph>
                     {title_string}
                 </Paragraph>
-                <Button
-                    backgroundColor={'transparent'}
+                <KronosButton
                     disabled={getIntervalDateFromDateString(active_date) === getIntervalDateFromDateString(dateToDDMMYYYY(new Date()))}
                     onPress={() => {
                         flatlist_ref.current?.scrollToIndex({
                             index: data.findIndex((date) => date === getIntervalDateFromDateString(active_date)) - 1,
                             animated: true
                         })
-                    }}>
-                    <ChevronRight/>
-                </Button>
+                    }} icon={ChevronRight}/>
             </XStack>
-            <View w={'100%'} flexGrow={1}>
+            <View w={'100%'} flexGrow={1} paddingRight={10}>
                 <FlatList
                     ref={flatlist_ref}
                     data={data}
                     horizontal={true}
-                    style={{width: '100%', height: '80%'}}
+                    style={{width: '100%', height: '100%'}}
                     inverted={true}
                     initialNumToRender={3}
                     windowSize={2}

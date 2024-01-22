@@ -1,11 +1,7 @@
 import React from 'react'
 import {Paragraph, XStack, YStack} from "tamagui";
-import {heightPercentageToDP} from "react-native-responsive-screen";
-import {Timer} from "@tamagui/lucide-icons";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
-import ThemeButton from "./ThemeButton";
 import {Image} from "react-native";
-import useAppSettings from "../../../../../globals/redux/hooks/useAppSettings";
 import AppPremiumStatusConfiguration from "./AppPremiumStatusConfiguration";
 
 

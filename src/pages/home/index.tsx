@@ -13,7 +13,7 @@ import SettingsTab from "./tabs/settings-tab";
 const Tab = createBottomTabNavigator()
 
 export default function HomePage() {
-    const {background, foreground, color, borderColor} = useTheme()
+    const {background, foreground, color,active_color, borderColor} = useTheme()
     // const dispatch = useDispatch()
     // dispatch(clearSessions())
     // // generate dummy sessions from 1st September 2023 to today
@@ -28,32 +28,34 @@ export default function HomePage() {
                 tabBarLabel: () => null,
                 tabBarStyle: {
                     backgroundColor: foreground?.val,
+                    borderWidth: 0,
+                    borderColor: 'transparent',
                 },
                 lazy: false
             }}>
             <Tab.Screen name={'Statistics'} component={StatisticsTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <BarChart3 size={25} color={focused ? SECONDARY_COLOR : color?.val}/>
+                    <BarChart3 size={25} color={focused ? active_color?.val : color?.val}/>
                 )
             }}/>
             <Tab.Screen name={'Calendar'} component={CalendarTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <Calendar size={25} color={focused ? SECONDARY_COLOR : color?.val}/>
+                    <Calendar size={25} color={focused ? active_color?.val : color?.val}/>
                 )
             }}/>
             <Tab.Screen name={'Timer'} component={TimerTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <Timer size={25} color={focused ? SECONDARY_COLOR : color?.val}/>
+                    <Timer size={25} color={focused ? active_color?.val : color?.val}/>
                 )
             }}/>
             <Tab.Screen name={'Planner'} component={PlannerTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <Clipboard size={25} color={focused ? SECONDARY_COLOR : color?.val}/>
+                    <Clipboard size={25} color={focused ? active_color?.val : color?.val}/>
                 )
             }}/>
             <Tab.Screen name={'Settings'} component={SettingsTab} options={{
                 tabBarIcon: ({focused}) => (
-                    <Settings size={25} color={focused ? SECONDARY_COLOR : color?.val}/>
+                    <Settings size={25} color={focused ? active_color?.val : color?.val}/>
                 )
             }}/>
         </Tab.Navigator>

@@ -4,6 +4,7 @@ import SessionViewModal from "../../../pages/home/tabs/calendar-tab/modals/Sessi
 import CalendarPicker from "react-native-calendar-picker";
 import {dateToDDMMYYYY} from "../../helpers/datetime_functions";
 import {Keyboard, KeyboardAvoidingView, StatusBar, TouchableWithoutFeedback} from "react-native";
+import {DARK_THEMES, KronosTheme} from "../../../../tamagui.config";
 
 export enum ModalType {
     ALERT = 'ALERT',
@@ -104,7 +105,7 @@ export default function KronosPage({children}: KronosPageProps) {
     const theme_name = useThemeName()
 
     const {
-        foreground: {val: foreground},
+        foreground: {val: foreground}
     } = useTheme()
     const sheet_modal_content = React.useMemo(() => {
         return (
@@ -126,7 +127,7 @@ export default function KronosPage({children}: KronosPageProps) {
                 <StatusBar
                     backgroundColor={'rgba(0,0,0,0)'}
                     translucent={true}
-                    barStyle={theme_name === 'dark' ? 'light-content' : 'dark-content'}/>
+                    barStyle={DARK_THEMES.includes(theme_name) ? 'light-content' : 'dark-content'}/>
                 <View w={'100%'} h={StatusBar.currentHeight}/>
                 {children}
                 <Sheet modal={true}
@@ -150,6 +151,7 @@ export default function KronosPage({children}: KronosPageProps) {
                     <Sheet.Overlay
                         key="sheet-overlay"
                         animation="quick"
+                        backgroundColor={'rgba(0,0,0,0.3)'}
                         opacity={0.3}
                         enterStyle={{opacity: 0}}
                         exitStyle={{opacity: 0}}
@@ -194,6 +196,7 @@ export default function KronosPage({children}: KronosPageProps) {
                             // }]}
                             animation={['fast', {}]}
                             onPress={() => setAlertModalOpen(false)}
+                            backgroundColor={'rgba(0,0,0,0.3)'}
                             opacity={0.5}
                             enterStyle={{opacity: 0}}
                             exitStyle={{opacity: 0}}

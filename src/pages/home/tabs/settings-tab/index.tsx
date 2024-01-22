@@ -27,15 +27,13 @@ function PaneWrapper({label, children}: PaneWrapperProps) {
 }
 
 export default function SettingsTab() {
-    const {theme, focus_color, break_color} = useSelector(selectSettingsPageState)
-    const dispatch = useDispatch()
-
     return (
         <KronosPage>
             <ScrollView w={'100%'} f={1} showsVerticalScrollIndicator={false}>
                 <YStack w={'100%'} backgroundColor={'$background'} alignItems={'center'}>
                     <AppBanner/>
                     <DataSetting/>
+                    <ThemeSetting/>
                     <BackupSetting/>
                 </YStack>
             </ScrollView>

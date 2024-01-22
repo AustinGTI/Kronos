@@ -12,6 +12,7 @@ import {Day, UNTITLED_ACTIVITY} from "../../../../../globals/types/main";
 import {ChevronLast, ChevronLeft, ChevronRight} from "@tamagui/lucide-icons";
 import {ActivitiesState} from "../../../../../globals/redux/reducers/activitiesReducer";
 import {SessionsState} from "../../../../../globals/redux/reducers/sessionsReducer";
+import KronosButton from "../../../../../globals/components/wrappers/KronosButton";
 
 interface DailyStackedBarChartProps {
     activities: ActivitiesState
@@ -153,33 +154,29 @@ export default function DailyStackedBarChart({
 
     return (
         <YStack w={'100%'} h={'90%'}>
-            <XStack w={'100%'} h={40} justifyContent={'center'} alignItems={'center'}>
-                <Button
-                    backgroundColor={'transparent'}
+            <XStack w={'100%'} h={50} justifyContent={'space-around'} alignItems={'center'}>
+                <KronosButton
                     onPress={() => {
                         flatlist_ref.current?.scrollToIndex({
                             index: data.findIndex((date) => date === active_date) + 1,
                             animated: true
                         })
-                    }}>
-                    <ChevronLeft/>
-                </Button>
+                    }}
+                    icon={ChevronLeft}/>
                 <Paragraph>
                     {title_string}
                 </Paragraph>
-                <Button
-                    backgroundColor={'transparent'}
+                <KronosButton
                     disabled={active_date === dateToDDMMYYYY(new Date())}
                     onPress={() => {
                         flatlist_ref.current?.scrollToIndex({
                             index: data.findIndex((date) => date === active_date) - 1,
                             animated: true
                         })
-                    }}>
-                    <ChevronRight/>
-                </Button>
+                    }} icon={ChevronRight}>
+                </KronosButton>
             </XStack>
-            <View w={'100%'} flexGrow={1}>
+            <View w={'100%'} flexGrow={1} paddingRight={10}>
                 <FlatList
                     ref={flatlist_ref}
                     data={data}

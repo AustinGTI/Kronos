@@ -1,6 +1,6 @@
 import React from 'react'
 import {Activity, Day, SegmentType, Session, UNTITLED_ACTIVITY} from "../../../../globals/types/main";
-import {Paragraph, View, XStack, XStackProps, YStack} from "tamagui";
+import {Paragraph, useTheme, View, XStack, XStackProps, YStack} from "tamagui";
 import {useSelector} from "react-redux";
 import {AppState} from "../../../../globals/redux/reducers";
 import {TouchableOpacity} from "react-native";
@@ -137,8 +137,12 @@ function Timeline({sessions}: TimelineProps) {
         })
     }, [sessions, openModal])
 
+    const {
+        foreground: {val: foreground}
+    } = useTheme()
+
     return (
-        <YStack position={'relative'} flexGrow={1} h={'100%'} alignItems={'center'} backgroundColor={'$foreground'}>
+        <YStack position={'relative'} flexGrow={1} h={'100%'} alignItems={'center'} backgroundColor={foreground}>
             {
                 timeline_sessions.map((timeline_session, index) => {
                         return (
