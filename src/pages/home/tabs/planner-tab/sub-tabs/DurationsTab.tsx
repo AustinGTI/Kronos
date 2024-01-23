@@ -23,6 +23,7 @@ import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 're
 import {heightPercentageToDP} from "react-native-responsive-screen";
 import {boolean, number} from "yup";
 import selectDurationState from "../../../../../globals/redux/selectors/base_selectors/durationsSelector";
+import useSegmentColors from "../../../../../globals/redux/hooks/useSegmentColors";
 
 interface DurationPaneProps {
     duration: Duration
@@ -40,6 +41,8 @@ interface DurationSegmentTimelineProps {
 }
 
 function DurationSegmentPane({segment, max_segment_duration}: DurationSegmentPaneProps) {
+    const segment_colors = useSegmentColors()
+    console.log('the segment is ', segment, 'and the segment colors are', segment_colors)
     return (
         <XStack width={'100%'} padding={10} justifyContent={'space-between'} alignItems={'center'}>
             <Paragraph fontSize={12} color={'#777'} textTransform={'uppercase'} width={'30%'}>
@@ -47,7 +50,7 @@ function DurationSegmentPane({segment, max_segment_duration}: DurationSegmentPan
             </Paragraph>
             <Stack flexGrow={1} alignItems={'center'} justifyContent={'center'}>
                 <Stack height={12} width={`${segment.duration / max_segment_duration * 80}%`}
-                       backgroundColor={segment.type.color} borderRadius={4}/>
+                       backgroundColor={segment_colors[segment.type.color_key]} borderRadius={4}/>
             </Stack>
             <Paragraph fontSize={12}
                        color={'#777'}
@@ -70,12 +73,13 @@ function DurationSegmentTimeline({duration}: DurationSegmentTimelineProps) {
         })
     }, [duration.segments]);
 
+    const segment_colors = useSegmentColors()
     return (
         <XStack width={'100%'} padding={10} justifyContent={'space-between'} alignItems={'center'}>
             {
                 duration.segments.map((v, i) => {
                     return (
-                        <Stack key={i} borderRadius={4} height={18} backgroundColor={v.type.color}
+                        <Stack key={i} borderRadius={4} height={18} backgroundColor={segment_colors[v.type.color_key]}
                                width={`${segment_widths[i] - 1}%`} paddingHorizontal={'0.5%'}/>
                     )
                 })
@@ -237,11 +241,11 @@ function DurationPane({duration, open_duration, setOpenDuration}: DurationPanePr
                                 onPress={handleOnClickPane}
                                 padding={15} height={default_pane_height}>
                             <YStack alignItems={'center'}>
-                                <Paragraph fontSize={24} color={'$color'} lineHeight={28}>{total_duration}</Paragraph>
+                                <Paragraph fontSize={24} color={'$color'}
+                                           lineHeight={28}>{total_duration}</Paragraph>
                                 <Paragraph fontSize={14} color={'$color'} lineHeight={16}>MINS</Paragraph>
                             </YStack>
                             <Paragraph textTransform={'uppercase'}>{duration.name}</Paragraph>
-                            {/*{is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}*/}
                             <XStack justifyContent={'space-between'}>
                                 <KronosButton
                                     onPress={handleOnClickEditButton} icon={Edit2}/>

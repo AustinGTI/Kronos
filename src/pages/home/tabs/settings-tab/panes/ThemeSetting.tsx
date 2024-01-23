@@ -11,6 +11,7 @@ import {KronosPageContext, ModalType} from "../../../../../globals/components/wr
 import KronosAlert from "../../../../../globals/components/wrappers/KronosAlert";
 import {setTheme} from "../../../../../globals/redux/reducers/settingsReducer";
 import {useDispatch} from "react-redux";
+import {boolean} from "yup";
 
 interface KronosThemePaneProps {
     theme: KronosTheme,
@@ -35,7 +36,9 @@ function KronosThemePane({theme, only_premium, label}: KronosThemePaneProps) {
     // region MEMOS
     // ? ........................
 
-    const is_active_theme: boolean = active_theme === theme
+    const is_active_theme: boolean = React.useMemo(() => {
+        return active_theme === theme
+    }, [active_theme, theme]);
 
     const icon_colors: string[] = React.useMemo(() => {
         const theme_colors = config.themes[theme]
@@ -122,10 +125,8 @@ function KronosThemePane({theme, only_premium, label}: KronosThemePaneProps) {
                 }
             })
         }
-    }, [theme, is_premium, only_premium, openModal, dispatch]);
+    }, [theme, is_premium, only_premium, openModal, dispatch, is_active_theme]);
 
-
-    console.log('border color is', borderColor)
 
     return (
         <XStack w={'100%'} paddingVertical={15} paddingHorizontal={5} justifyContent={'space-between'}>

@@ -4,6 +4,7 @@ import {Segment, SegmentTypes, SegmentType} from "../../../types/main";
 import {Plus, Trash} from "@tamagui/lucide-icons";
 import CarouselInput, {CarouselItem} from "../input/CarouselInput";
 import SegmentsBarView from "../../duration/SegmentsBarView";
+import useSegmentColors, {SegmentColors} from "../../../redux/hooks/useSegmentColors";
 
 
 interface SegmentPickerProps {
@@ -15,6 +16,7 @@ interface SegmentPickerProps {
 interface InputSegmentPaneProps {
     segment: Segment
     segments: Segment[]
+    segment_colors: SegmentColors,
     setSegments: (segments: Segment[]) => void
 }
 
@@ -60,7 +62,6 @@ function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegmen
                         setDurationHours(hours)
                         setDuration(hours * 60 + duration_minutes)
                     }}/>
-                {/*<Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>HOURS</Paragraph>*/}
             </YStack>
             <XStack h={'100%'} paddingBottom={12} alignItems={'center'} justifyContent={'center'}>
                 <Paragraph fontSize={20} paddingHorizontal={10}>:</Paragraph>
@@ -77,7 +78,6 @@ function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegmen
                     setDurationMinutes(minutes)
                     setDuration(duration_hours * 60 + minutes)
                 }}/>
-                {/*<Paragraph fontSize={8} lineHeight={10} color={'#aaa'}>MINUTES</Paragraph>*/}
             </YStack>
         </XStack>
     )
@@ -141,16 +141,17 @@ function InputSegmentPaneDurationPicker({duration, setDuration}: InputSegmentPan
     )
 }
 
-function InputSegmentPane({segment, segments, setSegments}: InputSegmentPaneProps) {
+function InputSegmentPane({segment, segments,segment_colors, setSegments}: InputSegmentPaneProps) {
     const onClickDeleteButton = React.useCallback(() => {
         setSegments(segments.filter((prev_segment) => prev_segment.key !== segment.key))
         console.log(segments)
     }, [setSegments, segment.key, segments])
+    
     return (
         <XStack w={'100%'} h={60} alignItems={'center'} borderColor={'#aaa'} borderWidth={1} borderRadius={10}
                 marginVertical={5}>
             <XStack h={'100%'} padding={4} w={'25%'} alignItems={'center'}>
-                <View w={15} h={30} backgroundColor={segment.type.color} marginHorizontal={10} borderRadius={7}/>
+                <View w={15} h={30} backgroundColor={segment_colors[segment.type.color_key]} marginHorizontal={10} borderRadius={7}/>
                 <Paragraph textTransform={'uppercase'} fontSize={14}>{segment.type.name}</Paragraph>
             </XStack>
             <InputSegmentPaneTextDurationPicker duration={segment.duration} setDuration={(duration) => {
@@ -190,6 +191,8 @@ export default function SegmentPicker({active_segments: segments, setSegments, s
         }
         setSegments([...segments, new_segment])
     }, [segments, setSegments])
+    
+    const segment_colors = useSegmentColors()
 
     return (
         // if there are segments, display them else display the rules for adding segments
@@ -224,7 +227,7 @@ export default function SegmentPicker({active_segments: segments, setSegments, s
                 ) : (
                     <YStack w={'100%'} paddingTop={5}>
                         {segments.map((segment) => (
-                            <InputSegmentPane key={segment.key} segment={segment} segments={segments}
+                            <InputSegmentPane key={segment.key} segment={segment} segments={segments} segment_colors={segment_colors}
                                               setSegments={setSegments}/>
                         ))}
                     </YStack>

@@ -12,6 +12,7 @@ import KronosAlert, {AlertModalProps} from "../../../../globals/components/wrapp
 import {Audio} from 'expo-av'
 import useTimerNotifications, {TimerNotificationType} from "./useBackgroundTimer";
 import {AppState} from "react-native";
+import {boolean} from "yup";
 
 
 export enum TimerStatus {
@@ -30,6 +31,9 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
     const dispatch = useDispatch()
     const timer_interval_ref = React.useRef<number | null>(null)
 
+    const app_in_background = React.useRef<boolean>(false);
+    const app_last_in_background_timestamp = React.useRef<number | null>(null);
+
     const [timer_state, updateTimerState] = React.useReducer(timerStateReducer, null)
 
     const on_segment_done_sound = React.useRef<Audio.Sound | null>(null);
@@ -47,8 +51,9 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
 
     const {scheduleNotification, cancelNotification} = useTimerNotifications()
 
-    // Region TIMER CALLBACKS
+    // region TIMER CALLBACKS
     // ? ........................
+
     const startTimer = React.useCallback(() => {
         if (!timer_duration || !timer_activity) {
             throw new Error('Cannot start timer if duration or activity is not set')
@@ -169,6 +174,10 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
         // if the active segment elapsed time, is higher than the initial time, then the segment is complete, set modal is open to true
     }, [session_id, timer_state, dispatch, updateTimerState])
 
+
+    // ? ........................
+    // endregion ........................
+
     const playSoundOnSegmentDone = React.useCallback(async () => {
         const {sound} = await Audio.Sound.createAsync(require('../../../../../assets/sounds/on_segment_complete.wav'))
         if (!on_segment_done_sound.current) {
@@ -186,7 +195,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
     }, []);
 
 
-    // Region MEMOS
+    // region MEMOS
     // ? ........................
 
     const active_segment = React.useMemo(() => {
@@ -198,10 +207,10 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
     }, [timer_state])
 
     // ? ........................
-    // End ........................
+    // endregion ........................
 
 
-    // Region EFFECTS
+    // region EFFECTS
     // ? ........................
 
     // unload sounds on unmount
@@ -217,6 +226,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
         const subscription = AppState.addEventListener('change', nextAppState => {
             if (nextAppState === 'background') {
                 console.log('app is in the background')
+                app_in_background.current = true
                 // check that the timer is running and that the timer state is set
                 if (timer_state?.timing_state.is_running) {
                     // the notification should be scheduled for the end of the active segment which would be the current datetime + (initial_duration - elapsed_duration)
@@ -243,6 +253,10 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
                 }
             } else {
                 console.log('app is in the foreground')
+                if (app_in_background.current) {
+                    app_last_in_background_timestamp.current = new Date().getTime()
+                }
+                app_in_background.current = false
                 // if the app is not in the background, cancel the notification if it is set
                 if (active_notification_id.current) {
                     cancelNotification(active_notification_id.current).then(() => {
@@ -306,8 +320,19 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
                     }
                 }]
             };
+            // if the app last in background timestamp is set, and the difference between the current time and the last
+            // in background timestamp is greater than the elapsed time minus the initial time of the active segment,
+            // then the sound was played as a notification while the app was in the background, so do not play it again
+            const seconds_since_last_in_background = app_last_in_background_timestamp.current ? (new Date().getTime() - app_last_in_background_timestamp.current) / 1000 : 0;
+            const seconds_since_segment_end = active_segment.elapsed_duration - active_segment.initial_duration;
+
+            console.log('last in background timestamp is', app_last_in_background_timestamp.current, 'and seconds since last in background is', seconds_since_last_in_background, 'and seconds since segment end is', seconds_since_segment_end)
+
             // play a bell sound then open the modal
-            (is_last_segment ? playSoundOnSessionDone() : playSoundOnSegmentDone()).then()
+            if (!app_last_in_background_timestamp.current || seconds_since_last_in_background > seconds_since_segment_end) {
+                console.log('playing sound');
+                (is_last_segment ? playSoundOnSessionDone() : playSoundOnSegmentDone()).then()
+            }
             openModal({
                 type: ModalType.ALERT,
                 component: KronosAlert,
@@ -317,7 +342,7 @@ export default function useTimer(timer_activity: Activity | null, timer_duration
     }, [active_segment?.on_complete_alert_props.is_open])
 
     // ? ........................
-    // End
+    // endregion
 
     // console.log('remaining segments length is', timer_state?.segments_state.segments_remaining.length, 'and active segment is', active_segment)
 

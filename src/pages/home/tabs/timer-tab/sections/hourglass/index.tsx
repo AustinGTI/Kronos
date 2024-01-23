@@ -17,6 +17,7 @@ import {HOUR_GLASS_PROPERTIES} from "./constants";
 import useHourGlassTexture from "./hooks/useHourGlassTexture";
 import {useTheme} from "tamagui";
 import chroma from "chroma-js";
+import useSegmentColors from "../../../../../../globals/redux/hooks/useSegmentColors";
 
 interface HourGlassProps {
     timer_status: TimerStatus
@@ -89,11 +90,10 @@ export default function HourGlassAnimation({
 
     const {
         foreground: {val: foreground},
-        // background: {val: background},
-        // color: {val: color},
-        // borderColor: {val: borderColor},
         shadowColor: {val: shadowColor}
     } = useTheme()
+
+    const segment_colors = useSegmentColors()
 
     // console.log('at the moment there are', completed_segments.length, 'completed segments', remaining_segments.length, 'remaining segments')
 
@@ -127,7 +127,7 @@ export default function HourGlassAnimation({
                             colors={
                                 [...remaining_segments, ...(active_segment ? [active_segment] : [])]
                                     .reduce((colors, segment, index) => {
-                                        const color = segment.segment_type.color
+                                        const color = segment_colors[segment.segment_type.color_key]
                                         colors.push(color)
                                         colors.push(color)
                                         return colors
@@ -139,7 +139,7 @@ export default function HourGlassAnimation({
                         (remaining_segments.length || active_segment) ?
                             <Path path={falling_sand_path}
                                   style="fill"
-                                  color={active_segment ? active_segment.segment_type.color : remaining_segments.length ? remaining_segments[remaining_segments.length - 1].segment_type.color : 'black'}
+                                  color={active_segment ? segment_colors[active_segment.segment_type.color_key] : remaining_segments.length ? segment_colors[remaining_segments[remaining_segments.length - 1].segment_type.color_key] : 'black'}
                                   strokeCap="round"/>
                             : null
                     }
@@ -155,7 +155,7 @@ export default function HourGlassAnimation({
                             colors={
                                 [...(active_segment ? [active_segment] : []), ...completed_segments.slice().reverse()]
                                     .reduce((colors, segment, index) => {
-                                        const color = segment.segment_type.color
+                                        const color = segment_colors[segment.segment_type.color_key]
                                         colors.push(color)
                                         colors.push(color)
                                         return colors

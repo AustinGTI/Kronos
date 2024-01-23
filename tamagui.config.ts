@@ -111,6 +111,7 @@ const rubikFont = createFont({
 // ? ........................
 
 const common_theme = {
+    pause_color: '#999',
     backgroundPress: 'transparent',
     error: '#f00'
 }
@@ -136,7 +137,7 @@ export const DARK_THEMES = [
 
 const config = createTamagui({
     animations,
-    defaultTheme: 'dark',
+    defaultTheme: KronosTheme.POMODORO_PURPLE,
     shouldAddPrefersColorThemes: false,
     themeClassNameOnRoot: false,
     shorthands,
@@ -155,6 +156,8 @@ const config = createTamagui({
             color: '#e9bcff',
             active_color: '#a900fe',
             shadowColor: '#7b00b8',
+            focus_color: '#db9cff',
+            break_color: '#ffe169',
         },
         light: {
             ...themes.light,
@@ -164,7 +167,9 @@ const config = createTamagui({
             border: '#aaa',
             color: '#3d005b',
             active_color: '#a900fe',
-            shadowColor: '#6b00a1'
+            shadowColor: '#6b00a1',
+            focus_color: '#db9cff',
+            break_color: '#ffe169',
         },
         [KronosTheme.POMODORO_PURPLE]: {
             ...themes.light,
@@ -174,7 +179,9 @@ const config = createTamagui({
             border: '#aaa',
             color: '#3d005b',
             active_color: '#a900fe',
-            shadowColor: '#6b00a1'
+            shadowColor: '#6b00a1',
+            focus_color: '#db9cff',
+            break_color: '#ffe169',
         },
         [KronosTheme.CHRONOGRAPH_CHERRY]: {
             ...themes.light,
@@ -184,7 +191,9 @@ const config = createTamagui({
             border: '#aaa',
             color: '#570000',
             active_color: '#ef0000',
-            shadowColor: '#d40000'
+            shadowColor: '#d40000',
+            focus_color: '#fda1e7',
+            break_color: '#fff4c9'
         },
         [KronosTheme.HOURGLASS_HAZEL]: {
             ...themes.light,
@@ -194,7 +203,9 @@ const config = createTamagui({
             border: '#aaa',
             color: '#524000',
             active_color: '#ffb800',
-            shadowColor: '#654f00'
+            shadowColor: '#654f00',
+            focus_color: '#ffd9f5',
+            break_color: '#ffc796'
         },
         [KronosTheme.TEMPORAL_TEAL]: {
             ...themes.dark,
@@ -204,17 +215,21 @@ const config = createTamagui({
             border: '#fff',
             color: '#b7f4ff',
             active_color: '#00d9ff',
-            shadowColor: '#000'
+            shadowColor: '#000',
+            focus_color: '#8f75b1',
+            break_color: '#d6c88a'
         },
         [KronosTheme.OCLOCK_ONYX]: {
             ...themes.dark,
             ...common_theme,
-            background: '#000',
+            background: '#0f0f0f',
             foreground: '#1d1d1d',
             border: '#fff',
             color: '#b5b5b5',
             active_color: '#fff',
             shadowColor: '#000',
+            focus_color: '#301934',
+            break_color: '#6b5d0a'
         },
     },
     tokens: {

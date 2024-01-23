@@ -17,7 +17,7 @@ const DurationFormValidation = yup.object().shape({
                 .required('Duration is required'),
             type: yup.object().shape({
                 name: yup.string().oneOf([SegmentTypes.FOCUS.name, SegmentTypes.BREAK.name]).required('Type is required'),
-                color: yup.string().required('Color is required')
+                color_key: yup.string().oneOf([SegmentTypes.FOCUS.color_key, SegmentTypes.BREAK.color_key]).required('Color key is required'),
             })
         }))
         .test('atLeastOneSegment',

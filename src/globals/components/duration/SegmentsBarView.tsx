@@ -1,6 +1,7 @@
 import React from 'react'
 import {Segment} from "../../types/main";
 import {View, XStack} from "tamagui";
+import useSegmentColors from "../../redux/hooks/useSegmentColors";
 
 interface SegmentsBarViewProps extends React.ComponentProps<typeof XStack> {
     segments: Segment[]
@@ -10,6 +11,7 @@ export default function SegmentsBarView({segments, ...stack_props}: SegmentsBarV
     const total_duration = segments.reduce((total, segment) => {
         return total + segment.duration
     }, 0)
+    const segment_colors = useSegmentColors()
     return (
         segments.length ?
             <XStack w={'100%'} h={20} alignItems={'center'} justifyContent={'center'} overflow={'hidden'}
@@ -24,7 +26,7 @@ export default function SegmentsBarView({segments, ...stack_props}: SegmentsBarV
                             return (
                                 // todo: fix the key issue when dummy sessions are regenerated
                                 <View key={`${segment.key}-${index}`} w={`${width.toFixed(2)}%`} h={'100%'}
-                                      backgroundColor={segment.type.color}/>
+                                      backgroundColor={segment_colors[segment.type.color_key]}/>
                             );
                         })}
             </XStack> :

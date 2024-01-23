@@ -37,6 +37,16 @@ export default function DataSetting() {
                             dispatch(resetDurations())
                             dispatch(resetActivities())
                             closeAlert()
+                            openModal({
+                                type: ModalType.ALERT,
+                                component: KronosAlert,
+                                component_props: {
+                                    title: 'Success',
+                                    description: 'Data reset successfully',
+                                    buttons: [],
+                                    with_cancel_button: true,
+                                }
+                            })
                         }
                     }
                 ]
@@ -65,6 +75,16 @@ export default function DataSetting() {
                             // dispatch(clearDurations)
                             dispatch(clearSessions())
                             closeAlert()
+                            openModal({
+                                type: ModalType.ALERT,
+                                component: KronosAlert,
+                                component_props: {
+                                    title: 'Success',
+                                    description: 'Session data deleted successfully',
+                                    buttons: [],
+                                    with_cancel_button: true,
+                                }
+                            })
                         }
                     }
                 ]
@@ -93,6 +113,16 @@ export default function DataSetting() {
                             dispatch(clearDurations())
                             dispatch(clearSessions())
                             closeAlert()
+                            openModal({
+                                type: ModalType.ALERT,
+                                component: KronosAlert,
+                                component_props: {
+                                    title: 'Success',
+                                    description: 'All data deleted successfully',
+                                    buttons: [],
+                                    with_cancel_button: true,
+                                }
+                            })
                         }
                     }
                 ]

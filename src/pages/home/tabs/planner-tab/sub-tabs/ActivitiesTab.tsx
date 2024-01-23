@@ -202,7 +202,6 @@ function ActivityPane({activity, open_activity, setOpenActivity}: ActivityPanePr
                             <Circle size={20} backgroundColor={activity.color}/>
                             <Paragraph color={'$color'} textTransform={'uppercase'}
                                        fontSize={14}>{activity.name}</Paragraph>
-                            {/*{is_open ? <ChevronUp size={'2$'} color={'$color'}/> : <ChevronDown size={'2$'} color={'$color'}/>}*/}
                             <XStack justifyContent={'space-between'}>
                                 <KronosButton
                                     onPress={handleOnClickEditButton} icon={Edit2}/>

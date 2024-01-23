@@ -2,32 +2,36 @@ export const EMPTY_RECORD_ID = -1;
 export const UNTITLED_RECORD_ID = -2;
 export const DELETED_RECORD_ID = -3;
 
+export enum SegmentColorKey {
+    FOCUS = 'focus_color',
+    BREAK = 'break_color',
+    PAUSE = 'pause_color'
+}
+
 export type SegmentType = {
     key: number,
     name: string;
-    color: string;
+    color_key: SegmentColorKey;
     persists_on_app_close: boolean;
 }
-
-export const SECONDARY_COLOR = '#db9cff';
 
 export const SegmentTypes: { [key: string]: SegmentType } = {
     FOCUS: {
         key: 1,
         name: 'focus',
-        color: '#db9cff',
+        color_key: SegmentColorKey.FOCUS,
         persists_on_app_close: true,
     },
     BREAK: {
         key: 2,
         name: 'break',
-        color: '#ffe169',
+        color_key: SegmentColorKey.BREAK,
         persists_on_app_close: true,
     },
     PAUSE: {
         key: 3,
         name: 'pause',
-        color: '#999',
+        color_key: SegmentColorKey.PAUSE,
         persists_on_app_close: true,
     }
 }

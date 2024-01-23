@@ -5,6 +5,7 @@ import {useSelector} from "react-redux";
 import {AppState} from "../../../../../globals/redux/reducers";
 import SegmentsBarView from "../../../../../globals/components/duration/SegmentsBarView";
 import KronosContainer from "../../../../../globals/components/wrappers/KronosContainer";
+import useSegmentColors from "../../../../../globals/redux/hooks/useSegmentColors";
 
 interface SessionViewModalProps {
     session: Session | null
@@ -66,6 +67,7 @@ function TimeRangeView({start_time, end_time, time_font_size, am_pm_font_size}: 
 }
 
 function SegmentsView({start_time, segments}: SegmentsViewProps) {
+    const segment_colors = useSegmentColors()
     return (
         <YStack w={'100%'}>
             {segments.map((segment, index) => {
@@ -90,7 +92,7 @@ function SegmentsView({start_time, segments}: SegmentsViewProps) {
                                 <Paragraph fontSize={20} lineHeight={20}>{Math.round(segment.duration)}</Paragraph>
                                 <Paragraph fontSize={10} lineHeight={10} color={'#999'}>MINS</Paragraph>
                             </YStack>
-                            <View w={30} h={30} backgroundColor={segment.type.color} borderRadius={5}
+                            <View w={30} h={30} backgroundColor={segment_colors[segment.type.color_key]} borderRadius={5}
                                   marginLeft={10}/>
                         </XStack>
                     </XStack>

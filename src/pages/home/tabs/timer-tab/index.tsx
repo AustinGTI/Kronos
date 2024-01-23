@@ -8,6 +8,7 @@ import TimerControls from "./sections/TimerControls";
 import HourGlassAnimation from "./sections/hourglass";
 import KronosContainer from "../../../../globals/components/wrappers/KronosContainer";
 import {durationToTimerState, TimerSegment} from "./timer_state";
+import useSegmentColors from "../../../../globals/redux/hooks/useSegmentColors";
 
 enum TIMER_TAB_SHEET_MODAL {
     SELECT_ACTIVITY = 'SELECT_ACTIVITY',
@@ -64,18 +65,19 @@ function TimeDisplay({duration, segment_type}: TimeDisplayProps) {
     }, [])
 
     // console.log('displaying on the time display ', hours, minutes, seconds)
+    const segment_colors = useSegmentColors()
 
     return (
         <KronosContainer w={'90%'} paddingVertical={5}>
             <YStack w={'100%'} alignItems={'center'}>
                 <XStack justifyContent={'center'} alignItems={'center'} paddingVertical={5}>
-                    <Circle size={7} backgroundColor={segment_type?.color ?? '$color'}/>
+                    <Circle size={7} backgroundColor={segment_type ? segment_colors[segment_type.color_key] : '$color'}/>
                     <Paragraph
                         paddingHorizontal={5}
                         fontSize={20} color={'$color'} textTransform={'uppercase'}>
                         {segment_type?.name ?? 'NONE'}
                     </Paragraph>
-                    <Circle size={7} backgroundColor={segment_type?.color ?? '$color'}/>
+                    <Circle size={7} backgroundColor={segment_type ? segment_colors[segment_type.color_key] : '$color'}/>
                 </XStack>
                 <XStack alignItems={'center'} justifyContent={'center'} paddingVertical={5}>
                     {is_negative ? <Paragraph fontSize={40} lineHeight={40} marginRight={2}>-</Paragraph> : null}
