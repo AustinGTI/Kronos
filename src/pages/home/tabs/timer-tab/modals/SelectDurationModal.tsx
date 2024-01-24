@@ -95,9 +95,10 @@ function SelectCustomDurationPane({duration, is_selected, setToTimerDuration}: S
                 <YStack w={'85%'} alignItems={'center'} paddingBottom={10}>
                     <Paragraph color={'red'} fontSize={10}>{error ?? ''}</Paragraph>
                     <SegmentPicker setSegments={setCustomSegments} active_segments={custom_segments}/>
-                    <Button onPress={handleSetToTimerDuration}>
-                        <Paragraph textTransform={'uppercase'}>Set Duration</Paragraph>
-                    </Button>
+                    <KronosButton
+                        onPress={handleSetToTimerDuration}
+                        label_props={{fontSize: 18,lineHeight:20}}
+                        label={'SET DURATION'} padding={10}/>
                 </YStack>
             }
         </KronosContainer>

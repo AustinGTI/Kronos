@@ -1,5 +1,6 @@
 import {AlertDialog, Button, XStack, YStack} from "tamagui";
 import React from "react";
+import KronosButton from "./KronosButton";
 
 export interface AlertButtonProps {
     label: string
@@ -14,11 +15,18 @@ export interface AlertModalProps {
     with_cancel_button?: boolean
 }
 
-interface KronosAlertProps extends AlertModalProps{
+interface KronosAlertProps extends AlertModalProps {
     closeModal: () => void
 }
 
-export default function KronosAlert({title, description, buttons, with_cancel_button,timeout_in_ms,closeModal}: KronosAlertProps) {
+export default function KronosAlert({
+                                        title,
+                                        description,
+                                        buttons,
+                                        with_cancel_button,
+                                        timeout_in_ms,
+                                        closeModal
+                                    }: KronosAlertProps) {
     React.useEffect(() => {
         // if the timeout_in_ms prop has been set, then close the modal after the timeout
         if (timeout_in_ms) {
@@ -36,19 +44,23 @@ export default function KronosAlert({title, description, buttons, with_cancel_bu
                 {description}
             </AlertDialog.Description>
 
-            <XStack space="$3" justifyContent={
+            <XStack paddingHorizontal={10} space="$3" justifyContent={
                 buttons.length + (with_cancel_button ? 1 : 0) > 1 ? 'space-between' : 'center'
             }>
                 {with_cancel_button && <AlertDialog.Cancel asChild>
-                    <Button>Close</Button>
+                    <KronosButton padding={10} label={'Close'}/>
                 </AlertDialog.Cancel>}
                 {buttons.map((button, index) => (
                     // <AlertDialog.Action key={index} asChild>
-                    <Button key={index} onPress={() => {
+                    <KronosButton
+                        // borderWidth={1}
+                        // borderRadius={5}
+                        // borderColor={'$color'}
+                        // todo: add button background color to themes
+                        padding={10}
+                        key={index} onPress={() => {
                         button.onPress(closeModal)
-                    }}>
-                        {button.label}
-                    </Button>
+                    }} label={button.label}/>
                     // </AlertDialog.Action>
                 ))}
             </XStack>

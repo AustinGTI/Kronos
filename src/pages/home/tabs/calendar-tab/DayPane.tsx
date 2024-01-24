@@ -1,18 +1,24 @@
-import React from 'react'
+import React, {useCallback, useRef} from 'react'
 import {Activity, Day, SegmentType, Session, UNTITLED_ACTIVITY} from "../../../../globals/types/main";
 import {Paragraph, useTheme, View, XStack, XStackProps, YStack} from "tamagui";
 import {useSelector} from "react-redux";
 import {AppState} from "../../../../globals/redux/reducers";
-import {TouchableOpacity} from "react-native";
+import {LayoutChangeEvent, NativeSyntheticEvent, TextLayoutEventData, TouchableOpacity} from "react-native";
 import {CalendarTabContext} from "./context";
 import {dateToDDMMYYYY} from "../../../../globals/helpers/datetime_functions";
 import {KronosPageContext, ModalType} from "../../../../globals/components/wrappers/KronosPage";
 import SessionViewModal from "./modals/SessionViewModal";
+import {number} from "yup";
+import {Canvas, DiffRect, rect, rrect} from "@shopify/react-native-skia";
+
+interface Dimensions {
+    width: number
+    height: number
+}
 
 interface DayPaneProps {
     day: Day
 }
-
 
 interface TimelineProps {
     sessions: {
@@ -28,11 +34,16 @@ interface DailyTimelineProps {
     calendar_height: number
 }
 
+interface TimelineSessionWindowProps {
+    calendar_height: number
+    timeline_session: TimelineSession
+    showSessionDetailsInModal: (timeline_session: TimelineSession) => void
+}
+
 interface TimelineSegment {
     size: number // a float between 0 and 1
     type: SegmentType
 }
-
 
 interface TimelineSession {
     id: number
@@ -40,6 +51,7 @@ interface TimelineSession {
     to: number // a float between 0 and 1
     activity: Activity
     segments: TimelineSegment[]
+    session_duration: number // in minutes
 }
 
 
@@ -85,6 +97,46 @@ function DailyTimeline({calendar_height}: DailyTimelineProps) {
     )
 }
 
+function TimelineSessionWindow
+({timeline_session, calendar_height, showSessionDetailsInModal}: TimelineSessionWindowProps) {
+    const [text_dimensions, setTextDimensions] = React.useState<Dimensions>({width: 0, height: 0})
+
+    const onParagraphTextLayout = useCallback((event: NativeSyntheticEvent<TextLayoutEventData>) => {
+        const {width, height} = event.nativeEvent.lines[0]
+        setTextDimensions({width, height})
+    }, [setTextDimensions]);
+
+    const window_height: number = React.useMemo(() => {
+        return (timeline_session.to - timeline_session.from) * calendar_height
+    }, [timeline_session.to, timeline_session.from, calendar_height]);
+
+    return (
+        <View paddingLeft={30} paddingRight={10}
+              position={'absolute'} w={"100%"} top={timeline_session.from * calendar_height}
+              height={window_height}>
+            <TouchableOpacity
+                onPressIn={() => showSessionDetailsInModal(timeline_session)}>
+                <View
+                    w={'100%'} h={'100%'}
+                    backgroundColor={timeline_session.activity.color}
+                    opacity={0.8}
+                    borderRadius={5}>
+                    {
+                        text_dimensions.height < window_height &&
+                        <Paragraph
+                            opacity={1}
+                            fontSize={12} textTransform={'uppercase'}
+                            paddingVertical={0} paddingHorizontal={5} onTextLayout={onParagraphTextLayout}>
+                            {timeline_session.activity.name}
+                        </Paragraph>
+                    }
+                </View>
+            </TouchableOpacity>
+        </View>
+    );
+}
+
+
 function Timeline({sessions}: TimelineProps) {
     const {
         dimensions_data: {calendar_height},
@@ -102,13 +154,14 @@ function Timeline({sessions}: TimelineProps) {
             start_of_day.setHours(0, 0, 0, 0)
             const from = (new Date(session.start_time).getTime() - start_of_day.getTime()) / (24 * 60 * 60 * 1000)
             const to = Math.min(1, (new Date(session.end_time ?? new Date()).getTime() - start_of_day.getTime()) / (24 * 60 * 60 * 1000))
+            const total_segments_duration = session.segments.reduce((total, segment) => total + segment.duration, 0)
             const timeline_session: TimelineSession = {
                 id: session.id,
                 from, to,
                 activity: activities[session.activity_id] ?? UNTITLED_ACTIVITY,
-                segments: []
+                segments: [],
+                session_duration: total_segments_duration
             }
-            const total_segments_duration = session.segments.reduce((total, segment) => total + segment.duration, 0)
             for (const segment of session.segments) {
                 timeline_session.segments.push({
                     size: segment.duration / total_segments_duration,
@@ -144,27 +197,11 @@ function Timeline({sessions}: TimelineProps) {
     return (
         <YStack position={'relative'} flexGrow={1} h={'100%'} alignItems={'center'} backgroundColor={foreground}>
             {
-                timeline_sessions.map((timeline_session, index) => {
-                        return (
-                            <View key={index}
-                                  paddingLeft={30} paddingRight={10}
-                                  position={'absolute'} w={"100%"} top={timeline_session.from * calendar_height}
-                                  height={(timeline_session.to - timeline_session.from) * calendar_height}>
-                                <TouchableOpacity
-                                    onPressIn={() => showSessionDetailsInModal(timeline_session)}>
-                                    <View
-                                        w={'100%'} h={'100%'}
-                                        backgroundColor={timeline_session.activity.color}
-                                        opacity={0.8}
-                                        borderRadius={5}>
-                                        <Paragraph fontSize={12} textTransform={'uppercase'}
-                                                   paddingVertical={5} paddingHorizontal={10}>
-                                            {timeline_session.activity.name}
-                                        </Paragraph>
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        )
+                timeline_sessions.map((timeline_session) => {
+                        return <TimelineSessionWindow
+                            key={timeline_session.id}
+                            calendar_height={calendar_height} timeline_session={timeline_session}
+                            showSessionDetailsInModal={showSessionDetailsInModal}/>
                     }
                 )
             }

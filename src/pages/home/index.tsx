@@ -5,10 +5,8 @@ import TimerTab from "./tabs/timer-tab";
 import PlannerTab from "./tabs/planner-tab";
 import {BarChart3, Calendar, Clipboard, Settings, Timer} from "@tamagui/lucide-icons";
 import {useTheme} from "tamagui";
-import {SECONDARY_COLOR} from "../../globals/types/main";
 import StatisticsTab from "./tabs/statistics-tab";
 import SettingsTab from "./tabs/settings-tab";
-
 
 const Tab = createBottomTabNavigator()
 
@@ -17,7 +15,7 @@ export default function HomePage() {
     // const dispatch = useDispatch()
     // dispatch(clearSessions())
     // // generate dummy sessions from 1st September 2023 to today
-    // const start_date = new Date(2021, 8, 1)
+    // const start_date = new Date(2023, 8, 1)
     // dispatch(generateDummySessions({start_date}))
     console.log('theme props at the moment are ', background, color, borderColor)
     return (

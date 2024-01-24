@@ -5,6 +5,7 @@ import {Plus, Trash} from "@tamagui/lucide-icons";
 import CarouselInput, {CarouselItem} from "../input/CarouselInput";
 import SegmentsBarView from "../../duration/SegmentsBarView";
 import useSegmentColors, {SegmentColors} from "../../../redux/hooks/useSegmentColors";
+import KronosButton from "../../wrappers/KronosButton";
 
 
 interface SegmentPickerProps {
@@ -47,7 +48,7 @@ function InputSegmentPaneTextDurationPicker({duration, setDuration}: InputSegmen
 
 
     return (
-        <XStack w={'60%'} justifyContent={'center'} paddingHorizontal={10} h={60}>
+        <XStack w={'60%'} justifyContent={'center'} h={60}>
             <YStack h={'100%'} w={'auto'} alignItems={'center'} justifyContent={'center'}>
                 <Input
                     fontSize={20} height={40} paddingHorizontal={10} keyboardType={'numeric'}
@@ -148,9 +149,9 @@ function InputSegmentPane({segment, segments,segment_colors, setSegments}: Input
     }, [setSegments, segment.key, segments])
     
     return (
-        <XStack w={'100%'} h={60} alignItems={'center'} borderColor={'#aaa'} borderWidth={1} borderRadius={10}
-                marginVertical={5}>
-            <XStack h={'100%'} padding={4} w={'25%'} alignItems={'center'}>
+        <XStack w={'100%'} h={60} alignItems={'center'} borderColor={'$border'} borderWidth={1} borderRadius={10}
+                marginVertical={5} justifyContent={'space-between'}>
+            <XStack h={'100%'} paddingLeft={4} w={'20%'} alignItems={'center'}>
                 <View w={15} h={30} backgroundColor={segment_colors[segment.type.color_key]} marginHorizontal={10} borderRadius={7}/>
                 <Paragraph textTransform={'uppercase'} fontSize={14}>{segment.type.name}</Paragraph>
             </XStack>
@@ -162,9 +163,7 @@ function InputSegmentPane({segment, segments,segment_colors, setSegments}: Input
                     return prev_segment
                 }))
             }}/>
-            <Button backgroundColor={'transparent'} padding={3} onPress={onClickDeleteButton} w={'15%'}>
-                <Trash size={20}/>
-            </Button>
+            <KronosButton width={'10%'} padding={4} onPress={onClickDeleteButton} icon={Trash} icon_position={'right'}/>
         </XStack>
     )
 }
@@ -197,10 +196,11 @@ export default function SegmentPicker({active_segments: segments, setSegments, s
     return (
         // if there are segments, display them else display the rules for adding segments
         <React.Fragment>
-            <XStack w={'100%'} justifyContent={'space-between'}>
-                <Button
+            <XStack w={'100%'} alignItems={'center'} justifyContent={'space-between'}>
+                <KronosButton
+                    icon_props={{size:30}}
                     onPress={onClickAddButton}
-                    icon={<Plus size={'4$'}/>}/>
+                    icon={Plus}/>
                 <YStack alignItems={'center'} height={'100%'}>
                     <Paragraph fontSize={30} lineHeight={30}
                                color={'$color'}>{(segments ?? []).reduce((total, segment) => {
